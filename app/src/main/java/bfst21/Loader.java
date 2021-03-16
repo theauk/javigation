@@ -15,23 +15,15 @@ public class Loader {
     private Creator creator;
     public void load(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
         long time = -System.nanoTime();
-       if (filename.endsWith(".osm")) {
-            loadOSM(filename);
-        } else if (filename.endsWith(".zip")) {
+       if (filename.endsWith(".zip")) {
             loadZIP(filename);
         }
-        time += System.nanoTime();
-        Logger.getGlobal().info(String.format("Load time: %dms", time / 1000000));
     }
 
     private void loadZIP(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
         var zip = new ZipInputStream(new FileInputStream(filename));
         zip.getNextEntry();
         loadOSM(zip);
-    }
-
-    private void loadOSM(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
-        loadOSM(new FileInputStream(filename));
     }
 
     private void loadOSM(InputStream input) throws IOException, XMLStreamException, FactoryConfigurationError {

@@ -27,7 +27,6 @@ public class Creator {
     private NonRoadElements nonRoadElements;
     private RefData refData;
     private RoadData roadData;
-    //List<Runnable> observers = new ArrayList<>();
     List<Way> roads;
     List<Way> footway;
     List<Way> bridges;
