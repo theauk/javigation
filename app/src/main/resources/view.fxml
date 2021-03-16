@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import bfst21.view.MapCanvas?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.Scene?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<Scene xmlns="http://javafx.com/javafx"
+       xmlns:fx="http://javafx.com/fxml"
+       fx:controller="bfst21.Controller"
+       fx:id="scene"
+>
+    <root>
+        <BorderPane prefWidth="640" prefHeight="480">
+            <top>
+                <MenuBar>
+                    <menus>
+                        <Menu text="File">
+                            <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
+                            <SeparatorMenuItem/>
+                            <MenuItem text="Exit" onAction="#exit"/>
+                        </Menu>
+                        <Menu text="View">
+                            <MenuItem text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
+                        </Menu>
+                    </menus>
+                </MenuBar>
+            </top>
+            <center>
+                <StackPane fx:id="centerPane">
+                    <MapCanvas fx:id="mapCanvas"
+                               width="${centerPane.width}"
+                               height="${centerPane.height}"
+                               onScroll="#onScroll"
+                               onMousePressed="#onMousePressed"
+                               onMouseDragged="#onMouseDragged"
+                               onMouseMoved="#onMouseMoved"
+                               onMouseReleased="#onMouseReleased"
+                    />
+                </StackPane>
+            </center>
+            <bottom>
+                <HBox alignment="CENTER_RIGHT">
+                    <Label fx:id="coordsLabel" text="Coords: 0.0, 0.0" prefWidth="150" style="-fx-padding: 5;"/>
+                </HBox>
+            </bottom>
+        </BorderPane>
+    </root>
+</Scene>

@@ -1,13 +1,17 @@
 package bfst21;
 
+import bfst21.view.MapSegment;
+import bfst21.view.View;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-public class App extends Application {
+import java.io.IOException;
+
+public class App extends Application
+{
     @Override
-    public void start(Stage primaryStage) {
-        /*var filename = getParameters().getRaw().get(0);
-        var model = new Model(filename);
-        new View(model, primaryStage);*/
+    public void start(Stage primaryStage) throws IOException
+    {
+        new View(new MapSegment(), primaryStage);
     }
 }
