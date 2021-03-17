@@ -1,6 +1,6 @@
 package bfst21.data_structures;
 
-// From Algorithms 4th ed. p. 398-399
+// Adapted from Algorithms 4th ed. p. 398-399
 public class BinarySearchTree<Key extends Comparable<Key>, Value> {
 
     private BSTNode root;
