@@ -1,6 +1,6 @@
 package bfst21.Osm_Elements;
 
-public class Node extends Element{
+public class Node { // TODO: 3/17/21 removed extends element. Doesn't have min and max x/y
     private float x, y;
     private transient long id;
 
