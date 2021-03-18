@@ -10,6 +10,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Slider?>
 <Scene xmlns="http://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
        fx:controller="bfst21.Controller"
@@ -27,6 +28,9 @@
                         </Menu>
                         <Menu text="View">
                             <MenuItem text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
+                            <SeparatorMenuItem/>
+                            <MenuItem fx:id="zoomInItem" text="Zoom in" onAction="#zoom" accelerator="CTRL + PLUS"/>
+                            <MenuItem fx:id="zoomOutItem" text="Zoom out" onAction="#zoom" accelerator="CTRL + MINUS"/>
                         </Menu>
                     </menus>
                 </MenuBar>
@@ -46,7 +50,9 @@
             </center>
             <bottom>
                 <HBox alignment="CENTER_RIGHT">
-                    <Label fx:id="coordsLabel" text="Coords: 0.0, 0.0" prefWidth="150" style="-fx-padding: 5;"/>
+                    <Label fx:id="coordsLabel" text="CanvasCoords: 0.0, 0.0" style="-fx-padding: 5;"/>
+                    <Label fx:id="geoCoordsLabel" text="GeoCoords: 0.0, 0.0" style="-fx-padding: 5;"/>
+                    <Slider fx:id="zoomSlider" showTickLabels="true" showTickMarks="true"/>
                 </HBox>
             </bottom>
         </BorderPane>
