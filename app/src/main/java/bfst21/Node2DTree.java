@@ -6,10 +6,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.Specifik_Elements.KDTreeNode;
 import javafx.geometry.Point2D;
 
 public class Node2DTree{
-    private Node root;
+    private KDTreeNode root;
     private final Comparator<Node> comparatorX = new Comparator<Node>() {
         @Override
         public int compare(Node p1, Node p2) {
@@ -27,12 +28,12 @@ public class Node2DTree{
 
    
 
-    public Node2DTree(List<Node> nodes){
+    public Node2DTree(List<KDTreeNode> nodes){
         buildTree(nodes);
     }
 
 
-    private void buildTree(List<Node> nodes){
+    private void buildTree(List<KDTreeNode> nodes){
         nodes.sort(comparatorX);
         int lo = 0;
         int hi = nodes.size();
@@ -46,7 +47,7 @@ public class Node2DTree{
     }
 
     //TODO split point, lige nu bygger den træet helt ud, men burde der være et slut punkt, med en liste?
-    private void buildTree(boolean isLeft,List<Node> nodes, Node parent){
+    private void buildTree(boolean isLeft,List<KDTreeNode> nodes, KDTreeNode parent){
         if (nodes == null || nodes.isEmpty()) {
             return;
         }
@@ -56,7 +57,7 @@ public class Node2DTree{
         int hi = nodes.size();
         int mid = (lo + hi) / 2;
 
-        Node child = nodes.get(mid);
+        KDTreeNode child = nodes.get(mid);
         child.setIsOnXAxis(!parent.IsOnXAxis());
         
         if(isLeft){
@@ -70,32 +71,7 @@ public class Node2DTree{
             buildTree(false, nodes.subList(mid+1, hi), child);
     }
 
-    //TODO smide print statements ud
-    public void printTree(){
-        System.out.println(root.getID() + " " + root.getX() + " " + root.getY());
-        printTree(root, true);
-    }
-
-    public void printTree(Node node, boolean x){
-        System.out.println("Parent");
-        
-        
-        if(node.getLeftChild() != null){
-            System.out.println("Chil left    " + " " + node.getX() + " " + node.getY());
-            printTree(node.getLeftChild(), !x);
-        }
-        if(node.getRightChild() != null){
-            System.out.println("Chil Right"+ " " + node.getX() + " " + node.getY());
-            printTree(node.getRightChild(), !x);
-        }
-    }
-
-    
-
-   
-
-
-    private int compareNodes(Node currentNode, Node node){
+    private int compareNodes(KDTreeNode currentNode, KDTreeNode node){
         if(currentNode.IsOnXAxis()){
             return compareTo(currentNode.getX(), node.getX());
         }
@@ -119,10 +95,10 @@ public class Node2DTree{
     }
 
 
-     public Node getNearestNode(long x, long y){
-        Node nearestNode = root;
-        Node leftChild;
-        Node rightChild;
+     public KDTreeNode getNearestNode(long x, long y){
+        KDTreeNode nearestNode = root;
+        KDTreeNode leftChild;
+        KDTreeNode rightChild;
 
         double shortestDistance = getDistance(nearestNode, x, y);
 
@@ -142,9 +118,9 @@ public class Node2DTree{
         
     }
     
-    private Node getNearestNode(Node nextNode, long x, long y, double shortestDistance, Node nearestNode){
-        Node leftChild;
-        Node rightChild;
+    private KDTreeNode getNearestNode(KDTreeNode nextNode, long x, long y, double shortestDistance, KDTreeNode nearestNode){
+        KDTreeNode leftChild;
+        KDTreeNode rightChild;
 
         double newDistance = getDistance(nextNode, x, y);
         if(newDistance<shortestDistance){
@@ -166,7 +142,7 @@ public class Node2DTree{
         return nearestNode;
     }
 
-    private double getDistance(Node from, long x, long y){
+    private double getDistance(KDTreeNode from, long x, long y){
         Point2D p = new Point2D(x, y);
        double result = p.distance(from.getX(), from.getY());
         return result;
