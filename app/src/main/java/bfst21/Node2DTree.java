@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import bfst21.Osm_Elements.Node;
+import javafx.geometry.Point2D;
 
 public class Node2DTree{
     private Node root;
@@ -41,13 +42,15 @@ public class Node2DTree{
         root = nodes.get(mid);
         root.setIsOnXAxis(true);        
         buildTree(true, nodes.subList(lo, mid), root);
-        buildTree(false, nodes.subList(mid, hi-1), root);
+        buildTree(false, nodes.subList(mid+1, hi), root);
 
     }
 
-    
+    //TODO split point, lige nu bygger den træet helt ud, men burde der være et slut punkt, med en liste?
     private void buildTree(boolean isLeft,List<Node> nodes, Node parent){
-        if (nodes == null || nodes.isEmpty()) return;
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
 
         nodes.sort(parent.IsOnXAxis() ? comparatorX : comparatorY);
         int lo = 0;
@@ -64,8 +67,30 @@ public class Node2DTree{
         }
 
         buildTree(true, nodes.subList(0, mid), child);
-        buildTree(false, nodes.subList(mid, hi-1), child);
+        if (mid + 1 < nodes.size())
+            buildTree(false, nodes.subList(mid+1, hi), child);
+    }
+
+    //TODO smide print statements ud
+    public void printTree(){
+        System.out.println(root.getID() + " " + root.getX() + " " + root.getY());
+        printTree(root, true);
+    }
+
+    public void printTree(Node node, boolean x){
+        System.out.println("Parent");
         
+        
+        if(node.getLeftChild() != null){
+            System.out.println("Chil left    " + " " + node.getX() + " " + node.getY());
+            printTree(node.getLeftChild(), !x);
+        }
+        if(node.getRightChild() != null){
+            System.out.println("Chil Right"+ " " + node.getX() + " " + node.getY());
+            printTree(node.getRightChild(), !x);
+        }
+   
+
     }
 
     
@@ -82,12 +107,12 @@ public class Node2DTree{
         }
         
     }
-    private int compareTo(float currentNode, float node){
+    private int compareTo(double currentNode, double newNode){
         // less than (return -1)    equal to (return 0)       greater than (return 1)
-        if(currentNode < node){
+        if(currentNode < newNode){
             return -1;
         }
-        if(currentNode > node){
+        if(currentNode > newNode){
             return 1;
         }
         else {
@@ -98,15 +123,37 @@ public class Node2DTree{
 
      //TODO does the x and y coordinates from the screen match lon and lat?
      public Node getNearestNode(long lon, long lat){
-        double shortestDistance;
-        Node NearestNode;
+        Node nearestNode = root;
 
-        return null;
+        double shortestDistance = getDistance(nearestNode, lon, lat);
+        
+        int compare = compareTo(nearestNode.getX(), lon);
+        //TODO problem, selvom at koordinatet i den ene side af træet kan den tætteste node være i den den anden side.
+        if(compare == -1){
+            return getNearestNode(nearestNode.getRightChild(), lon, lat, shortestDistance, nearestNode);
+        } else {
+            return getNearestNode(nearestNode.getLeftChild(), lon, lat, shortestDistance, nearestNode);
+        }
+        
+      
+
+        
+    }
+    //TODO get this done
+    private Node getNearestNode(Node nextNode, long lon, long lat, double shortestDistance, Node nearestNode){
+        double newDistance = getDistance(nextNode, lon, lat);
+        if(newDistance<shortestDistance)
+            shortestDistance = newDistance;
+
+        
+
+        return nearestNode;
     }
 
-    private float getDistance(Node from, long lon, long lat){
-        //TODO 
-        return 0;
+    private double getDistance(Node from, long lon, long lat){
+        Point2D p = new Point2D(lon, lat);
+       double result = p.distance(from.getX(), from.getY());
+        return result;
     }
     
 }
