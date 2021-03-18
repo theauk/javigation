@@ -47,7 +47,7 @@ public class Controller
 
         initView();
 
-        //openFile();
+        openFile();
     }
 
     private void initView()
