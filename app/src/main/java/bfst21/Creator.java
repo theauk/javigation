@@ -53,7 +53,7 @@ public class Creator {
         XMLStreamReader reader = XMLInputFactory
                 .newInstance()
                 .createXMLStreamReader(new BufferedInputStream(input));
-        var idToNode = new HashMap<Long,Node>();
+        BinarySearchTree<Long,Node> idToNode = new BinarySearchTree<>();
         Way way = null;
         Node node = null;
         var member = new ArrayList<Long>();
