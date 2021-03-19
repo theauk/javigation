@@ -10,12 +10,12 @@ import javafx.scene.transform.NonInvertibleTransformException;
 
 public class MapCanvas extends Canvas
 {
-    private Loader loader;
+    private MapSegment mapSegment;
     private Affine trans;
 
-    public void init(Loader loader)
+    public void init(MapSegment mapSegment)
     {
-        this.loader = loader;
+        this.mapSegment = mapSegment;
         trans = new Affine();
 
         widthProperty().addListener(observable -> repaint());
@@ -46,28 +46,6 @@ public class MapCanvas extends Canvas
         TO-DO:
         DRAWING ACTION -> GET ELEMENTS TO DRAW
          */
-        for (var coast: loader.getCreator().getCoastlines()){
-            gc.setStroke(Color.BLACK);
-            coast.draw(gc);
-        }
-        for(var footway: loader.getCreator().getFootway()){
-            footway.draw(gc);
-        }
-        for(var resRoad: loader.getCreator().getResidentialRoads()){
-            resRoad.draw(gc);
-        }
-        for (var highway : loader.getCreator().getHighways()){
-            highway.draw(gc);
-        }
-        for (var tertiary: loader.getCreator().getTertiary()){
-            tertiary.draw(gc);
-        }
-        for (var bridge: loader.getCreator().getBridges()){
-            bridge.draw(gc);
-        }
-        for (var road: loader.getCreator().getRoads()){
-            road.draw(gc);
-        }
         gc.restore();
     }
 

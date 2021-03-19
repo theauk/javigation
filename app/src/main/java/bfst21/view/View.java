@@ -11,7 +11,8 @@ import java.io.IOException;
 
 public class View
 {
-    public View(Loader loader, Stage stage) throws IOException, XMLStreamException {
+    public View(Loader loader, Stage stage) throws IOException
+    {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view.fxml"));
         Scene scene = fxmlLoader.load();
         stage.setScene(scene);
@@ -19,6 +20,6 @@ public class View
 
         Controller controller = fxmlLoader.getController();
         stage.show();
-        controller.init(loader);
+        controller.init(new MapSegment());
     }
 }
