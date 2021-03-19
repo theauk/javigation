@@ -44,5 +44,5 @@ tasks.named('test') {
 }
 
 run {
-    //args = ['src/main/resources/bfst21/vector/small.osm']
+    //args = ['src/main/resources/map.osm']
 }

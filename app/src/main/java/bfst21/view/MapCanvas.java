@@ -1,5 +1,6 @@
 package bfst21.view;
 
+import bfst21.Loader;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -9,12 +10,12 @@ import javafx.scene.transform.NonInvertibleTransformException;
 
 public class MapCanvas extends Canvas
 {
-    private MapSegment segment;
+    private Loader loader;
     private Affine trans;
 
-    public void init(MapSegment segment)
+    public void init(Loader loader)
     {
-        this.segment = segment;
+        this.loader = loader;
         trans = new Affine();
 
         widthProperty().addListener(observable -> repaint());
@@ -36,15 +37,38 @@ public class MapCanvas extends Canvas
         gc.setLineWidth(1 / Math.sqrt(trans.determinant()));
 
         //TEST LINE
-        gc.beginPath();
+        /*gc.beginPath();
         gc.moveTo(10, 10);
         gc.lineTo(20, 20);
         gc.stroke();
-
+*/
         /*
         TO-DO:
         DRAWING ACTION -> GET ELEMENTS TO DRAW
          */
+        for (var coast: loader.getCreator().getCoastlines()){
+            gc.setStroke(Color.BLACK);
+            coast.draw(gc);
+        }
+        for(var footway: loader.getCreator().getFootway()){
+            footway.draw(gc);
+        }
+        for(var resRoad: loader.getCreator().getResidentialRoads()){
+            resRoad.draw(gc);
+        }
+        for (var highway : loader.getCreator().getHighways()){
+            highway.draw(gc);
+        }
+        for (var tertiary: loader.getCreator().getTertiary()){
+            tertiary.draw(gc);
+        }
+        for (var bridge: loader.getCreator().getBridges()){
+            bridge.draw(gc);
+        }
+        for (var road: loader.getCreator().getRoads()){
+            road.draw(gc);
+        }
+        gc.restore();
     }
 
     public void zoom(double factor, Point2D center)

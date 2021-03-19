@@ -1,5 +1,7 @@
 package bfst21.Osm_Elements;
 
+import javafx.scene.canvas.GraphicsContext;
+
 public class Node extends Element{
     private float x, y;
     private transient long id;
@@ -21,5 +23,9 @@ public class Node extends Element{
 	public long getID() {
 		return id;
 	}
-    
+
+    @Override // Need this for drawing stuff for relation (etc. busstop) or a single tree.
+    public void draw(GraphicsContext gc) {
+
+    }
 }
