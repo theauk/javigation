@@ -44,17 +44,17 @@ class RTreeTest {
         e3.addNode(n5);
         e3.addNode(n6);
 
-        RTreeNode r1 = new RTreeNode(e1.getxMin(), e1.getxMax(), e1.getyMin(), e1.getyMax(), false, 1);
-        RTreeNode r2 = new RTreeNode(e2.getxMin(), e2.getxMax(), e2.getyMin(), e2.getyMax(), false, 1);
+        RTreeNode r1 = new RTreeNode(e1.getxMin(), e1.getxMax(), e1.getyMin(), e1.getyMax(), false, 0,  1);
+        RTreeNode r2 = new RTreeNode(e2.getxMin(), e2.getxMax(), e2.getyMin(), e2.getyMax(), false, 0, 1);
         r1.addChild(r2);
-        RTreeNode r3 = new RTreeNode(e3.getxMin(), e3.getxMax(), e3.getyMin(), e3.getyMax(), true, 1);
+        RTreeNode r3 = new RTreeNode(e3.getxMin(), e3.getxMax(), e3.getyMin(), e3.getyMax(), true, 0, 1);
         r2.addChild(r3);
 
         rTree.setRoot(r1);
 
-        r1.addNodeHolderElement(e1);
-        r2.addNodeHolderElement(e2);
-        r3.addNodeHolderElement(e3);
+        r1.addNodeHolderEntry(e1);
+        r2.addNodeHolderEntry(e2);
+        r3.addNodeHolderEntry(e3);
 
         //System.out.println(rTree.search(6, 10, 0, 5).size());
         assertEquals(2, rTree.search(6, 10, 0, 5).size());

@@ -34,7 +34,7 @@ public class RTree {
 
     private void search(float[] searchCoordinates, RTreeNode node, ArrayList<NodeHolder> results) {
         if (node.isLeaf()) {
-            for (NodeHolder n : node.getNodeHolderElements()) {
+            for (NodeHolder n : node.getNodeHolderEntries()) {
                 if (intersects(searchCoordinates, n.getCoordinates())) {
                     results.add(n);
                 }
@@ -50,9 +50,15 @@ public class RTree {
 
     public void insert(NodeHolder nodeHolder) {
         RTreeNode selectedLeaf = chooseLeaf(nodeHolder, root);
+
+        if(selectedLeaf.isFull()) {
+            //splitNodeExhaustive(selectedLeaf);
+        } else {
+            selectedLeaf.addNodeHolderEntry(nodeHolder);
+        }
     }
 
-    public RTreeNode chooseLeaf(NodeHolder nodeHolder, RTreeNode node) {
+    private RTreeNode chooseLeaf(NodeHolder nodeHolder, RTreeNode node) {
         if (node.isLeaf()) {
             return node;
         } else {
@@ -65,6 +71,22 @@ public class RTree {
             }
             return chooseLeaf(nodeHolder, smallestBoundingBoxNode);
         }
+    }
+
+    /*private RTreeNode splitNodeExhaustive(RTreeNode leaf) {
+
+    }
+
+    private RTreeNode splitNodeQuadraticCost(RTreeNode leaf) {
+
+    }
+
+    private RTreeNode splitNodeLinearCost(RTreeNode leaf) {
+
+    }*/
+
+    private void adjustTree() {
+
     }
 
     private float getNewBoundingBoxArea(NodeHolder nodeHolder, RTreeNode node) {
