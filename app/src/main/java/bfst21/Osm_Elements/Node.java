@@ -24,7 +24,7 @@ public class Node extends Element{
 		return id;
 	}
 
-    @Override
+    @Override // Need this for drawing stuff for relation (etc. busstop) or a single tree.
     public void draw(GraphicsContext gc) {
 
     }

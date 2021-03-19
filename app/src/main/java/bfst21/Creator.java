@@ -6,6 +6,7 @@ import bfst21.data.NonRoadData;
 import bfst21.data.NonRoadElements;
 import bfst21.data.RefData;
 import bfst21.data.RoadData;
+import bfst21.data_structures.BinarySearchTree;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -23,6 +24,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 /*
 Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
  */
+// TODO: 19-03-2021 BST instead of HashMap :3
 public class Creator {
 
     List<Way> roads = new ArrayList<>();
@@ -41,7 +43,7 @@ public class Creator {
     boolean iscoastline, isRoad, isPrimaryHighway, isBridge, isFootWay, ispedestrianRoad, isresidentialRoad;
     boolean istertiary;
     boolean isRelation;
-    //ArrayList<Way> relation = new ArrayList<>();
+    ArrayList<Way> relation = new ArrayList<>();
 
     public Creator(InputStream input) throws IOException, XMLStreamException {
         create(input);

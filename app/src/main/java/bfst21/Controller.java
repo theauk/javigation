@@ -100,12 +100,7 @@ public class Controller
     }
 
     private void loadFile(String path) throws IOException, XMLStreamException {
-        /*
-        TO-DO
-        IMPLEMENT LOADER
         osmLoader.load(path);
-         */
-        osmLoader = new Loader(path);
     }
 
     private void setCoordsLabel(Point2D point)

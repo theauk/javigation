@@ -14,10 +14,7 @@ public class Loader {
     private static Creator creator;
     //private Creator creator;
 
-    public Loader(String filename) throws IOException, XMLStreamException {
-        load(filename);
-    }
-
+    public Loader(){}
 
 
 

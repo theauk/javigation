@@ -14,7 +14,8 @@ public class App extends Application
     public void start(Stage primaryStage) throws IOException, XMLStreamException {
         var filename = "C:\\Users\\Stribe\\IdeaProjects\\BFST21Group10\\app\\src\\main\\resources\\map.zip";
         //var filename = getParameters().getRaw().get(0);
-        var loader = new Loader(filename);
+        var loader = new Loader();
+        loader.load(filename);
         new View(loader, primaryStage);
     }
 }
