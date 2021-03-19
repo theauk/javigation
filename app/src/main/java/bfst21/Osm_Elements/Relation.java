@@ -3,11 +3,32 @@ package bfst21.Osm_Elements;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class Relation extends Element {
-    List<Node> nodes = new ArrayList<>();
-    List<Way> ways = new ArrayList<>();
+public class Relation extends NodeHolder {
+
+    private ArrayList<Way> ways;
+    private ArrayList<Node> nodes;
+
+    public Relation() {
+        ways = new ArrayList<>();
+        nodes = new ArrayList<>();
+    }
+
+    public ArrayList<Way> getWays() {
+        return ways;
+    }
+
+    public void addWay(Way way) {
+        ways.add(way);
+    }
+
+    public ArrayList<Node> getNodes() {
+        return nodes;
+    }
+
+    public void addNode(Node node) {
+        nodes.add(node);
+    }
 
     @Override
     public void draw(GraphicsContext gc) {
