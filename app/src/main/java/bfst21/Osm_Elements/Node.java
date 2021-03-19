@@ -8,8 +8,7 @@ public class Node extends Element{
     public Node(long id, float lat, float lon) {
         this.id = id;
         this.x = lon;
-        //TODO remove this 
-        this.y = lat;
+        this.y = -lat/0.56f;
     }
 
     public float getX() {
