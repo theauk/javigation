@@ -72,6 +72,7 @@ public class Node2DTree{
             buildTree(false, nodes.subList(mid+1, hi), child);
     }
 
+
     private int compareNodes(KDTreeNode currentNode, KDTreeNode node){
         if(currentNode.IsOnXAxis()){
             return compareTo(currentNode.getX(), node.getX());
@@ -96,30 +97,16 @@ public class Node2DTree{
     }
 
 
-     public KDTreeNode getNearestNode(long x, long y){
-        KDTreeNode nearestNode = root;
-        KDTreeNode leftChild;
-        KDTreeNode rightChild;
+     public KDTreeNode getNearestNode(float x, float y){
+        double shortestDistance = Double.MAX_VALUE;
 
-        double shortestDistance = getDistance(nearestNode, x, y);
-
-        if(root.getLeftChild() != null){
-            leftChild = getNearestNode(root.getLeftChild(), x, y, shortestDistance, nearestNode, false);
-            if(shortestDistance > getDistance(leftChild, x, y)) {
-                nearestNode = leftChild;
-            }
-        }
-        if(root.getRightChild() != null){
-            rightChild = getNearestNode(root.getRightChild(), x, y, shortestDistance, nearestNode, false);
-            if(shortestDistance > getDistance(rightChild, x, y)) {
-                nearestNode = rightChild;
-            }
-        } 
+        KDTreeNode nearestNode = getNearestNode(root, x, y, shortestDistance, null, root.IsOnXAxis());
+        
         return nearestNode;
         
     }
     
-    private KDTreeNode getNearestNode(KDTreeNode nextNode, long x, long y, double shortestDistance, KDTreeNode nearestNode, Boolean xAxis){
+    private KDTreeNode getNearestNode(KDTreeNode nextNode, float x, float y, double shortestDistance, KDTreeNode nearestNode, Boolean xAxis){
         if (nextNode == null){
             return nearestNode;
         }
@@ -149,7 +136,7 @@ public class Node2DTree{
         
     }
 
-    private double getDistance(KDTreeNode from, long x, long y){
+    private double getDistance(KDTreeNode from, float x, float y){
         Point2D p = new Point2D(x, y);
        double result = p.distance(from.getX(), from.getY());
         return result;

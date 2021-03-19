@@ -11,8 +11,8 @@ public class KDTreeNode extends Node{
     private Boolean OnXAxis;
     private List<Way> partOfWays;
 
-    public KDTreeNode(long id, float lat, float lon) {
-        super(id, lat, lon);
+    public KDTreeNode(Node node) {
+        super(node.getID(), node.getY(), node.getX());
         
     }
 
