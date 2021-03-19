@@ -1,19 +1,24 @@
 package bfst21.view;
 
-import java.io.IOException;
-
+import bfst21.Controller;
+import bfst21.Map;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class View {
-   
-    /*public View(Model model, Stage stage) throws IOException {
-        var loader = new FXMLLoader(View.class.getResource("View.fxml"));
-        Scene scene = loader.load();
+import java.io.IOException;
+
+public class View
+{
+    public View(Map map, Stage stage) throws IOException
+    {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view.fxml"));
+        Scene scene = fxmlLoader.load();
         stage.setScene(scene);
-        stage.setTitle("Public transport inner Copenhagen");
-        Controller controller = loader.getController();
+        stage.setTitle("Working Title...");
+
+        Controller controller = fxmlLoader.getController();
         stage.show();
-        controller.init(model);}*/
+        controller.init(map);
+    }
 }
