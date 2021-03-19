@@ -35,7 +35,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'bfst21.vector.Launcher'
+    mainClass = 'bfst21.Launcher'
 }
 compileJava.options.encoding = 'UTF-8'
 tasks.named('test') {
