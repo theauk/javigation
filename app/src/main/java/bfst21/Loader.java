@@ -1,25 +1,28 @@
 package bfst21;
 
 import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.*;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.ZipInputStream;
 
 // Loads the file given from the Filechooser
-public class Loader {
+public class Loader
+{
     private static Creator creator;
     //private Creator creator;
+    private Map map;
 
-    public Loader(){}
+    public Loader(Map map)
+    {
+        this.map = map;
+    }
 
-
-
-    public void load(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
-       if (filename.endsWith(".zip")) {
+    public void load(String filename) throws IOException, XMLStreamException, FactoryConfigurationError
+    {
+        if (filename.endsWith(".zip"))
+        {
             loadZIP(filename);
         }
     }
@@ -31,7 +34,7 @@ public class Loader {
     }
 
     private void loadOSM(InputStream input) throws IOException, XMLStreamException, FactoryConfigurationError {
-        creator = new Creator(input);
+        creator = new Creator(map, input);
     }
     //Test
     /* public static void main(String[] args) throws IOException, XMLStreamException {

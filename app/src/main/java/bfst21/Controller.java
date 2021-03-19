@@ -1,7 +1,6 @@
 package bfst21;
 
 import bfst21.view.MapCanvas;
-import bfst21.view.MapSegment;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -15,11 +14,13 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.FileChooser;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
+import java.io.IOException;
 
 public class Controller
 {
-    private MapSegment mapSegment;
+    private Map map;
     private Loader osmLoader;
 
     private Point2D currentMouse;
@@ -39,11 +40,11 @@ public class Controller
     @FXML private MenuItem zoomInItem;
     @FXML private MenuItem zoomOutItem;
 
-    public void init(MapSegment mapSegment)
+    public void init(Map map)
     {
-        this.mapSegment = mapSegment;
-        mapCanvas.init(mapSegment);
-        osmLoader = new Loader();
+        this.map = map;
+        mapCanvas.init(map);
+        osmLoader = new Loader(map);
 
         initView();
 
@@ -184,11 +185,11 @@ public class Controller
 
     private void loadFile(String path)
     {
-        /*
-        TO-DO
-        IMPLEMENT LOADER
-        osmLoader.load(path);
-         */
+        try {
+            osmLoader.load(path);
+        } catch (IOException | XMLStreamException e) {
+            e.printStackTrace();
+        }
     }
 
     private void setCoordsLabel(Point2D point)

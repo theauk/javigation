@@ -1,25 +1,20 @@
 package bfst21;
 
+import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
-import bfst21.data.NonRoadData;
-import bfst21.data.NonRoadElements;
-import bfst21.data.RefData;
-import bfst21.data.RoadData;
 import bfst21.data_structures.BinarySearchTree;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.*;
-import java.io.IOException;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /*
 Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
@@ -27,38 +22,39 @@ Creates Objects such as Nodes, Ways and Relations from the .osm file given from 
 // TODO: 19-03-2021 BST instead of HashMap :3
 public class Creator {
 
-    List<Way> roads = new ArrayList<>();
-    List<Way> residentialRoads = new ArrayList<>();
-    List<Way> highways = new ArrayList<>();
-    ArrayList<Way> coastlines = new ArrayList<>();
-   
-    List<Way> footway = new ArrayList<>();
-    List<Way> tertiary = new ArrayList<>();
-    List<Way> bridges = new ArrayList<>();
+    private Map map;
+    private List<Element> roads;
+    private List<Element> coastLines;
+
     List<Node> nodesInRoads = new ArrayList<>();
     float minx, miny, maxx, maxy;
-    boolean iscoastline, isRoad, isPrimaryHighway, isBridge, isFootWay, ispedestrianRoad, isresidentialRoad;
-    boolean istertiary;
+    boolean iscoastline, isRoad;
     boolean isRelation;
-    ArrayList<Way> relation = new ArrayList<>();
 
-    public Creator(InputStream input) throws IOException, XMLStreamException {
+    public Creator(Map map, InputStream input) throws XMLStreamException
+    {
+        this.map = map;
+        roads = new ArrayList<>();
+        coastLines = new ArrayList<>();
+
         create(input);
     }
 
-    public void create(InputStream input) throws IOException, XMLStreamException {
-        XMLStreamReader reader = XMLInputFactory
-                .newInstance()
-                .createXMLStreamReader(new BufferedInputStream(input));
-        BinarySearchTree<Long,Node> idToNode = new BinarySearchTree<>();
+    public void create(InputStream input) throws XMLStreamException
+    {
+        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(input));
+
+        BinarySearchTree<Long, Node> idToNode = new BinarySearchTree<>();
         Way way = null;
         Node node = null;
-        var member = new ArrayList<Long>();
-        
-        while (reader.hasNext()) {
-            switch (reader.next()) {
+
+        while(reader.hasNext())
+        {
+            switch (reader.next())
+            {
                 case START_ELEMENT:
-                    switch (reader.getLocalName()) {
+                    switch (reader.getLocalName())
+                    {
                         case "bounds":
                             minx = Float.parseFloat(reader.getAttributeValue(null, "minlon"));
                             maxx = Float.parseFloat(reader.getAttributeValue(null, "maxlon"));
@@ -86,7 +82,7 @@ public class Creator {
                             switch(k){
                                 case "natural":
                                     if(v.equals("coastline")) iscoastline = true;
-                                break;
+                                    break;
 
                                 case "highway":
                                     if (v.equals("primary")) isPrimaryHighway = true;
@@ -95,14 +91,14 @@ public class Creator {
                                     if(v.equals("tertiary")) istertiary = true;
                                     if(v.equals("footway")) isFootWay = true;
                                     else isRoad = true; //if there's other roads, then add them to this list.
-                                break;
+                                    break;
                             }
                             break;
 
                         case "nd":
                             var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
                             way.add(idToNode.get(refNode));
-                                break;
+                            break;
 
                         case "member":
                             if(isRelation){
@@ -110,25 +106,27 @@ public class Creator {
                                 member.add(refWay);
                             }
                             break;
-                            }
-                            break;
-                        case END_ELEMENT:
-                            switch (reader.getLocalName()) {
-                                case "way":
-                                    if (iscoastline) coastlines.add(way);
-                                    if (isRoad) addRoadToList(roads, way);
-                                    if (isPrimaryHighway) addRoadToList(highways, way);
-                                    if (isFootWay) addRoadToList(footway, way);
-                                    if(isresidentialRoad) addRoadToList(residentialRoads, way);
-                                    if (isBridge) bridges.add(way);
-                                    if (istertiary) addRoadToList(tertiary, way);
-                                        
-                                    break;
-                            }
+                    }
+                    break;
+                case END_ELEMENT:
+                    switch (reader.getLocalName()) {
+                        case "way":
+                            if (iscoastline) coastlines.add(way);
+                            if (isRoad) addRoadToList(roads, way);
+                            if (isPrimaryHighway) addRoadToList(highways, way);
+                            if (isFootWay) addRoadToList(footway, way);
+                            if(isresidentialRoad) addRoadToList(residentialRoads, way);
+                            if (isBridge) bridges.add(way);
+                            if (istertiary) addRoadToList(tertiary, way);
+
                             break;
                     }
+                    break;
             }
         }
+
+        map.addData(coastlines);
+    }
 
     private void addRoadToList(List<Way> list, Way way){
         list.add(way);
@@ -204,12 +202,12 @@ public class Creator {
 }
 
 
-    //create Node Object
+//create Node Object
 
-    //create Way Object
+//create Way Object
 
-    //create Road Object
+//create Road Object
 
-    //Create Relation Object
+//Create Relation Object
 
-    // add methods to the different Datasets
+// add methods to the different Datasets
