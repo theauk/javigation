@@ -1,6 +1,6 @@
-package bfst21.Osm_Elements.Specifik_Elements;
+package bfst21.osm_elements.Specifik_Elements;
 
-import bfst21.Osm_Elements.Node;
+import bfst21.osm_elements.Node;
 
 public class AddressNode extends Node{
 

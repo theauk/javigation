@@ -1,6 +1,6 @@
 package bfst21.data_structures;
 
-import bfst21.Osm_Elements.NodeHolder;
+import bfst21.osm_elements.NodeHolder;
 
 import java.util.ArrayList;
 

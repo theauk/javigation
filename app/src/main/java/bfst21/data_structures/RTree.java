@@ -1,6 +1,6 @@
 package bfst21.data_structures;
 
-import bfst21.Osm_Elements.NodeHolder;
+import bfst21.osm_elements.NodeHolder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,10 +94,14 @@ public class RTree {
             updateNodeCoordinates(originalNode);
             updateNodeCoordinates(newNode);
             if (originalNode.getParent().overflow()) {
-                RTreeNode[] newParents = splitNodeShuffle(originalNode.getParent());
-                adjustTree(newParents[0], newParents[1]);
+                createNewParents(originalNode.getParent());
             }
         }
+    }
+
+    private void createNewParents(RTreeNode oldParent) {
+        RTreeNode[] newParents = splitNodeShuffle(oldParent);
+        adjustTree(newParents[0], newParents[1]);
     }
 
     private void createNewRoot(RTreeNode oldRoot) {
@@ -178,17 +182,4 @@ public class RTree {
     private boolean doesNotIntersect(float minCoordinateFirstElement, float maxCoordinateSecondElement) {
         return minCoordinateFirstElement >= maxCoordinateSecondElement;
     }
-
-    /*private Boolean contains(Element outerElement, Element innerElement) {
-        if (outerElement.getxMin() > innerElement.getxMin()) {
-            return false;
-        } else if (outerElement.getxMax() < outerElement.getxMax()) {
-            return false;
-        } else if (outerElement.getyMin() > innerElement.getyMin()) {
-            return false;
-        } else if (outerElement.getyMax() < innerElement.getyMax()) {
-            return false;
-        }
-        return true;
-    }*/
 }
