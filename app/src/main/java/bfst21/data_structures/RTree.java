@@ -2,11 +2,9 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.NodeHolder;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class RTree {
     private int minimumChildren, maximumChildren, size;
@@ -61,8 +59,10 @@ public class RTree {
         selectedNode.addChild(newEntry);
 
         if (selectedNode.overflow()) {
-            RTreeNode[] result = splitNodeRandom(selectedNode);
-            adjustTree(result);
+            RTreeNode[] result = splitNodeShuffle(selectedNode);
+            adjustTree(result[0], result[1]);
+        } else {
+            adjustTree(selectedNode, null);
         }
     }
 
@@ -81,7 +81,39 @@ public class RTree {
         }
     }
 
-    private RTreeNode[] splitNodeRandom(RTreeNode node) {
+    private void adjustTree(RTreeNode originalNode, RTreeNode newNode) {
+        if (originalNode.getParent() == null) { // root
+            if(originalNode.overflow()) {
+                RTreeNode[] rootChildren = splitNodeShuffle(originalNode);
+                RTreeNode newRoot = new RTreeNode(new float[originalNode.getCoordinates().length], false, minimumChildren, maximumChildren, null);
+                newRoot.addChild(rootChildren[0]);
+                newRoot.addChild(rootChildren[1]);
+                updateNodeCoordinates(newRoot);
+            }
+        } else if (newNode == null) {
+            updateNodeCoordinates(originalNode);
+            adjustTree(originalNode.getParent(), null);
+        } else {
+            updateNodeCoordinates(originalNode);
+            updateNodeCoordinates(newNode);
+            if(originalNode.getParent().overflow()) {
+                splitNodeShuffle(originalNode.getParent());
+            }
+        }
+    }
+
+    private void updateNodeCoordinates(RTreeNode node) {
+
+        for (RTreeNode r: node.getChildren()) {
+            for (int i = 0; i < node.getCoordinates().length; i++) {
+                if(r.getCoordinates()[i] > node.getCoordinates()[i]) {
+                    node.updateCoordinate(i, r.getCoordinates()[i]);
+                }
+            }
+        }
+    }
+
+    private RTreeNode[] splitNodeShuffle(RTreeNode node) {
 
         ArrayList<RTreeNode> elementsToSplit = node.getChildren();
         Collections.shuffle(elementsToSplit);
@@ -101,9 +133,6 @@ public class RTree {
 
     /*
     private RTreeNode[] splitNodeExhaustive(RTreeNode leaf, NodeHolder nodeHolderToInsert) {
-        ArrayList<NodeHolder> elementsToSplit = new ArrayList<>();
-        elementsToSplit.add(nodeHolderToInsert);
-        elementsToSplit.addAll(leaf.getNodeHolderEntries());
 
     }
 
@@ -114,10 +143,6 @@ public class RTree {
     private RTreeNode splitNodeLinearCost(RTreeNode leaf) {
 
     }*/
-
-    private void adjustTree(RTreeNode[] nodes) {
-
-    }
 
     private float getNewBoundingBoxArea(NodeHolder nodeHolder, RTreeNode node) {
         float[] newCoordinates = new float[nodeHolder.getCoordinates().length];
@@ -133,7 +158,7 @@ public class RTree {
         for (int j = 0; j < newCoordinates.length - 1; j += 2) {
             area *= (newCoordinates[j + 1] - newCoordinates[j]);
         }
-        return area;
+        return Math.abs(area);
     }
 
     public Boolean intersects(float[] coordinates1, float[] coordinates2) {

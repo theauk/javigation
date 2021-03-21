@@ -30,6 +30,10 @@ public class RTreeNode {
         return coordinates;
     }
 
+    public void updateCoordinate(int index, float newCoordinate) {
+        coordinates[index] = newCoordinate;
+    }
+
     public ArrayList<RTreeNode> getChildren() {
         return children;
     }
