@@ -6,6 +6,7 @@ import bfst21.Osm_Elements.Way;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static java.lang.Float.NaN;
@@ -105,14 +106,23 @@ class RTreeTest {
         System.out.println("--FOURTH--");
         rTree.insert(w4);
 
-        rTree.printTree();
-
         System.out.println("");
         System.out.println("--FIFTH--");
         rTree.insert(w5);
 
-        /*System.out.println("");
+        System.out.println("");
         System.out.println("--SIXTH--");
+        rTree.insert(w6);
+
+        /*System.out.println("");
+        System.out.println("--SIXTH II--");
+        rTree.insert(w6);
+
+        System.out.println("");
+        System.out.println("--SIXTH III--");
+        rTree.insert(w6);
+
+        rTree.insert(w6);
         rTree.insert(w6);*/
 
         /*float[] rootCoordinates = rTree.getRoot().getCoordinates();
@@ -126,5 +136,11 @@ class RTreeTest {
         System.out.println("");
 
         rTree.printTree();
+
+        ArrayList<NodeHolder> result = rTree.search(-5, 17, -63, -1);
+        System.out.println("Result size: " + result.size());
+        for (NodeHolder n: result) {
+            System.out.println("NodeHolder: " + Arrays.toString(n.getCoordinates()));
+        }
     }
 }

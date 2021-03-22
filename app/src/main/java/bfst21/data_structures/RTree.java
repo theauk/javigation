@@ -2,7 +2,9 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.NodeHolder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class RTree {
     private int minimumChildren, maximumChildren, size, numberOfCoordinates;
@@ -36,7 +38,7 @@ public class RTree {
         return idCount;
     }
 
-    public List<NodeHolder> search(float xMin, float xMax, float yMin, float yMax) {
+    public ArrayList<NodeHolder> search(float xMin, float xMax, float yMin, float yMax) {
         float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
         ArrayList<NodeHolder> results = new ArrayList<>();
         search(searchCoordinates, root, results);
@@ -45,9 +47,11 @@ public class RTree {
 
     private void search(float[] searchCoordinates, RTreeNode node, ArrayList<NodeHolder> results) {
         if (node.isLeaf()) {
-            for (NodeHolder n : node.getNodeHolderEntries()) {
-                if (intersects(searchCoordinates, n.getCoordinates())) {
-                    results.add(n);
+            for (RTreeNode r : node.getChildren()) { // TODO: 3/22/21 fix search: seems like something here · like it only runs one on 51
+                for (NodeHolder n : r.getNodeHolderEntries()) {
+                    if (intersects(searchCoordinates, n.getCoordinates())) {
+                        results.add(n);
+                    }
                 }
             }
         } else {
@@ -194,7 +198,7 @@ public class RTree {
         RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent(), getId());
 
         ArrayList<RTreeNode> elementsToSplit = node.getChildren();
-        Collections.shuffle(elementsToSplit);
+        //Collections.shuffle(elementsToSplit);
 
         ArrayList<RTreeNode> childrenForOldNode = new ArrayList<>();
         ArrayList<RTreeNode> childrenForNewNode = new ArrayList<>();
@@ -218,7 +222,7 @@ public class RTree {
         System.out.println("In split second children: " + newNode.getChildren().size());
         System.out.println("");
 
-        if(node.getParent() != null) {
+        if (node.getParent() != null) {
             node.getParent().addChild(newNode);
         }
 
@@ -272,10 +276,6 @@ public class RTree {
         HashMap<Integer, ArrayList<RTreeNode>> result = new HashMap<>();
         result = getPrintTree(root, level, result);
 
-        /*for (RTreeNode r: root.getChildren()) {
-            System.out.println(r.id + " " + Arrays.toString(r.getCoordinates()));
-        }*/
-
         while (result.get(level) != null) {
             System.out.println("");
             System.out.println("Level: " + level);
@@ -312,26 +312,4 @@ public class RTree {
         }
         return result;
     }
-
-    /*public void printTree() {
-        int level = 0;
-        printTree(root, level);
-        System.out.println("");
-    }
-
-    public void printTree(RTreeNode theRoot, int level) {
-        System.out.println("");
-        System.out.println("Level: " + level);
-        level += 1;
-        if(theRoot != null) {
-            if(theRoot.getParent() != null) {
-                System.out.println("Node: " + theRoot.id + " coor: " + Arrays.toString(theRoot.getCoordinates()) + " parent: " + theRoot.getParent().id);
-            } else {
-                System.out.println("Node: " + theRoot.id + " coor: " + Arrays.toString(theRoot.getCoordinates()) + " parent: NONE");
-            }
-            for(RTreeNode child : theRoot.getChildren()) {
-                printTree(child, level);
-            }
-        }
-    }*/
 }
