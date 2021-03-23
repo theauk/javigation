@@ -2,16 +2,19 @@ package bfst21.Osm_Elements.Specifik_Elements;
 
 import bfst21.Osm_Elements.Way;
 
-public class RoadWay {
+/**
+ * A TravelWay is walkable, cycleable and driveable.
+ */
+public class TravelWay {
     private Way way;
-    private String type; // what type of road it is
     private String name;
+    private final String type;
     private int maxspeed;
     private boolean onewayRoad;
     private String cycleway;
     private String footway;
 
-    public RoadWay (Way way, String type){
+    public TravelWay(Way way, String type){
         this.way = way;
         this.type = type;
     }
@@ -47,5 +50,8 @@ public class RoadWay {
 
     public int getMaxspeed() {
         return maxspeed;
+    }
+    public String getName() {
+        return name;
     }
 }

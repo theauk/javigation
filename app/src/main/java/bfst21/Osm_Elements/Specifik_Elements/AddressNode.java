@@ -4,7 +4,7 @@ import bfst21.Osm_Elements.Node;
 
 public class AddressNode{
     private Node node;
-    private int housenumber;
+    private String housenumber;
     private String city;
     private int postcode;
     private String street;
@@ -15,7 +15,7 @@ public class AddressNode{
         //TODO Auto-generated constructor stub
     }
 
-    public void setHousenumber(int housenumber) {
+    public void setHousenumber(String housenumber) {
         this.housenumber = housenumber;
     }
 
@@ -31,7 +31,7 @@ public class AddressNode{
         this.street = street;
     }
 
-    public int getHousenumber() {
+    public String getHousenumber() {
         return housenumber;
     }
 
@@ -45,5 +45,9 @@ public class AddressNode{
 
     public String getStreet() {
         return street;
+    }
+
+    public Node getNode() {
+        return node;
     }
 }

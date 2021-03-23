@@ -4,7 +4,7 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
-import bfst21.Osm_Elements.Specifik_Elements.RoadWay;
+import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.BinarySearchTree;
 
@@ -14,6 +14,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
@@ -27,8 +28,8 @@ public class Creator {
     private Map map;
     private List<Element> roads;
     private List<Element> coastLines;
-    private List<RoadWay> roadWays;
-    private RoadWay roadway;
+    private List<TravelWay> travelWays;
+    private TravelWay roadway;
     private List<Element> relations;
 
     List<Node> nodesInRoads = new ArrayList<>();
@@ -42,6 +43,7 @@ public class Creator {
         this.map = map;
         roads = new ArrayList<>();
         coastLines = new ArrayList<>();
+        travelWays = new ArrayList<>();
 
         create(input);
     }
@@ -50,13 +52,15 @@ public class Creator {
     {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(input));
 
-        BinarySearchTree<Long, Node> idToNode = new BinarySearchTree<>();
-        BinarySearchTree<Long, Way> idToWay = new BinarySearchTree<>();
+        //BinarySearchTree<Long, Node> idToNode = new BinarySearchTree<>();
+        HashMap<Long, Node> idToNode = new HashMap<>();
+       //BinarySearchTree<Long, Way> idToWay = new BinarySearchTree<>();
+        HashMap<Long, Way> idToWay = new HashMap<>();
         BinarySearchTree<Long, AddressNode> idToAddressNode = new BinarySearchTree<>();
 
         Way way = null;
         Node node = null;
-        RoadWay roadWay = null;
+        TravelWay travelWay = null;
         String cycle = null; // the cycleproperties of the road comes before "highway" in the .osm files
         Relation relation = null;
         var member = new ArrayList<Long>();
@@ -102,24 +106,24 @@ public class Creator {
                                     break;
 
                                 case "highway":
-                                        roadWay = new RoadWay(way,v);
+                                        travelWay = new TravelWay(way,v);
                                     isRoad = true;
                                     break;
                                 case "maxspeed":
-                                    if (roadWay != null) {
-                                        roadWay.setMaxspeed(Integer.parseInt(reader.getAttributeValue(null, v)));
+                                    if (travelWay != null) {
+                                        travelWay.setMaxspeed(Integer.parseInt(v));
                                     }
                                     break;
                                 case "name":
-                                    if (roadWay != null) {
-                                        roadWay.setName(v);
+                                    if (travelWay != null) {
+                                        travelWay.setName(v);
                                     }
                                     if (relation != null) {
                                         relation.setName(v);
                                     }
                                     break;
                                 case "oneway":
-                                    if(v.equals("yes")) roadWay.setOnewayRoad(true);
+                                    if(v.equals("yes")) travelWay.setOnewayRoad(true);
 
                                 case "cycleway": // should this not be always cycleable unless it's trunk (motortrafikvej) or primary highway.
                                     if (!v.equals("no")) {
@@ -135,13 +139,13 @@ public class Creator {
 
                                 case "addr:housenumber":
                                     if (addressNode != null) {
-                                        addressNode.setHousenumber(Integer.parseInt(reader.getAttributeValue(null, v)));
+                                        addressNode.setHousenumber((v));
                                     }
                                     break;
 
                                 case "addr:postcode":
                                     if (addressNode != null) {
-                                        addressNode.setPostcode(Integer.parseInt(reader.getAttributeValue(null, v)));
+                                        addressNode.setPostcode(Integer.parseInt(v));
                                     }
                                     break;
 
@@ -183,20 +187,14 @@ public class Creator {
                             idToWay.put(way.getId(), way);
                             if (iscoastline) coastLines.add(way);
                             if (isRoad){
-                                //roads.add(way);
-                                roadWays.add(roadWay);
+                                roads.add(way);
+                                travelWays.add(travelWay);
                             }
-                            if(iscycleAble) roadWay.setCycleway(cycle);
+                            if(iscycleAble) travelWay.setCycleway(cycle);
                             break;
                     }
                     break;
             }
-        }
-        for (var ref: member){
-            System.out.println(ref);
-        }
-        for (var road: roadWays){
-            System.out.println("maxspeed" + road.getMaxspeed());
         }
 
         map.addData(coastLines);
