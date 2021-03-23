@@ -1,6 +1,0 @@
-Default
-primary = [252, 206, 144]
-secondary = [244, 251, 173]
-tertiary = [254, 254, 254]
-residential [254, 254, 254]
-water = [710, 211, 223]

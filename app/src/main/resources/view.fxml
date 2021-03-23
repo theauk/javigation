@@ -1,42 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import bfst21.view.MapCanvas?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.Scene?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.Scene?>
 <Scene xmlns="http://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
        fx:controller="bfst21.Controller"
        fx:id="scene"
 >
     <root>
-        <BorderPane prefWidth="640" prefHeight="480">
+        <BorderPane prefWidth="680" prefHeight="520">
             <top>
                 <MenuBar>
-                    <menus>
-                        <Menu text="File">
-                            <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
+                    <Menu text="File">
+                        <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
+                        <SeparatorMenuItem/>
+                        <MenuItem text="Exit" onAction="#exit"/>
+                    </Menu>
+                    <Menu text="View">
+                        <MenuItem text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
+                        <SeparatorMenuItem/>
+                        <Menu fx:id="themeMenu" text="Change Theme...">
+                            <RadioMenuItem fx:id="defaultThemeItem" text="Default" selected="true">
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="themeGroup"/>
+                                </toggleGroup>
+                            </RadioMenuItem>
                             <SeparatorMenuItem/>
-                            <MenuItem text="Exit" onAction="#exit"/>
                         </Menu>
-                        <Menu text="View">
-                            <MenuItem text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
-                            <SeparatorMenuItem/>
-                            <MenuItem fx:id="zoomInItem" text="Zoom in" onAction="#zoom" accelerator="CTRL + PLUS"/>
-                            <MenuItem fx:id="zoomOutItem" text="Zoom out" onAction="#zoom" accelerator="CTRL + MINUS"/>
-                        </Menu>
-                    </menus>
+                        <SeparatorMenuItem/>
+                        <MenuItem fx:id="zoomInItem" text="Zoom in" onAction="#zoom" accelerator="CTRL + PLUS"/>
+                        <MenuItem fx:id="zoomOutItem" text="Zoom out" onAction="#zoom" accelerator="CTRL + MINUS"/>
+                    </Menu>
                 </MenuBar>
             </top>
             <center>
-                <StackPane fx:id="centerPane">
+                <Pane fx:id="centerPane">
                     <MapCanvas fx:id="mapCanvas"
                                width="${centerPane.width}"
                                height="${centerPane.height}"
@@ -46,10 +48,11 @@
                                onMouseMoved="#onMouseMoved"
                                onMouseReleased="#onMouseReleased"
                     />
-                </StackPane>
+                </Pane>
             </center>
             <bottom>
                 <HBox alignment="CENTER_RIGHT">
+                    <Label fx:id="boundsLabel" style="-fx-padding: 5;"/>
                     <Label fx:id="coordsLabel" text="CanvasCoords: 0.0, 0.0" style="-fx-padding: 5;"/>
                     <Label fx:id="geoCoordsLabel" text="GeoCoords: 0.0, 0.0" style="-fx-padding: 5;"/>
                     <Slider fx:id="zoomSlider" showTickLabels="true" showTickMarks="true"/>
