@@ -5,15 +5,20 @@ import java.util.List;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 
-public class KDTreeNode extends Node{
+public class KDTreeNode {
+    //TODO fjern
+    private Node node;
     private KDTreeNode leftChild;
     private KDTreeNode rightChild;
     private Boolean OnXAxis;
     private List<Way> partOfWays;
 
     public KDTreeNode(Node node) {
-        super(node.getId(), node.getX(), node.getY());
-        
+        this.node = node;
+    }
+
+    public Node getNode(){
+        return node;
     }
 
     public KDTreeNode getLeftChild() {

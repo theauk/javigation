@@ -37,11 +37,10 @@ public class Map
     }
 
     public String getNearestRoad(float x, float y){
-        String name = "";
+        //TODO more specific task
         KDTreeNode node = roadKdTree.getNearestNode(x, y);
-        //TODO name = node.getWay.getName?? eller
-        //name = node.getRoadWay.getRoadName??
-        return name;
+        
+        return node.getNode().getName();
     }
 
     public List<Element> getMapData()
