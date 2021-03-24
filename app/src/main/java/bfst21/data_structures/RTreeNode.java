@@ -1,5 +1,6 @@
 package bfst21.data_structures;
 
+import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.NodeHolder;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ public class RTreeNode {
     private float[] coordinates;
     private ArrayList<RTreeNode> children;
     private boolean leaf;
-    private ArrayList<NodeHolder> entries;
+    private ArrayList<Element> entries;
     private int minimumEntrySize, maximumChildren;
     private RTreeNode parent;
     public int id;
@@ -45,7 +46,7 @@ public class RTreeNode {
         return children;
     }
 
-    public ArrayList<NodeHolder> getNodeHolderEntries() {
+    public ArrayList<Element> getElementEntries() {
         return entries;
     }
 
@@ -58,9 +59,9 @@ public class RTreeNode {
         return children.size() < minimumEntrySize;
     }
 
-    public void addNodeHolderEntry(NodeHolder n) {
+    public void addElementEntry(Element e) {
         System.out.println("Added nodeHolderEntry to: " + id);
-        entries.add(n);
+        entries.add(e);
     }
 
     public void addChild(RTreeNode r) {

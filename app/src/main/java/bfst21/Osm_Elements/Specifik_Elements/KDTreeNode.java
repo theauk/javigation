@@ -12,7 +12,7 @@ public class KDTreeNode extends Node{
     private List<Way> partOfWays;
 
     public KDTreeNode(Node node) {
-        super(node.getId(), node.getY(), node.getX());
+        super(node.getId(), node.getyMin(), node.getxMin());
         
     }
 

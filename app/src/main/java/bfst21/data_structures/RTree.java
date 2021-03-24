@@ -1,6 +1,6 @@
 package bfst21.data_structures;
 
-import bfst21.Osm_Elements.NodeHolder;
+import bfst21.Osm_Elements.Element;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,19 +38,19 @@ public class RTree {
         return idCount;
     }
 
-    public ArrayList<NodeHolder> search(float xMin, float xMax, float yMin, float yMax) {
+    public ArrayList<Element> search(float xMin, float xMax, float yMin, float yMax) {
         float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
-        ArrayList<NodeHolder> results = new ArrayList<>();
+        ArrayList<Element> results = new ArrayList<>();
         search(searchCoordinates, root, results);
         return results;
     }
 
-    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<NodeHolder> results) {
+    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<Element> results) {
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) { // TODO: 3/22/21 fix search: seems like something here · like it only runs one on 51
-                for (NodeHolder n : r.getNodeHolderEntries()) {
-                    if (intersects(searchCoordinates, n.getCoordinates())) {
-                        results.add(n);
+                for (Element e : r.getElementEntries()) {
+                    if (intersects(searchCoordinates, e.getCoordinates())) {
+                        results.add(e);
                     }
                 }
             }
@@ -63,25 +63,25 @@ public class RTree {
         }
     }
 
-    public void insert(NodeHolder nodeHolder) {
+    public void insert(Element element) {
 
         System.out.println("");
         if (root == null) { // if there are no roots we need to create a new one which points to its data
             System.out.println("creating first root with leaf true");
-            root = new RTreeNode(nodeHolder.getCoordinates(), true, minimumChildren, maximumChildren, null, getId());
-            RTreeNode dataLeaf = new RTreeNode(nodeHolder.getCoordinates(), false, minimumChildren, maximumChildren, root, getId());
-            dataLeaf.addNodeHolderEntry(nodeHolder);
+            root = new RTreeNode(element.getCoordinates(), true, minimumChildren, maximumChildren, null, getId());
+            RTreeNode dataLeaf = new RTreeNode(element.getCoordinates(), false, minimumChildren, maximumChildren, root, getId());
+            dataLeaf.addElementEntry(element);
             root.addChild(dataLeaf);
         } else {
             System.out.println("root is already created -> invoke selectNode");
-            RTreeNode selectedNode = chooseLeaf(nodeHolder, root); // select where to place the new node
+            RTreeNode selectedNode = chooseLeaf(element, root); // select where to place the new node
             System.out.println("selected node id: " + selectedNode.id);
             System.out.println("selected node coordinates: " + Arrays.toString(selectedNode.getCoordinates()) + " with parent: " + selectedNode.getParent());
 
             // need to create new data entry node in the selected node. So we set leaf as false
             // we set its parent as the node that will hold it as a child
-            RTreeNode newEntry = new RTreeNode(nodeHolder.getCoordinates(), false, minimumChildren, maximumChildren, selectedNode, getId());
-            newEntry.addNodeHolderEntry(nodeHolder);
+            RTreeNode newEntry = new RTreeNode(element.getCoordinates(), false, minimumChildren, maximumChildren, selectedNode, getId());
+            newEntry.addElementEntry(element);
             selectedNode.addChild(newEntry);
             checkOverflow(selectedNode);
         }
@@ -112,7 +112,7 @@ public class RTree {
         }
     }
 
-    private RTreeNode chooseLeaf(NodeHolder nodeHolder, RTreeNode node) {
+    private RTreeNode chooseLeaf(Element element, RTreeNode node) {
         if (node.isLeaf()) {
             System.out.println("Found a leaf: " + node.id);
             return node;
@@ -123,11 +123,11 @@ public class RTree {
             RTreeNode smallestBoundingBoxNode = children.get(0);
             for (int i = 1; i < node.getChildren().size(); i++) {
                 System.out.println("Coordinates child: " + Arrays.toString(node.getChildren().get(i).getCoordinates()));
-                if (getNewBoundingBoxArea(nodeHolder, children.get(i)) < getNewBoundingBoxArea(nodeHolder, smallestBoundingBoxNode)) {
+                if (getNewBoundingBoxArea(element, children.get(i)) < getNewBoundingBoxArea(element, smallestBoundingBoxNode)) {
                     smallestBoundingBoxNode = children.get(i);
                 }
             }
-            return chooseLeaf(nodeHolder, smallestBoundingBoxNode);
+            return chooseLeaf(element, smallestBoundingBoxNode);
         }
     }
 
@@ -242,12 +242,12 @@ public class RTree {
 
     }*/
 
-    private float getNewBoundingBoxArea(NodeHolder nodeHolder, RTreeNode node) {
+    private float getNewBoundingBoxArea(Element element, RTreeNode node) {
         float[] newCoordinates = new float[numberOfCoordinates];
 
         for (int i = 0; i < numberOfCoordinates; i += 2) {
-            newCoordinates[i] = Math.min(nodeHolder.getCoordinates()[i], node.getCoordinates()[i]);
-            newCoordinates[i + 1] = Math.max(nodeHolder.getCoordinates()[i + 1], node.getCoordinates()[i + 1]);
+            newCoordinates[i] = Math.min(element.getCoordinates()[i], node.getCoordinates()[i]);
+            newCoordinates[i + 1] = Math.max(element.getCoordinates()[i + 1], node.getCoordinates()[i + 1]);
         }
         float area = 1;
         for (int j = 0; j < numberOfCoordinates - 1; j += 2) {
@@ -304,10 +304,8 @@ public class RTree {
                 result.put(level, current);
             }
             level += 1;
-            if (true) {
-                for (RTreeNode child : theRoot.getChildren()) {
-                    getPrintTree(child, level, result);
-                }
+            for (RTreeNode child : theRoot.getChildren()) {
+                getPrintTree(child, level, result);
             }
         }
         return result;

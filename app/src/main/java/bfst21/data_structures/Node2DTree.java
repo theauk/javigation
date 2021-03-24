@@ -15,7 +15,7 @@ public class Node2DTree{
     private final Comparator<Node> comparatorX = new Comparator<Node>() {
         @Override
         public int compare(Node p1, Node p2) {
-            return Double.compare(p1.getX(), p2.getY());
+            return Double.compare(p1.getxMin(), p2.getyMin());
         }
     };
 
@@ -23,7 +23,7 @@ public class Node2DTree{
 
         @Override
         public int compare(Node p1, Node p2) {
-            return Double.compare(p1.getY(), p2.getY());
+            return Double.compare(p1.getyMin(), p2.getyMin());
         }
     };
 
@@ -97,7 +97,7 @@ public class Node2DTree{
 
 
         //checks if we should search the left or right side of the tree first, to save time/space.
-        double compare = xAxis ? Math. abs(x - nextNode.getX()) : Math. abs(y - nextNode.getY());
+        double compare = xAxis ? Math. abs(x - nextNode.getxMin()) : Math. abs(y - nextNode.getyMin());
 
         KDTreeNode node1 = compare < 0 ? nextNode.getLeftChild() : nextNode.getRightChild();
         KDTreeNode node2 = compare < 0 ? nextNode.getRightChild() : nextNode.getLeftChild();
@@ -105,7 +105,7 @@ public class Node2DTree{
         nearestNode = getNearestNode(node1, x, y, shortestDistance, nearestNode, !xAxis);
 
 
-        if(shortestDistance > Math. abs((xAxis ? x - nextNode.getX() : y - nextNode.getY()))){
+        if(shortestDistance > Math. abs((xAxis ? x - nextNode.getxMin() : y - nextNode.getyMin()))){
             nearestNode = getNearestNode(node2, x, y, shortestDistance, nearestNode, !xAxis);
         }
         
@@ -115,7 +115,7 @@ public class Node2DTree{
 
     private double getDistance(KDTreeNode from, float x, float y){
         Point2D p = new Point2D(x, y);
-       double result = p.distance(from.getX(), from.getY());
+       double result = p.distance(from.getxMin(), from.getyMin());
         return result;
     }
     

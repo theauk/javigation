@@ -1,7 +1,7 @@
 package bfst21.data_structures;
 
+import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
-import bfst21.Osm_Elements.NodeHolder;
 import bfst21.Osm_Elements.Way;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,18 +9,15 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static java.lang.Float.NaN;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 class RTreeTest {
 
     private RTree rTree;
-    private Way w1, w2, w3, w4, w5, w6;
+    private Way w1, w2, w3, w4, w5, w6, w7;
 
     @BeforeEach
     void setUp() {
 
-        rTree = new RTree(1, 2, 4);
+        rTree = new RTree(1, 3, 4);
 
         w1 = new Way(1);
         Node n1 = new Node(1, -1, 2);
@@ -58,6 +55,12 @@ class RTreeTest {
         w6.addNode(n11);
         //w4.addNode(n12);
 
+        w7 = new Way(7);
+        Node n13 = new Node(13, 40, 50);
+        //Node 14 = new Node(12, 20, 14);
+        w7.addNode(n13);
+        //w7.addNode(n12);
+
     }
 
     @Test
@@ -71,9 +74,9 @@ class RTreeTest {
 
         rTree.setRoot(r1);
 
-        r1.addNodeHolderEntry(w1);
-        r2.addNodeHolderEntry(w2);
-        r3.addNodeHolderEntry(w3);
+        r1.addElementEntry(w1);
+        r2.addElementEntry(w2);
+        r3.addElementEntry(w3);
 
         System.out.println(rTree.search(6, 10, 0, -5 / 0.56f).size());
         /*assertEquals(2, rTree.search(6, 10, 0, -5/0.56f).size());
@@ -114,6 +117,9 @@ class RTreeTest {
         System.out.println("--SIXTH--");
         rTree.insert(w6);
 
+        rTree.insert(w7);
+
+
         /*System.out.println("");
         System.out.println("--SIXTH II--");
         rTree.insert(w6);
@@ -137,10 +143,10 @@ class RTreeTest {
 
         rTree.printTree();
 
-        ArrayList<NodeHolder> result = rTree.search(-5, 17, -63, -1);
+        ArrayList<Element> result = rTree.search(-5, 17, -63, -1);
         System.out.println("Result size: " + result.size());
-        for (NodeHolder n: result) {
-            System.out.println("NodeHolder: " + Arrays.toString(n.getCoordinates()));
+        for (Element element : result) {
+            System.out.println("NodeHolder: " + Arrays.toString(element.getCoordinates()));
         }
     }
 }
