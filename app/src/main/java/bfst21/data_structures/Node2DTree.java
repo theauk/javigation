@@ -15,19 +15,16 @@ public class Node2DTree{
     private final Comparator<KDTreeNode> comparatorX = new Comparator<KDTreeNode>() {
         @Override
         public int compare(KDTreeNode p1, KDTreeNode p2) {
-            return Double.compare(p1.getNode().getX(), p2.getNode().getX());
+            return Double.compare(p1.getNode().getxMax(), p2.getNode().getxMax());
         }
     };
 
     private final Comparator<KDTreeNode> comparatorY = new Comparator<KDTreeNode>() {
         @Override
         public int compare(KDTreeNode p1, KDTreeNode p2) {
-            return Double.compare(p1.getNode().getY(), p2.getNode().getY());
+            return Double.compare(p1.getNode().getyMax(), p2.getNode().getyMax());
         }
     };
-
-    
-
     public Node2DTree(List<KDTreeNode> nodes){
         if(nodes != null){
             buildTree(nodes);
@@ -99,7 +96,7 @@ public class Node2DTree{
 
 
         //checks if we should search the left or right side of the tree first, to save time/space.
-        double compare = xAxis ? Math. abs(x - nextNode.getNode().getX()) : Math. abs(y - nextNode.getNode().getY());
+        double compare = xAxis ? Math. abs(x - nextNode.getNode().getxMax()) : Math. abs(y - nextNode.getNode().getyMax());
 
         KDTreeNode node1 = compare < 0 ? nextNode.getLeftChild() : nextNode.getRightChild();
         KDTreeNode node2 = compare < 0 ? nextNode.getRightChild() : nextNode.getLeftChild();
@@ -107,7 +104,7 @@ public class Node2DTree{
         nearestNode = getNearestNode(node1, x, y, shortestDistance, nearestNode, !xAxis);
 
 
-        if(shortestDistance > Math. abs((xAxis ? x - nextNode.getNode().getX() : y - nextNode.getNode().getY()))){
+        if(shortestDistance > Math. abs((xAxis ? x - nextNode.getNode().getxMax() : y - nextNode.getNode().getyMax()))){
             nearestNode = getNearestNode(node2, x, y, shortestDistance, nearestNode, !xAxis);
         }
         
@@ -117,7 +114,7 @@ public class Node2DTree{
 
     private double getDistance(KDTreeNode from, float x, float y){
         Point2D p = new Point2D(x, y);
-       double result = p.distance(from.getNode().getX(), from.getNode().getY());
+       double result = p.distance(from.getNode().getxMax(), from.getNode().getyMax());
         return result;
     }
     

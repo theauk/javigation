@@ -13,9 +13,9 @@ public class Way extends NodeHolder {
     @Override
     public void draw(GraphicsContext gc) {
         gc.beginPath();
-        gc.moveTo(nodes.get(0).getX(), nodes.get(0).getY());
+        gc.moveTo(nodes.get(0).getxMin(), nodes.get(0).getyMin());
         for (var node : nodes) {
-            gc.lineTo(node.getX(), node.getY());
+            gc.lineTo(node.getxMin(), node.getyMin());
         }
         gc.stroke();
     }
