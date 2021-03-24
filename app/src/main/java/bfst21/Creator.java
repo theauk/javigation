@@ -4,6 +4,7 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import bfst21.Osm_Elements.Specifik_Elements.KDTreeNode;
+import bfst21.data_structures.AlternateBinarySearchTree;
 import bfst21.data_structures.BinarySearchTree;
 
 import javax.xml.stream.XMLInputFactory;
@@ -20,7 +21,7 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 /*
 Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
  */
-// TODO: 19-03-2021 BST instead of HashMap :3
+
 public class Creator {
 
     private Map map;
@@ -44,7 +45,7 @@ public class Creator {
     {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(input));
 
-        BinarySearchTree<Long, Node> idToNode = new BinarySearchTree<>();
+        AlternateBinarySearchTree<Long, Node> idToNode = new AlternateBinarySearchTree<>();
         Way way = null;
         Node node = null;
 
