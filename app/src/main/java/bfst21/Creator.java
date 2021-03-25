@@ -4,6 +4,7 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.BinarySearchTree;
+import bfst21.data_structures.RTree;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -22,7 +23,7 @@ Creates Objects such as Nodes, Ways and Relations from the .osm file given from 
 // TODO: 19-03-2021 BST instead of HashMap :3
 public class Creator {
 
-    private Map map;
+    private MapData mapData;
     private List<Element> roads;
     private List<Element> coastLines;
 
@@ -30,9 +31,9 @@ public class Creator {
     boolean iscoastline, isRoad;
     boolean isRelation;
 
-    public Creator(Map map, InputStream input) throws XMLStreamException
+    public Creator(MapData mapData, InputStream input) throws XMLStreamException
     {
-        this.map = map;
+        this.mapData = mapData;
         roads = new ArrayList<>();
         coastLines = new ArrayList<>();
 
@@ -55,10 +56,10 @@ public class Creator {
                     switch (reader.getLocalName())
                     {
                         case "bounds":
-                            map.setMinX(Float.parseFloat(reader.getAttributeValue(null, "minlon")));
-                            map.setMaxX(Float.parseFloat(reader.getAttributeValue(null, "maxlon")));
-                            map.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
-                            map.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
+                            mapData.setMinX(Float.parseFloat(reader.getAttributeValue(null, "minlon")));
+                            mapData.setMaxX(Float.parseFloat(reader.getAttributeValue(null, "maxlon")));
+                            mapData.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
+                            mapData.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
                             break;
                         case "relation":
                             // adding memebers like Node and Way into the list
@@ -112,8 +113,8 @@ public class Creator {
             }
         }
 
-        map.addData(coastLines);
-        map.addData(roads);
+        mapData.addData(coastLines);
+        mapData.addData(roads);
     }
 
     private void allBooleansFalse() {

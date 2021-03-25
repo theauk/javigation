@@ -1,6 +1,6 @@
 package bfst21.view;
 
-import bfst21.Map;
+import bfst21.MapData;
 import bfst21.Osm_Elements.Element;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
@@ -10,18 +10,27 @@ import javafx.scene.transform.NonInvertibleTransformException;
 
 public class MapCanvas extends Canvas
 {
-    private Map map;
+    private MapData mapData;
     private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
 
-    public void init(Map map, Theme theme)
+    public void init(MapData mapData, Theme theme)
     {
-        this.map = map;
+        this.mapData = mapData;
         this.theme = theme;
         trans = new Affine();
 
         bounds = new CanvasBounds();
+
+        widthProperty().addListener(((observable, oldValue, newValue) -> {
+            setBounds();
+            repaint();
+        }));
+        heightProperty().addListener((observable, oldValue, newValue) -> {
+            setBounds();
+            repaint();
+        });
 
         repaint();
     }
@@ -38,7 +47,7 @@ public class MapCanvas extends Canvas
         gc.setTransform(trans);
         gc.setLineWidth(1 / Math.sqrt(trans.determinant()));
 
-        for(Element element: map.getMapData())
+        for(Element element: mapData.getMapSegment())
         {
             gc.setStroke(theme.get("coastline"));
             element.draw(gc);
@@ -51,6 +60,7 @@ public class MapCanvas extends Canvas
     {
         trans.prependScale(factor, factor, center);
         setBounds();
+        mapData.searchInData(bounds);
         repaint();
     }
 
@@ -58,6 +68,7 @@ public class MapCanvas extends Canvas
     {
         trans.prependTranslation(dx, dy);
         setBounds();
+        mapData.searchInData(bounds);
         repaint();
     }
 
@@ -65,6 +76,8 @@ public class MapCanvas extends Canvas
     {
         trans = new Affine();
         pan(0, 0);
+        setBounds();
+        mapData.searchInData(bounds);
     }
 
     public CanvasBounds getBounds()
@@ -76,12 +89,12 @@ public class MapCanvas extends Canvas
     {
         try {
             Point2D startCoords = getTransCoords(0, 0);
-            bounds.setMinX(startCoords.getX());
-            bounds.setMinY(startCoords.getY());
+            bounds.setMinX((float) startCoords.getX());
+            bounds.setMinY((float) startCoords.getY());
 
             Point2D endCoords = getTransCoords(0 + getWidth(), 0 + getHeight());
-            bounds.setMaxX(endCoords.getX());
-            bounds.setMaxY(endCoords.getY());
+            bounds.setMaxX((float) endCoords.getX());
+            bounds.setMaxY((float) endCoords.getY());
         } catch (NonInvertibleTransformException e) {
             e.printStackTrace();
         }
@@ -103,53 +116,5 @@ public class MapCanvas extends Canvas
     {
         this.theme = theme;
         repaint();
-    }
-
-    public class CanvasBounds
-    {
-        private double minX;
-        private double minY;
-        private double maxX;
-        private double maxY;
-
-        public double getMinX()
-        {
-            return minX;
-        }
-
-        public void setMinX(double minX)
-        {
-            this.minX = minX;
-        }
-
-        public double getMinY()
-        {
-            return minY;
-        }
-
-        public void setMinY(double minY)
-        {
-            this.minY = minY;
-        }
-
-        public double getMaxX()
-        {
-            return maxX;
-        }
-
-        public void setMaxX(double maxX)
-        {
-            this.maxX = maxX;
-        }
-
-        public double getMaxY()
-        {
-            return maxY;
-        }
-
-        public void setMaxY(double maxY)
-        {
-            this.maxY = maxY;
-        }
     }
 }

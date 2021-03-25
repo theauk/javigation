@@ -1,5 +1,6 @@
 package bfst21;
 
+import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
 import javafx.event.ActionEvent;
@@ -17,13 +18,14 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Controller
 {
-    private Map map;
+    private MapData mapData;
     private Loader loader;
 
-    private java.util.Map<String, Theme> themes = new HashMap<>();
+    private Map<String, Theme> themes = new HashMap<>();
 
     private Point2D currentMouse;
     private Point2D lastMouse;
@@ -46,10 +48,10 @@ public class Controller
     @FXML private RadioMenuItem defaultThemeItem;
     @FXML private ToggleGroup themeGroup;
 
-    public void init(Map map)
+    public void init(MapData mapData)
     {
-        this.map = map;
-        loader = new Loader(map);
+        this.mapData = mapData;
+        loader = new Loader(mapData);
 
         loadThemes();
         initView();
@@ -79,16 +81,12 @@ public class Controller
 
     private void initView()
     {
-        mapCanvas.init(map, themes.get("Default"));
+        mapCanvas.init(mapData, themes.get("Default"));
 
         mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> {
-            mapCanvas.setBounds();
-            mapCanvas.repaint();
             setBoundsLabel();
         }));
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> {
-            mapCanvas.setBounds();
-            mapCanvas.repaint();
             setBoundsLabel();
         });
 
@@ -108,7 +106,7 @@ public class Controller
 
     /**
      * Called when a ScrollEvent is raised. Zooms in on the MapCanvas at the Mouse's coordinates.
-     * @param e The ScrollEvent associated with the caller.
+     * @param e the ScrollEvent associated with the caller.
      */
     @FXML
     private void onScroll(ScrollEvent e)
@@ -119,7 +117,7 @@ public class Controller
 
     /**
      * Zoom in or out on the MapCanvas via the MenuBar.
-     * @param e The ActionEvent associated with the caller.
+     * @param e the ActionEvent associated with the caller.
      */
     @FXML
     private void zoom(ActionEvent e)
@@ -131,7 +129,7 @@ public class Controller
 
     /**
      * Zooms in or out on the MapCanvas at the center point of the Canvas.
-     * @param amount The zoom amount.
+     * @param amount the zoom amount.
      */
     private void zoom(double amount)
     {
@@ -140,8 +138,8 @@ public class Controller
 
     /**
      * Zooms in or out on the MapCanvas within a certain zoom level at a certain point.
-     * @param amount The zoom amount.
-     * @param center The zoom center as a 2D point.
+     * @param amount the zoom amount.
+     * @param center the zoom center as a 2D point.
      */
     private void zoom(double amount, Point2D center)
     {
@@ -243,7 +241,6 @@ public class Controller
     private void setTheme(String themeName)
     {
         mapCanvas.setTheme(themes.get(themeName));
-        System.out.println("Theme set to " + themes.get(themeName).getName());
     }
 
     private void setCoordsLabel(Point2D point)
@@ -266,7 +263,7 @@ public class Controller
 
     private void setBoundsLabel()
     {
-        MapCanvas.CanvasBounds bounds = mapCanvas.getBounds();
+        CanvasBounds bounds = mapCanvas.getBounds();
         boundsLabel.setText("Bounds: (" + round(bounds.getMinX(), 1) + ", "  + round(bounds.getMinY(), 1) + ") | (" + round(bounds.getMaxX(), 1) + ", " + round(bounds.getMaxY(), 1) + ")");
     }
 

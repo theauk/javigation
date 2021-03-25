@@ -19,13 +19,13 @@ import java.util.zip.ZipInputStream;
 
 public class Loader
 {
-    private Map map;
+    private MapData mapData;
     private final String regex = "^(?:\"(?<key>[A-Za-z]*)\" *= *\\[ *(?<red>-?\\d{1,3}) *, *(?<green>-?\\d{1,3}) *, *(?<blue>-?\\d{1,3}) *]; *)$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
 
-    public Loader(Map map)
+    public Loader(MapData mapData)
     {
-        this.map = map;
+        this.mapData = mapData;
     }
 
     public void load(String filename) throws IOException, XMLStreamException, FactoryConfigurationError
@@ -46,7 +46,7 @@ public class Loader
     }
 
     private void loadOSM(InputStream inputStream) throws XMLStreamException {
-        new Creator(map, inputStream);
+        new Creator(mapData, inputStream);
     }
 
     public Theme loadTheme(String file)
@@ -54,7 +54,6 @@ public class Loader
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file))))
         {
             Theme theme = new Theme();
-            System.out.println("Loading theme: '" + file + "'.");
 
             String line;
             int lineNumber = 0;
@@ -90,7 +89,7 @@ public class Loader
                 theme.setName("?Unknown");
             }
             if(theme.isEmpty()) System.err.println("Warning: Theme '" + theme.getName() + "' is empty! All colors will be the same.");
-            System.out.println("DONE.\n");
+
             return theme;
         } catch(IOException e) {
             e.printStackTrace();
