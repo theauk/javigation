@@ -84,7 +84,7 @@ public class Node2DTree<Value extends Element>{
             return;
         }
 
-        nodes = checkForDuplikates(nodes, parent);
+        //nodes = checkForDuplikates(nodes, parent);
         if(nodes.isEmpty()){
             return;
         }
