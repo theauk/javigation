@@ -2,10 +2,7 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Element;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 public class RTree {
     private int minimumChildren, maximumChildren, numberOfCoordinates;
@@ -45,7 +42,9 @@ public class RTree {
             search(searchCoordinates, root, results);
             return results;
         } else {
-            throw new RuntimeException("No elements in the RTree");
+            //throw new RuntimeException("No elements in the RTree");
+            System.out.println("No elements in the rtree");
+            return new ArrayList<>();
         }
     }
 
@@ -64,6 +63,12 @@ public class RTree {
                     search(searchCoordinates, r, results);
                 }
             }
+        }
+    }
+
+    public void insertAll(List<Element> elements) {
+        for (Element e: elements) {
+            insert(e);
         }
     }
 
