@@ -3,32 +3,24 @@ package bfst21.Osm_Elements;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class NodeHolder extends Element implements Spatializable {
+public abstract class NodeHolder extends Element {
 
     protected List<Node> nodes = new ArrayList<>();
-    private float xMin;
-    private float xMax;
-    private float yMin;
-    private float yMax;
 
     public NodeHolder(long id) {
         super(id);
     }
 
-    public Node firstNode() {
-        return nodes.get(0);
-    }
-
     public void addNode(Node node) {
         nodes.add(node);
         if (nodes.size() > 1) {
-            checkX(node.getX());
-            checkY(node.getY());
+            checkX(node.getxMin());
+            checkY(node.getyMin());
         } else {
-            xMin = node.getX();
-            xMax = node.getX();
-            yMin = node.getY();
-            yMax = node.getY();
+            xMin = node.getxMin();
+            xMax = node.getxMin();
+            yMin = node.getyMin();
+            yMax = node.getyMin();
         }
     }
 
@@ -48,24 +40,8 @@ public abstract class NodeHolder extends Element implements Spatializable {
         }
     }
 
-    public float getxMin() {
-        return xMin;
-    }
-
-    public float getxMax() {
-        return xMax;
-    }
-
-    public float getyMin() {
-        return yMin;
-    }
-
-    public float getyMax() {
-        return yMax;
-    }
-
-    public float[] getCoordinates() {
-        return new float[]{xMin, xMax, yMin, yMax};
+    public List<Node> getNodes() {
+        return nodes;
     }
 
 }

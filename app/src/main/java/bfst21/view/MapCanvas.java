@@ -1,25 +1,38 @@
 package bfst21.view;
 
-import bfst21.Map;
+import bfst21.MapData;
+import bfst21.Osm_Elements.Element;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
 public class MapCanvas extends Canvas
 {
-    private Map map;
+    private MapData mapData;
     private Affine trans;
+    private CanvasBounds bounds;
+    private Theme theme;
 
-    public void init(Map map)
+    public void init(MapData mapData, Theme theme)
     {
-        this.map = map;
+        this.mapData = mapData;
+        this.theme = theme;
         trans = new Affine();
 
-        widthProperty().addListener(observable -> repaint());
-        heightProperty().addListener(observable -> repaint());
+        bounds = new CanvasBounds();
+
+        widthProperty().addListener(((observable, oldValue, newValue) -> {
+            setBounds();
+            repaint();
+        }));
+        heightProperty().addListener((observable, oldValue, newValue) -> {
+            setBounds();
+            repaint();
+        });
+
+        mapData.searchInData(bounds);
 
         repaint();
     }
@@ -30,14 +43,15 @@ public class MapCanvas extends Canvas
         gc.save();
         gc.setTransform(new Affine());
 
-        gc.setFill(Color.WHITE);
+        gc.setFill(theme.get("background"));
         gc.fillRect(0, 0, getWidth(), getHeight());
 
         gc.setTransform(trans);
         gc.setLineWidth(1 / Math.sqrt(trans.determinant()));
 
-        for (var element: map.getMapData()) {
-            gc.setStroke(Color.BLACK);
+        for(Element element: mapData.getMapSegment())
+        {
+            gc.setStroke(theme.get("coastline"));
             element.draw(gc);
         }
 
@@ -47,12 +61,16 @@ public class MapCanvas extends Canvas
     public void zoom(double factor, Point2D center)
     {
         trans.prependScale(factor, factor, center);
+        setBounds();
+        mapData.searchInData(bounds);
         repaint();
     }
 
     public void pan(double dx, double dy)
     {
         trans.prependTranslation(dx, dy);
+        setBounds();
+        mapData.searchInData(bounds);
         repaint();
     }
 
@@ -60,6 +78,28 @@ public class MapCanvas extends Canvas
     {
         trans = new Affine();
         pan(0, 0);
+        setBounds();
+        mapData.searchInData(bounds);
+    }
+
+    public CanvasBounds getBounds()
+    {
+        return bounds;
+    }
+
+    public void setBounds()
+    {
+        try {
+            Point2D startCoords = getTransCoords(0, 0);
+            bounds.setMinX((float) startCoords.getX());
+            bounds.setMinY((float) startCoords.getY());
+
+            Point2D endCoords = getTransCoords(0 + getWidth(), 0 + getHeight());
+            bounds.setMaxX((float) endCoords.getX());
+            bounds.setMaxY((float) endCoords.getY());
+        } catch (NonInvertibleTransformException e) {
+            e.printStackTrace();
+        }
     }
 
     public Point2D getTransCoords(double x, double y) throws NonInvertibleTransformException
@@ -72,5 +112,11 @@ public class MapCanvas extends Canvas
         Point2D geoCoords = getTransCoords(x, y);
 
         return new Point2D(geoCoords.getX(), -geoCoords.getY() * 0.56f);
+    }
+
+    public void setTheme(Theme theme)
+    {
+        this.theme = theme;
+        repaint();
     }
 }
