@@ -95,6 +95,7 @@ public class Creator {
                             idToNode.put(id, node);
                             break;
                         case "way":
+                            travelWay = null;
                             way = new Way(Long.parseLong(reader.getAttributeValue(null, "id")));
                             allBooleansFalse();
                             break;
@@ -197,12 +198,11 @@ public class Creator {
                             if (isRoad){
                                 roads.add(way);
                                 travelWays.add(travelWay);
-                                for(Node n: way.getNodes()){
-                                    if(n.getName() == null){
-                                        break;
-                                    } else {
-                                        nodesInRoads.add(n);
-                                    }
+
+                                int n = way.getNodes().size();
+                                Node nodeRoad = way.getNodes().get(n/2);
+                                if(nodeRoad.getName() != null){
+                                    nodesInRoads.add(nodeRoad);
                                 }
                                 
 

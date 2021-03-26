@@ -212,8 +212,7 @@ public class Controller
         //y = Math.round(geoCoords.getY() * 10000000) / 10000000.0;
         geoCoordsLabel.setText("Road(s): " + map.getNearestRoad((float)coords.getX(), (float)coords.getY()));
         //TODO Fjern
-        //System.out.println(map.getNearestRoad((float)12.5970225, (float)-99.4069));
-        //System.out.println();
+        ;
     }
 
     private FileChooser showFileChooser()

@@ -15,7 +15,6 @@ public class Node2DTree<Value extends Element>{
     private KDTreeNode root;
     private List<KDTreeNode> list;
     private boolean isSorted;
-    private int i;
 
     private final Comparator<KDTreeNode> comparatorX = new Comparator<KDTreeNode>() {
         @Override
@@ -41,7 +40,7 @@ public class Node2DTree<Value extends Element>{
         
     }
 
-    private void add(Value node){
+    public void add(Value node){
         list.add(new KDTreeNode(node));
         isSorted = false;
     }
@@ -72,73 +71,79 @@ public class Node2DTree<Value extends Element>{
         int mid = (lo + hi) / 2;
 
         root = list.get(mid);
-        root.onXAxis = true;        
-        buildTree(true, list.subList(lo, mid), root);
-        buildTree(false, list.subList(mid+1, hi), root);
+        root.onXAxis = true;
+        buildTree(false, list.subList(mid+1,hi), root);
+        buildTree(true, list.subList(0, mid), root);
+
+
 
     }
 
-    
-    private void buildTree(boolean isLeft,List<KDTreeNode> nodes, KDTreeNode parent){
+
+    private void buildTree(boolean isLeft, List<KDTreeNode> nodes, KDTreeNode parent) {
         if (nodes == null || nodes.isEmpty()) {
             return;
         }
+        List<KDTreeNode> nodesCopy;
 
-        //nodes = checkForDuplikates(nodes, parent);
-        if(nodes.isEmpty()){
+        if(isParentAndNextMidSame(nodes, parent)){
+            nodesCopy = new ArrayList<>();
+            nodes = removeDuplicates(nodes, parent,(0 + nodes.size()) / 2);
+            nodesCopy.addAll(nodes);
+        } else{
+            nodesCopy = nodes;
+        }
+
+        if (nodesCopy.isEmpty()) {
             return;
         }
-        nodes.sort(parent.onXAxis ? comparatorX  : comparatorY );
-        
 
-        int lo = 0;
-        int hi = nodes.size();
-        int mid = (lo + hi) / 2;
-        KDTreeNode child = nodes.get(mid);
-        
+        nodesCopy.sort(parent.onXAxis ? comparatorX : comparatorY);
+
+
+
+        KDTreeNode child = nodesCopy.get(nodesCopy.size() / 2);
+
         child.onXAxis = !parent.onXAxis;
-        
-        if(isLeft){
+
+        if (isLeft) {
             parent.leftChild = child;
-        } else{
-            parent.rightChild=child;
+        } else {
+            parent.rightChild = child;
         }
 
-        buildTree(true, nodes.subList(0, mid), child);
-        if (mid + 1 < nodes.size())
-            buildTree(false, nodes.subList(mid+1, hi), child);
+        buildTree(true, nodesCopy.subList(0, nodesCopy.size() / 2), child);
+        if ((nodesCopy.size() / 2) + 1 < nodesCopy.size()){
+            buildTree(false, nodesCopy.subList(nodesCopy.size() / 2 + 1, nodesCopy.size()), child);
+        }
     }
 
-    private List<KDTreeNode> checkForDuplikates(List<KDTreeNode> nodes, KDTreeNode parent){
-        
-        int lo = 0;
-        int hi = nodes.size();
-        int mid = (lo + hi) / 2;
+    private List<KDTreeNode> removeDuplicates(List<KDTreeNode> nodes, KDTreeNode parent, int mid){
 
-        if(nodes.get(mid).node.getxMax() == parent.node.getxMax() && nodes.get(mid).node.getyMax() == parent.node.getyMax() ){
-           
             nodes.remove(mid);
-            if(!nodes.isEmpty()){
-                nodes = checkForDuplikates(nodes, parent);
-            }
-            
-        }
-        
         return nodes;
     }
 
+    private boolean isParentAndNextMidSame(List<KDTreeNode> nodes, KDTreeNode parent){
+        int lo = 0;
+        int hi = nodes.size();
+        int mid = (lo + hi) / 2;
+        return (nodes.get(mid).node.getxMax() == parent.node.getxMax() && nodes.get(mid).node.getyMax() == parent.node.getyMax());
+    }
 
 
-     public Value getNearestNode(float x, float y){
+
+    public Value getNearestNode(float x, float y){
         if(!isSorted){
             buildTree();
             isSorted = true;
-            System.out.println(i);
+        }
+        //TODO  tjek for null??
+        if(root == null){
+            return null;
         }
         double shortestDistance = Double.MAX_VALUE;
-
         KDTreeNode nearestNode = getNearestNode(root, x, y, shortestDistance, null, root.onXAxis);
-
         return nearestNode.node;
         
     }
@@ -179,6 +184,10 @@ public class Node2DTree<Value extends Element>{
        double result = p.distance(from.node.getxMax(), from.node.getyMax());
         return result;
     }
+
+
+
+
 
     
     

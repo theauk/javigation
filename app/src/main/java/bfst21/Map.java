@@ -41,8 +41,6 @@ public class Map
     public String getNearestRoad(float x, float y){
         String names = "";
         Node node = roadNodes.getNearestNode(x, y);
-        //TODO fjern
-        System.out.println(node.getxMax() + " y: " + node.getyMax());
         for(String s: node.getName()){
             names += s + " ";
         }
