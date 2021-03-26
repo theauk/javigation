@@ -17,7 +17,7 @@ class RTreeTest {
     @BeforeEach
     void setUp() {
 
-        rTree = new RTree(1, 3, 4);
+        rTree = new RTree(1, 2, 4);
 
         w1 = new Way(1);
         Node n1 = new Node(1, -1, 2);
@@ -120,7 +120,7 @@ class RTreeTest {
         rTree.insert(w7);
 
 
-        /*System.out.println("");
+        System.out.println("");
         System.out.println("--SIXTH II--");
         rTree.insert(w6);
 
@@ -129,7 +129,7 @@ class RTreeTest {
         rTree.insert(w6);
 
         rTree.insert(w6);
-        rTree.insert(w6);*/
+        rTree.insert(w6);
 
         /*float[] rootCoordinates = rTree.getRoot().getCoordinates();
         assertEquals(1.0, rootCoordinates[0]);
@@ -143,7 +143,12 @@ class RTreeTest {
 
         rTree.printTree();
 
-        ArrayList<Element> result = rTree.search(-5, 17, -63, -1);
+        long startTime = System.nanoTime();
+        ArrayList<Element> result = rTree.search(-10, 18, -63, 5);
+        long estimatedTime = System.nanoTime() - startTime;
+        double elapsedTimeInSecond = (double) estimatedTime / 1_000_000_000;
+        System.out.println(elapsedTimeInSecond + " seconds");
+
         System.out.println("Result size: " + result.size());
         for (Element element : result) {
             System.out.println("NodeHolder: " + Arrays.toString(element.getCoordinates()));

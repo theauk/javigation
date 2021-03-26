@@ -43,9 +43,8 @@ public class Creator {
     boolean isFerryRoute;
     boolean isAddress;
 
-    public Creator(Map map, InputStream input) throws XMLStreamException
-    {
-        this.map = map;
+    public Creator(MapData mapData, InputStream input) throws XMLStreamException {
+        this.mapData = mapData;
         roads = new ArrayList<>();
         coastLines = new ArrayList<>();
         travelWays = new ArrayList<>();
@@ -54,14 +53,13 @@ public class Creator {
         create(input);
     }
 
-    public void create(InputStream input) throws XMLStreamException
-    {
+    public void create(InputStream input) throws XMLStreamException {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(input));
 
         AlternateBinarySearchTree<Long, Node> idToNode = new AlternateBinarySearchTree<>();
-        
+
         AlternateBinarySearchTree<Long, Way> idToWay = new AlternateBinarySearchTree<>();
-        
+
         AlternateBinarySearchTree<Long, AddressNode> idToAddressNode = new AlternateBinarySearchTree<>();
 
         Way way = null;
@@ -73,18 +71,18 @@ public class Creator {
 
         AddressNode addressNode = null;
 
-        while(reader.hasNext())
-        {
-            switch (reader.next())
-            {
+        while (reader.hasNext()) {
+            switch (reader.next()) {
                 case START_ELEMENT:
-                    switch (reader.getLocalName())
-                    {
+                    switch (reader.getLocalName()) {
                         case "bounds":
-                            map.setMinX(Float.parseFloat(reader.getAttributeValue(null, "minlon")));
-                            map.setMaxX(Float.parseFloat(reader.getAttributeValue(null, "maxlon")));
-                            map.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
-                            map.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
+                            mapData.setMinX(Float.parseFloat(reader.getAttributeValue(null, "minlon")));
+                            mapData.setMaxX(Float.parseFloat(reader.getAttributeValue(null, "maxlon")));
+                            mapData.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
+                            mapData.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
+                            break;
+                        case "relation":
+                            // adding memebers like Node and Way into the list
                             break;
                         case "node":
                             isAddress = false;
@@ -108,13 +106,13 @@ public class Creator {
                         case "tag":
                             var k = reader.getAttributeValue(null, "k");
                             var v = reader.getAttributeValue(null, "v");
-                            switch(k){
+                            switch (k) {
                                 case "natural":
-                                    if(v.equals("coastline")) iscoastline = true;
+                                    if (v.equals("coastline")) iscoastline = true;
                                     break;
 
                                 case "highway":
-                                        travelWay = new TravelWay(way,v);
+                                    travelWay = new TravelWay(way,v);
                                     isRoad = true;
                                     break;
                                 case "maxspeed":
@@ -174,7 +172,6 @@ public class Creator {
                                     }
                                     break;
                             }
-
                             break;
 
                         case "nd":
@@ -183,9 +180,9 @@ public class Creator {
                             break;
 
                         case "member":
-                            if(isRelation){
-                                var refWay = Long.parseLong(reader.getAttributeValue(null,"ref"));
-                                member.add(refWay); // i think this takes both ways and nodes (their refnumber).
+                            if (isRelation) {
+                                //var refWay = Long.parseLong(reader.getAttributeValue(null,"ref"));
+                                //member.add(refWay);
                             }
                             break;
                     }
@@ -204,7 +201,7 @@ public class Creator {
                                 if(nodeRoad.getName() != null){
                                     nodesInRoads.add(nodeRoad);
                                 }
-                                
+
 
                             }
                             if(iscycleAble) travelWay.setCycleway(cycle);
@@ -220,7 +217,7 @@ public class Creator {
         map.addData(coastLines);
         map.addData(roads);
         map.addRoads(nodesInRoads);
-        
+
 
     }
 
