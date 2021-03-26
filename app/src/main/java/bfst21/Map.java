@@ -3,21 +3,21 @@ package bfst21;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 
-import bfst21.data_structures.Node2DTree;
+import bfst21.data_structures.KDTree;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Map
 {
-    private Node2DTree<Node> roadNodes;
+    private KDTree<Node> roadNodes;
     private List<Element> mapData; //All data
     private float minX, minY, maxX, maxY;
 
     public Map()
     {
         mapData = new ArrayList<>();
-        roadNodes = new Node2DTree<>();
+        roadNodes = new KDTree<>();
     }
 
     public void addData(List<Element> toAdd)

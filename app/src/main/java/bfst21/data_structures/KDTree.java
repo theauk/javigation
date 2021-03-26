@@ -4,6 +4,7 @@ package bfst21.data_structures;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import bfst21.Osm_Elements.Element;
@@ -11,7 +12,7 @@ import bfst21.Osm_Elements.Element;
 
 import javafx.geometry.Point2D;
 
-public class Node2DTree<Value extends Element>{
+public class KDTree<Value extends Element>{
     private KDTreeNode root;
     private List<KDTreeNode> list;
     private boolean isSorted;
@@ -186,9 +187,61 @@ public class Node2DTree<Value extends Element>{
     }
 
 
+   public void printTree(){
+        if(root == null){
+            buildTree();
+        }
+        Integer level = 1;
 
+       HashMap<Integer, ArrayList<KDTreeNode>> result = new HashMap<>();
 
+       result = getPrintTree(root, level, result);
 
-    
-    
+       while (result.get(level) != null) {
+           System.out.println("");
+           System.out.println("Level: " + level);
+           for (KDTreeNode node : result.get(level)) {
+               System.out.println("Node id: " + node.node.getId() + " : x:"  + node.node.getxMax() + " y: " + node.node.getyMax());
+               if(node.leftChild != null){
+                   System.out.println("Has left child, id: "+ node.leftChild.node.getId());
+               }if(node.rightChild != null){
+                   System.out.println("Has right child, id: "+ node.rightChild.node.getId());
+               }
+
+           }
+           level++;
+       }
+       System.out.println("");
+   }
+
+   private HashMap<Integer, ArrayList<KDTreeNode>> getPrintTree(KDTreeNode node, Integer level, HashMap<Integer, ArrayList<KDTreeNode>> result ){
+        if(node != null){
+            if (result.get(level) == null) {
+                ArrayList<KDTreeNode> newAL = new ArrayList<>();
+                newAL.add(node);
+                result.put(level, newAL);
+            } else {
+                ArrayList<KDTreeNode> current = result.get(level);
+                current.add(node);
+                result.put(level, current);
+            }
+            level += 1;
+            int levelCopy = level.intValue();
+
+                getPrintTree(node.leftChild, level, result);
+                getPrintTree(node.rightChild, levelCopy, result);
+
+        }
+
+        return result;
+
+   }
 }
+
+
+
+
+
+    
+    
+
