@@ -23,11 +23,6 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
  */
 public class Creator {
-
-    boolean iscoastline, isRoad;
-    boolean iscycleAble, isbuilding;
-    boolean isRelation;
-    boolean isAddress;
     private MapData mapData;
 
 
@@ -50,12 +45,6 @@ public class Creator {
         Relation relation = null;
         TravelWay travelWay = null;
         AddressNode addressNode = null;
-        List<Long> memberWay = new ArrayList<>();
-        List<Long> memberNode = new ArrayList<>();
-
-        // TODO: 28-03-2021 needed?
-        boolean wayTypeIsSet = false;
-
 
 
         while (reader.hasNext()) {
@@ -85,8 +74,6 @@ public class Creator {
                             break;
 
                         case "relation":
-                            memberWay = new ArrayList<>();
-                            memberNode = new ArrayList<>();
                             relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
                             break;
 
