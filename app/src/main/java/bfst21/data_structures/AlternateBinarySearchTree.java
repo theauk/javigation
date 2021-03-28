@@ -9,28 +9,17 @@ public class AlternateBinarySearchTree<Key extends Comparable<Key>, Value> {
     List<BSTNode> BSTNodes = new ArrayList<>();
     boolean sorted = true;
 
-    private class BSTNode {
-        private Key key;
-        private Value val;
-
-        public BSTNode(Key key, Value val) {
-            this.key = key;
-            this.val = val;
-            
-        }
-    }
-    
     public void put(Key key, Value val) {
         BSTNodes.add(new BSTNode(key, val));
         sorted = false;
-	}
+    }
 
     public Value get(Key key) {
         if (!sorted) {
             BSTNodes.sort((a, b) -> a.key.compareTo(b.key));
             sorted = true;
         }
-        int lo = 0;            
+        int lo = 0;
         int hi = BSTNodes.size();
         while (lo + 1 < hi) {
             int mid = (lo + hi) / 2;
@@ -44,6 +33,17 @@ public class AlternateBinarySearchTree<Key extends Comparable<Key>, Value> {
         }
         BSTNode node = BSTNodes.get(lo);
         return node.key.compareTo(key) == 0 ? node.val : null;
-	}
+    }
+
+    private class BSTNode {
+        private Key key;
+        private Value val;
+
+        public BSTNode(Key key, Value val) {
+            this.key = key;
+            this.val = val;
+
+        }
+    }
 }
 

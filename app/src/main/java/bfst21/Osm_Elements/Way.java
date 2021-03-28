@@ -5,8 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 
 public class Way extends NodeHolder {
 
-    public Way(long id)
-    {
+    public Way(long id) {
         super(id);
     }
 
