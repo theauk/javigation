@@ -6,6 +6,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.Scene?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <Scene xmlns="http://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
        fx:controller="bfst21.Controller"
@@ -18,10 +20,12 @@
                     <Menu text="File">
                         <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
                         <SeparatorMenuItem/>
+                        <MenuItem text="Cancel" onAction="#cancelLoad" accelerator="CTRL + W"/>
+                        <SeparatorMenuItem/>
                         <MenuItem text="Exit" onAction="#exit"/>
                     </Menu>
                     <Menu text="View">
-                        <MenuItem text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
+                        <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
                         <SeparatorMenuItem/>
                         <Menu fx:id="themeMenu" text="Change Theme...">
                             <RadioMenuItem fx:id="defaultThemeItem" text="Default" selected="true">
@@ -38,17 +42,23 @@
                 </MenuBar>
             </top>
             <center>
-                <Pane fx:id="centerPane">
-                    <MapCanvas fx:id="mapCanvas"
-                               width="${centerPane.width}"
-                               height="${centerPane.height}"
-                               onScroll="#onScroll"
-                               onMousePressed="#onMousePressed"
-                               onMouseDragged="#onMouseDragged"
-                               onMouseMoved="#onMouseMoved"
-                               onMouseReleased="#onMouseReleased"
-                    />
-                </Pane>
+                <StackPane fx:id="centerPane">
+                    <Pane fx:id="mapPane">
+                        <MapCanvas fx:id="mapCanvas"
+                                   width="${mapPane.width}"
+                                   height="${mapPane.height}"
+                                   onScroll="#onScroll"
+                                   onMousePressed="#onMousePressed"
+                                   onMouseDragged="#onMouseDragged"
+                                   onMouseMoved="#onMouseMoved"
+                                   onMouseReleased="#onMouseReleased"
+                        />
+                    </Pane>
+                    <VBox fx:id="loaderPane" alignment="CENTER" style="-fx-background-color: rgb(180, 180, 180);">
+                        <ProgressIndicator fx:id="loadingBar" progress="0"/>
+                        <Label fx:id="statusLabel" text="Loading"/>
+                    </VBox>
+                </StackPane>
             </center>
             <bottom>
                 <HBox alignment="CENTER_RIGHT">

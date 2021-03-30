@@ -3,6 +3,7 @@ package bfst21;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
+import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -11,10 +12,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,40 +27,37 @@ public class Controller {
     private final int MAX_ZOOM_LEVEL = 100;
     private final int MIN_ZOOM_LEVEL = 0;
     private final int ZOOM_FACTOR = 32;
+
     private MapData mapData;
     private Loader loader;
+    private Creator creator;
+
     private Map<String, Theme> themes = new HashMap<>();
     private Point2D currentMouse;
     private Point2D lastMouse;
     private int zoomLevel;
     private boolean viaSlider = true;
 
-    @FXML
-    private MapCanvas mapCanvas;
-    @FXML
-    private Scene scene;
-    @FXML
-    private Label boundsLabel;
-    @FXML
-    private Label coordsLabel;
-    @FXML
-    private Label geoCoordsLabel;
-    @FXML
-    private Slider zoomSlider;
-    @FXML
-    private Menu themeMenu;
-    @FXML
-    private MenuItem zoomInItem;
-    @FXML
-    private MenuItem zoomOutItem;
-    @FXML
-    private RadioMenuItem defaultThemeItem;
-    @FXML
-    private ToggleGroup themeGroup;
+    @FXML private MapCanvas mapCanvas;
+    @FXML private Scene scene;
+    @FXML private StackPane centerPane;
+    @FXML private VBox loaderPane;
+    @FXML private ProgressIndicator loadingBar;
+    @FXML private Label boundsLabel;
+    @FXML private Label coordsLabel;
+    @FXML private Label geoCoordsLabel;
+    @FXML private Label statusLabel;
+    @FXML private Slider zoomSlider;
+    @FXML private Menu themeMenu;
+    @FXML private MenuItem resetItem;
+    @FXML private MenuItem zoomInItem;
+    @FXML private MenuItem zoomOutItem;
+    @FXML private RadioMenuItem defaultThemeItem;
+    @FXML private ToggleGroup themeGroup;
 
     public void init(MapData mapData) {
         this.mapData = mapData;
-        loader = new Loader(mapData);
+        loader = new Loader();
 
         loadThemes();
         initView();
@@ -65,31 +65,11 @@ public class Controller {
         openFile();
     }
 
-    private void loadThemes() {
-        for (String file : loader.getFilesIn("/themes", ".theme")) {
-            Theme theme = loader.loadTheme(file);
-            themes.put(theme.getName(), theme);
-
-            if (!file.equals("default.theme")) {
-                addTheme(new RadioMenuItem(theme.getName()));
-            }
-        }
-    }
-
-    private void addTheme(RadioMenuItem item) {
-        item.setToggleGroup(themeGroup);
-        themeMenu.getItems().add(item);
-    }
-
     private void initView() {
         mapCanvas.init(mapData, themes.get("Default"));
 
-        mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> {
-            setBoundsLabel();
-        }));
-        mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> {
-            setBoundsLabel();
-        });
+        mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> setBoundsLabel()));
+        mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabel());
 
         zoomSlider.setValue(zoomLevel);
         zoomSlider.setMax(MAX_ZOOM_LEVEL);
@@ -102,6 +82,19 @@ public class Controller {
         });
 
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
+    }
+
+    private void loadThemes() {
+        for (String file : loader.getFilesIn("/themes", ".mtheme")) {
+            Theme theme = loader.loadTheme(file);
+            themes.put(theme.getName(), theme);
+
+            if (!file.equals("default.mtheme")) {
+                RadioMenuItem item = new RadioMenuItem(theme.getName());
+                item.setToggleGroup(themeGroup);
+                themeMenu.getItems().add(item);
+            }
+        }
     }
 
     /**
@@ -149,9 +142,17 @@ public class Controller {
             if (amount > 0 && zoomLevel != MAX_ZOOM_LEVEL) {
                 zoomLevel++;
                 mapCanvas.zoom(factor, center);
+                CanvasBounds cb = mapCanvas.getBounds();
+                System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                printDistance(new Point2D((-cb.getMinY() * 0.56f), cb.getMinX()), new Point2D((-cb.getMinY() * 0.56f), cb.getMaxX()));
             } else if (amount < 0 && zoomLevel != MIN_ZOOM_LEVEL) {
                 zoomLevel--;
                 mapCanvas.zoom(factor, center);
+                CanvasBounds cb = mapCanvas.getBounds();
+                System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                printDistance(new Point2D((-cb.getMinY() * 0.56f), cb.getMinX()), new Point2D((-cb.getMinY() * 0.56f), cb.getMaxX()));
             }
 
             setBoundsLabel();
@@ -183,6 +184,23 @@ public class Controller {
         currentMouse = new Point2D(e.getX(), e.getY());
     }
 
+    public void printDistance(Point2D start, Point2D end) {
+        int earthRadius = 6371000; //in meters
+        double lat1 = Math.toRadians(start.getX());
+        double lat2 = Math.toRadians(end.getX());
+        double lon1 = Math.toRadians(start.getY());
+        double lon2 = Math.toRadians(end.getY());
+
+        double deltaLat = lat2 - lat1;
+        double deltaLon = lon2 - lon1;
+
+        double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
+        double c = Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = earthRadius * c;
+
+        System.out.println(round(distance, 1) + " m");
+    }
+
     @FXML
     private void onMousePressed(MouseEvent e) {
         lastMouse = new Point2D(e.getX(), e.getY());
@@ -208,8 +226,12 @@ public class Controller {
     private void openFile() {
         File file = showFileChooser().showOpenDialog(scene.getWindow());
 
-        if (file != null) loadFile(file.getAbsolutePath());
-        else loadFile(getClass().getResource("/small.osm").getPath()); //USE BINARY FILE
+        if(file != null) loadFile(file.getAbsolutePath(), file.length());
+        else
+        {
+            File binaryFile = new File(getClass().getResource("/small.osm").getPath());
+            loadFile(binaryFile.getPath(), binaryFile.length()); //USE BINARY FILE
+        }
     }
 
     @FXML
@@ -217,10 +239,50 @@ public class Controller {
         System.exit(0);
     }
 
-    private void loadFile(String path) {
+    @FXML
+    private void cancelLoad()
+    {
+        if(creator != null) creator.cancel();
+    }
+
+    private void loadFile(String path, long fileSize) {
         try {
-            loader.load(path);
-        } catch (IOException | XMLStreamException e) {
+            creator = new Creator(mapData, loader.load(path), fileSize);
+            creator.setOnRunning(e -> {
+                centerPane.setCursor(Cursor.WAIT);
+                statusLabel.textProperty().bind(creator.messageProperty());
+                loadingBar.progressProperty().bind(creator.progressProperty());
+                disableGui(true);
+                loaderPane.setVisible(true);
+            });
+            creator.setOnSucceeded(e -> {
+                centerPane.setCursor(Cursor.DEFAULT);
+                statusLabel.textProperty().unbind();
+                loadingBar.progressProperty().unbind();
+                disableGui(false);
+                loaderPane.setVisible(false);
+            });
+            creator.setOnCancelled(e -> {
+                centerPane.setCursor(Cursor.DEFAULT);
+                statusLabel.textProperty().unbind();
+                loadingBar.progressProperty().unbind();
+                statusLabel.setText("Cancelled!");
+                disableGui(false);
+            });
+            creator.setOnFailed(e -> {
+                centerPane.setCursor(Cursor.DEFAULT);
+                statusLabel.textProperty().unbind();
+                loadingBar.progressProperty().unbind();
+                statusLabel.setText("Failed!");
+                creator.exceptionProperty().get().printStackTrace();
+                disableGui(false);
+            });
+
+            Thread creatorThread = new Thread(creator, "Creator Thread");
+            creatorThread.setUncaughtExceptionHandler((t, e) -> System.out.println("Exception " + e + " from thread " + t));
+            creatorThread.setDaemon(true);
+            creatorThread.start();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -241,7 +303,8 @@ public class Controller {
             // TODO: 26-03-2021 Visning af roadnavne skal være mere hensigtsmæssigt
             //x = round(geoCoords.getX(), 7);
             //y = round(geoCoords.getY(), 7);
-            geoCoordsLabel.setText(mapData.getNearestRoad((float)coords.getX(), (float) coords.getY()));
+            //geoCoordsLabel.setText(mapData.getNearestRoad((float)coords.getX(), (float) coords.getY()));
+            geoCoordsLabel.setText("(" + geoCoords.getX() + ", " + geoCoords.getY() + ")");
         } catch (NonInvertibleTransformException e) {
             e.printStackTrace();
         }
@@ -255,6 +318,13 @@ public class Controller {
     private double round(double number, int digits) {
         double scale = Math.pow(10, digits);
         return Math.round(number * scale) / scale;
+    }
+
+    private void disableGui(boolean disable) {
+        zoomSlider.setDisable(disable);
+        zoomInItem.setDisable(disable);
+        zoomOutItem.setDisable(disable);
+        resetItem.setDisable(disable);
     }
 
     private FileChooser showFileChooser() {

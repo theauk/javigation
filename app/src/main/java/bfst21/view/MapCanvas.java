@@ -5,6 +5,8 @@ import bfst21.Osm_Elements.Element;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TabPane;
+import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
@@ -54,6 +56,10 @@ public class MapCanvas extends Canvas
             gc.setStroke(theme.get("coastline"));
             element.draw(gc);
         }
+
+        gc.setStroke(Color.RED);
+        gc.strokeLine(bounds.getMinX(), (bounds.getMaxY() + bounds.getMinY()) / 2, getWidth(), (bounds.getMaxY() + bounds.getMinY()) / 2);
+        //gc.strokeLine((bounds.getMinX() + bounds.getMaxX()) / 2, bounds.getMinY(), (bounds.getMinX() + bounds.getMaxX()) / 2, getHeight());
 
         gc.restore();
     }

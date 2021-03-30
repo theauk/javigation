@@ -3,8 +3,6 @@ package bfst21;
 import bfst21.view.InvalidRGBValueException;
 import bfst21.view.Theme;
 
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,34 +19,25 @@ import java.util.zip.ZipInputStream;
 public class Loader {
     private final String regex = "^(?:\"(?<key>[A-Za-z]*)\" *= *\\[ *(?<red>-?\\d{1,3}) *, *(?<green>-?\\d{1,3}) *, *(?<blue>-?\\d{1,3}) *]; *)$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
-    private MapData mapData;
 
-    public Loader(MapData mapData) {
-        this.mapData = mapData;
+    public InputStream load(String filename) throws IOException {
+        if(filename.endsWith(".osm")) return loadOSM(filename);
+        else if(filename.endsWith(".zip")) return loadZIP(filename);
+        return null;
     }
 
-    public void load(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
-        if (filename.endsWith(".osm")) loadOSM(filename);
-        else if (filename.endsWith(".zip")) loadZIP(filename);
-    }
-
-    private void loadZIP(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
-        var zip = new ZipInputStream(new FileInputStream(filename));
+    private InputStream loadZIP(String filename) throws IOException {
+        ZipInputStream zip = new ZipInputStream(new FileInputStream(filename));
         zip.getNextEntry();
-        loadOSM(zip);
+        return zip;
     }
 
-    private void loadOSM(String filename) throws IOException, XMLStreamException, FactoryConfigurationError {
-        FileInputStream fileInputStream = new FileInputStream(filename);
-        loadOSM(fileInputStream);
-    }
-
-    private void loadOSM(InputStream inputStream) throws XMLStreamException {
-        new Creator(mapData, inputStream);
+    private InputStream loadOSM(String filename) throws IOException {
+        return new FileInputStream(filename);
     }
 
     public Theme loadTheme(String file) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
