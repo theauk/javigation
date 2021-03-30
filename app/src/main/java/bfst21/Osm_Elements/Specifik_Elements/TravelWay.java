@@ -10,7 +10,7 @@ public class TravelWay {
     private final String type;
     private Way way;
     private String name;
-    private int maxspeed;
+    private double maxspeed;
     private boolean onewayRoad;
     private String cycleway;
     private String footway;
@@ -42,11 +42,11 @@ public class TravelWay {
         return way;
     }
 
-    public int getMaxspeed() {
+    public double getMaxspeed() {
         return maxspeed;
     }
 
-    public void setMaxspeed(int maxspeed) {
+    public void setMaxspeed(double maxspeed) {
         this.maxspeed = maxspeed;
     }
 

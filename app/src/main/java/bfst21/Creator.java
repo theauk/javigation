@@ -105,11 +105,12 @@ public class Creator {
                                     travelWay = new TravelWay(way, v);
                                     isRoad = true;
                                     break;
-                                case "maxspeed":
+                                /*case "maxspeed":
                                     if (travelWay != null) {
-                                        travelWay.setMaxspeed(Integer.parseInt(v));
+                                        travelWay.setMaxspeed(Double.parseDouble(v.trim()));
                                     }
                                     break;
+                                 */
                                 case "name":
                                     if (travelWay != null) {
                                         travelWay.setName(v);
@@ -118,15 +119,15 @@ public class Creator {
                                         relation.setName(v);
                                     }
                                     break;
-                                case "oneway":
-                                    if (v.equals("yes")) travelWay.setOnewayRoad(true);
+                                //case "oneway":
+                                //    if (v.equals("yes")) travelWay.setOnewayRoad(true);
 
-                                case "cycleway": // should this not be always cycleable unless it's trunk (motortrafikvej) or primary highway.
-                                    if (!v.equals("no")) {
-                                        cycle = v;
-                                        iscycleAble = true;
-                                    }
-                                    break;
+                               // case "cycleway": // should this not be always cycleable unless it's trunk (motortrafikvej) or primary highway.
+                                //    if (!v.equals("no")) {
+                               //         cycle = v;
+                               //        iscycleAble = true;
+                               //     }
+                                //    break;
 
                                 // methods when encountering addressNodes in the .osm file.
                                 case "addr:city":

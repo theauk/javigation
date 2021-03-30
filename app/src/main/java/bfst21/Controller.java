@@ -220,6 +220,7 @@ public class Controller {
     private void loadFile(String path) {
         try {
             loader.load(path);
+            mapCanvas.startup();
         } catch (IOException | XMLStreamException e) {
             e.printStackTrace();
         }
@@ -234,8 +235,8 @@ public class Controller {
             Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
             Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
 
-            double x = round(coords.getX(), 1);
-            double y = round(coords.getY(), 1);
+            double x = round(coords.getX(), 10);
+            double y = round(coords.getY(), 10);
             coordsLabel.setText("CanvasCoords: " + x + ", " + y);
 
             // TODO: 26-03-2021 Visning af roadnavne skal være mere hensigtsmæssigt
