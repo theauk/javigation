@@ -143,15 +143,15 @@ public class Controller {
                 zoomLevel++;
                 mapCanvas.zoom(factor, center);
                 CanvasBounds cb = mapCanvas.getBounds();
-                System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                //System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                //System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
                 printDistance(new Point2D((-cb.getMinY() * 0.56f), cb.getMinX()), new Point2D((-cb.getMinY() * 0.56f), cb.getMaxX()));
             } else if (amount < 0 && zoomLevel != MIN_ZOOM_LEVEL) {
                 zoomLevel--;
                 mapCanvas.zoom(factor, center);
                 CanvasBounds cb = mapCanvas.getBounds();
-                System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                //System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
+                //System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
                 printDistance(new Point2D((-cb.getMinY() * 0.56f), cb.getMinX()), new Point2D((-cb.getMinY() * 0.56f), cb.getMaxX()));
             }
 
@@ -186,19 +186,19 @@ public class Controller {
 
     public void printDistance(Point2D start, Point2D end) {
         int earthRadius = 6371000; //in meters
-        double lat1 = Math.toRadians(start.getX());
-        double lat2 = Math.toRadians(end.getX());
-        double lon1 = Math.toRadians(start.getY());
-        double lon2 = Math.toRadians(end.getY());
+        double lat1 = start.getX() * Math.PI / 180;
+        double lat2 = end.getX() * Math.PI / 180;
+        double lon1 = start.getY();
+        double lon2 = end.getY();
 
-        double deltaLat = lat2 - lat1;
-        double deltaLon = lon2 - lon1;
+        double deltaLat = (lat2 - lat1) * Math.PI / 180;
+        double deltaLon = (lon2 - lon1) * Math.PI / 180;
 
         double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-        double c = Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = earthRadius * c;
 
-        System.out.println(round(distance, 1) + " m");
+        //System.out.println(round(distance, 1) + " m");
     }
 
     @FXML
@@ -251,6 +251,7 @@ public class Controller {
             creator.setOnRunning(e -> {
                 centerPane.setCursor(Cursor.WAIT);
                 statusLabel.textProperty().bind(creator.messageProperty());
+
                 loadingBar.progressProperty().bind(creator.progressProperty());
                 disableGui(true);
                 loaderPane.setVisible(true);

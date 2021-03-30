@@ -8,8 +8,6 @@ import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AlternateBinarySearchTree;
 import bfst21.file_reading.ProgressInputStream;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 
 import javax.xml.stream.XMLInputFactory;
@@ -78,8 +76,7 @@ public class Creator extends Task<Void> {
 
         while (reader.hasNext()) {
             if(isCancelled()) return;   //Abort task
-            else
-            {
+            else {
                 switch (reader.next()) {
                     case START_ELEMENT:
                         switch (reader.getLocalName()) {
@@ -223,8 +220,8 @@ public class Creator extends Task<Void> {
         }
         mapData.addData(coastLines);
         mapData.addData(roads);
-        reader.close();
         updateMessage("");
+        reader.close();
     }
 
     private void allBooleansFalse() {

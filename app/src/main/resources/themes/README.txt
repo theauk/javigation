@@ -12,7 +12,7 @@ THE BASICS OF THEMES
 -------------------------------------------------------------------------------------
 
 1. Create a theme
-    To create a theme, simply create a new file with '.theme' as the file extension.
+    To create a theme, simply create a new file with '.mtheme' as the file extension.
 
 2. Keywords
     2.1 Language Keywords
