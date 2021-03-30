@@ -82,7 +82,8 @@ public class MapCanvas extends Canvas
     public void reset()
     {
         trans = new Affine();
-        pan(0, 0);
+        //pan(0, 0);
+        startup();
         setBounds();
         mapData.searchInData(bounds);
     }
@@ -123,5 +124,9 @@ public class MapCanvas extends Canvas
     {
         this.theme = theme;
         repaint();
+    }
+    public void startup(){
+        pan(-mapData.getMinX(),-mapData.getMinY());
+        zoom((getWidth()-200)/(mapData.getMaxX()- mapData.getMinX()), new Point2D(-0.009127,-0.010532));
     }
 }

@@ -283,6 +283,7 @@ public class Controller {
             creatorThread.setUncaughtExceptionHandler((t, e) -> System.out.println("Exception " + e + " from thread " + t));
             creatorThread.setDaemon(true);
             creatorThread.start();
+            mapCanvas.startup();
         } catch (IOException e) {
             e.printStackTrace();
         }
