@@ -77,9 +77,6 @@ public class TravelWay extends Way{
 
     public void setName(String name) {
         this.name = name;
-        for(Node n: nodes){
-            n.addRoadname(name);
-        }
     }
     @Override
     public void draw(GraphicsContext gc) {

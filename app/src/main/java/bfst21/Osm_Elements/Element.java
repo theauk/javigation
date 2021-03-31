@@ -3,7 +3,7 @@ package bfst21.Osm_Elements;
 import javafx.scene.canvas.GraphicsContext;
 
 public abstract class Element implements Spatializable {
-    protected Long id;
+    protected long id;
     protected float xMin;
     protected float xMax;
     protected float yMin;

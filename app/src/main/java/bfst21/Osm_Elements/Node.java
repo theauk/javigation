@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Node extends Element {
-    List<String> roadNames;
 
     public Node(long id, float lon, float lat) {
         super(id);
@@ -30,20 +29,5 @@ public class Node extends Element {
     @Override
     public void draw(GraphicsContext gc) {
 
-    }
-
-    public void addRoadname(String name) {
-        if (roadNames == null) {
-            roadNames = new ArrayList<>();
-        }
-        if (!roadNames.contains(name)) {
-            // TODO: 30-03-2021 det her kan godt være en tidsluger
-            roadNames.add(name);
-        }
-
-    }
-
-    public List<String> getName() {
-        return roadNames;
     }
 }
