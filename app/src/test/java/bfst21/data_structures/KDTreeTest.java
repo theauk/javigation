@@ -29,7 +29,6 @@ public class KDTreeTest {
         tree.addALl(list);
 
         Node node = new Node(5, (float)12.5823800, (float)55.6685260);
-        //System.out.println(node.getxMax() + " " + node.getyMax());
         assertEquals(4, tree.getNearestNode(node.getxMax(),node.getyMax()).getId());
     }
 

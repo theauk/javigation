@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapData {
-    private KDTree<Node> roadNodesTree;
+    private KDTree<AddressNode> roadNodesTree;
     private RTree rTree;
     private List<Element> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
@@ -33,10 +33,6 @@ public class MapData {
 
     public void addRoad(TravelWay way){
         roadGraph.add(way);
-
-            if(way.getName()!= null){
-                roadNodesTree.addALl(way.getNodes());
-            }
         addData(way);
     }
 
@@ -55,10 +51,8 @@ public class MapData {
     public String getNearestRoad(float x, float y) {
         String names = "";
         try {
-            Node node = roadNodesTree.getNearestNode(x, y);
-            for (String s : node.getName()) {
-                names += s + " ";
-            }
+            AddressNode node = roadNodesTree.getNearestNode(x,y);
+            names = node.getStreet();
             names += "   x: " + node.getxMax() + "    y: " + node.getyMax();
         } catch (KDTreeEmptyException e){
             names = e.getMessage();
@@ -72,6 +66,7 @@ public class MapData {
 
     public void addAddress(AddressNode node){
         addressTree.put(node);
+        roadNodesTree.add(node);
 
     }
 

@@ -43,6 +43,9 @@ public class KDTree<Value extends Element>{
     }
 
     public void add(Value node){
+        if(list == null){
+            list = new ArrayList<>();
+        }
         list.add(new KDTreeNode(node));
         isSorted = false;
     }
@@ -89,9 +92,8 @@ public class KDTree<Value extends Element>{
         List<KDTreeNode> nodesCopy;
 
         if(isParentAndNextMidSame(nodes, parent)){
-            nodesCopy = new ArrayList<>();
-            nodes = removeDuplicates(nodes, parent,(nodes.size()) / 2);
-            nodesCopy.addAll(nodes);
+            removeDuplicates(nodes, (nodes.size()) / 2);
+            nodesCopy = new ArrayList<>(nodes);
         } else{
             nodesCopy = nodes;
         }
@@ -121,10 +123,8 @@ public class KDTree<Value extends Element>{
 
     }
 
-    private List<KDTreeNode> removeDuplicates(List<KDTreeNode> nodes, KDTreeNode parent, int mid){
-
+    private void removeDuplicates(List<KDTreeNode> nodes, int mid){
             nodes.remove(mid);
-        return nodes;
     }
 
     private boolean isParentAndNextMidSame(List<KDTreeNode> nodes, KDTreeNode parent){
@@ -171,7 +171,6 @@ public class KDTree<Value extends Element>{
 
             nearestNode = getNearestNode(node2, x, y, shortestDistance, nearestNode, !xAxis);
         }
-        
         return nearestNode;
         
     }
