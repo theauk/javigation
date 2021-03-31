@@ -298,15 +298,21 @@ public class Controller {
             Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
             Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
 
-            double x = round(coords.getX(), 1);
-            double y = round(coords.getY(), 1);
-            coordsLabel.setText("CanvasCoords: " + x + ", " + y);
+            //double x = round(coords.getX(), 1);
+            //double y = round(coords.getY(), 1);
+            // coordsLabel.setText("CanvasCoords: " + x + ", " + y);
 
             // TODO: 26-03-2021 Visning af roadnavne skal være mere hensigtsmæssigt
             //x = round(geoCoords.getX(), 7);
             //y = round(geoCoords.getY(), 7);
             //geoCoordsLabel.setText(mapData.getNearestRoad((float)coords.getX(), (float) coords.getY()));
-            geoCoordsLabel.setText("(" + geoCoords.getX() + ", " + geoCoords.getY() + ")");
+            //geoCoordsLabel.setText("(" + geoCoords.getX() + ", " + geoCoords.getY() + ")");
+            double x = round(geoCoords.getX(), 5);
+            double y = round(geoCoords.getY(), 5);
+            y = -y/0.56f;
+            coordsLabel.setText("CanvasCoords: " + x + ", " + y);
+            //geoCoordsLabel.setText("GeoCoords : " + x + ", "+ y);
+            geoCoordsLabel.setText(mapData.getNearestRoad((float)x, (float) y));
         } catch (NonInvertibleTransformException e) {
             e.printStackTrace();
         }

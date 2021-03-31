@@ -17,17 +17,27 @@ public class Node extends Element {
 
     }
 
+    public Node(long id, float lon, float lat, boolean nodeFromNode){
+        super(id);
+        if(nodeFromNode){
+            this.xMin = lon;
+            this.xMax = lon;
+            this.yMin = lat;
+            this.yMax = lat;
+        }
+    }
+
     @Override
     public void draw(GraphicsContext gc) {
 
     }
 
     public void addRoadname(String name) {
-        //TODO half assed fix
         if (roadNames == null) {
             roadNames = new ArrayList<>();
         }
         if (!roadNames.contains(name)) {
+            // TODO: 30-03-2021 det her kan godt være en tidsluger
             roadNames.add(name);
         }
 

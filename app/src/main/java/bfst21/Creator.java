@@ -23,26 +23,12 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
  */
 public class Creator {
-
-    boolean iscoastline, isRoad;
-    boolean iscycleAble, isbuilding;
-    boolean isRelation;
-    boolean isFerryRoute;
-    boolean isAddress;
     private MapData mapData;
-    private List<Element> roads;
-    private List<Element> coastLines;
-    private List<TravelWay> travelWays;
-    private TravelWay travelWay;
-    private List<Element> relations;
-    private ArrayList<AddressNode> addressNodes;
+
 
     public Creator(MapData mapData, InputStream input) throws XMLStreamException {
         this.mapData = mapData;
-        roads = new ArrayList<>();
-        coastLines = new ArrayList<>();
-        travelWays = new ArrayList<>();
-        addressNodes = new ArrayList<>();
+
 
         create(input);
     }
@@ -51,19 +37,14 @@ public class Creator {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(input));
 
         AlternateBinarySearchTree<Long, Node> idToNode = new AlternateBinarySearchTree<>();
-
         AlternateBinarySearchTree<Long, Way> idToWay = new AlternateBinarySearchTree<>();
-
-        AlternateBinarySearchTree<Long, AddressNode> idToAddressNode = new AlternateBinarySearchTree<>();
 
         Way way = null;
         Node node = null;
-        TravelWay travelWay = null;
-        String cycle = null; // the cycleproperties of the road comes before "highway" in the .osm files
         Relation relation = null;
-        var member = new ArrayList<Long>();
-
+        TravelWay travelWay = null;
         AddressNode addressNode = null;
+
 
         while (reader.hasNext()) {
             switch (reader.next()) {
@@ -75,105 +56,70 @@ public class Creator {
                             mapData.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
                             mapData.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
                             break;
+
                         case "node":
-                            isAddress = false;
-                            var id = Long.parseLong(reader.getAttributeValue(null, "id"));
+                            var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                             var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                             var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
-                            node = new Node(id, lon, lat);
-                            idToNode.put(id, node);
+                            node = new Node(idNode, lon, lat);
+                            idToNode.put(idNode, node);
                             break;
+
                         case "way":
-                            travelWay = null;
-                            way = new Way(Long.parseLong(reader.getAttributeValue(null, "id")));
-                            allBooleansFalse();
+                            var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
+                            way = new Way(idWay);
+                            idToWay.put(idWay, way);
                             break;
+
                         case "relation":
-                            member = new ArrayList<>();
-                            relations = new ArrayList<>();
-                            isRelation = true;
+                            relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
                             break;
+
                         case "tag":
                             var k = reader.getAttributeValue(null, "k");
                             var v = reader.getAttributeValue(null, "v");
-                            switch (k) {
-                                case "natural":
-                                    if (v.equals("coastline")) iscoastline = true;
-                                    break;
 
-                                case "highway":
-                                    travelWay = new TravelWay(way, v);
-                                    isRoad = true;
-                                    break;
-                                /*case "maxspeed":
-                                    if (travelWay != null) {
-                                        travelWay.setMaxspeed(Double.parseDouble(v.trim()));
-                                    }
-                                    break;
-                                 */
-                                case "name":
-                                    if (travelWay != null) {
-                                        travelWay.setName(v);
-                                    }
-                                    if (relation != null) {
-                                        relation.setName(v);
-                                    }
-                                    break;
-                                //case "oneway":
-                                //    if (v.equals("yes")) travelWay.setOnewayRoad(true);
+                            if (k.equals("highway")) {
+                                if (checkHighWayType(way, v)) travelWay = new TravelWay(way, v, k);
+                                way = null;
+                            }
 
-                               // case "cycleway": // should this not be always cycleable unless it's trunk (motortrafikvej) or primary highway.
-                                //    if (!v.equals("no")) {
-                               //         cycle = v;
-                               //        iscycleAble = true;
-                               //     }
-                                //    break;
+                            if (k.equals("addr:city")) {
+                                addressNode = new AddressNode(node);
+                                node = null;
+                            }
 
-                                // methods when encountering addressNodes in the .osm file.
-                                case "addr:city":
-                                    addressNode = new AddressNode(node, v);
-                                    isAddress = true;
-                                    break;
+                            if (addressNode != null) {
+                                checkAddressNode(k, v, addressNode);
+                            }
 
-                                case "addr:housenumber":
-                                    if (addressNode != null) {
-                                        addressNode.setHousenumber((v));
-                                    }
-                                    break;
+                            if (relation != null) {
+                                checkRelation(k, v, relation);
+                            }
 
-                                case "addr:postcode":
-                                    if (addressNode != null) {
-                                        addressNode.setPostcode(Integer.parseInt(v.trim()));
-                                    }
-                                    break;
+                            if (travelWay != null) {
+                                checkTravelWay(k, v, travelWay);
+                            }
 
-                                case "addr:street":
-                                    if (addressNode != null) {
-                                        addressNode.setStreet(v);
-                                    }
-
-                                case "building":
-                                    if (v.equals("yes")) isbuilding = true;
-                                    break;
-
-                                case "route":
-                                    if (v.equals("ferry")) isFerryRoute = true;
-                                    if (relation != null) {
-                                        relation.setRoute(v);
-                                    }
-                                    break;
+                            if (way != null) {
+                                checkWay(k, v, way);
                             }
                             break;
-
                         case "nd":
                             var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
                             way.addNode(idToNode.get(refNode));
                             break;
 
                         case "member":
-                            if (isRelation) {
-                                //var refWay = Long.parseLong(reader.getAttributeValue(null,"ref"));
-                                //member.add(refWay);
+                            if (relation != null) {
+                                var type = (reader.getAttributeValue(null, "type"));
+                                var refR = Long.parseLong(reader.getAttributeValue(null, "ref"));
+                                if (type.equals("way")) {
+                                    relation.addWay(idToWay.get(refR));
+                                }
+                                if (type.equals("node")) {
+                                    relation.addNode(idToNode.get(refR));
+                                }
                             }
                             break;
                     }
@@ -181,43 +127,126 @@ public class Creator {
                 case END_ELEMENT:
                     switch (reader.getLocalName()) {
                         case "way":
-                            idToWay.put(way.getId(), way);
-                            if (iscoastline) coastLines.add(way);
-                            if (isRoad) {
-                                roads.add(way);
-                                travelWays.add(travelWay);
-                                // TODO: 26-03-2021 when all ways tagged as travelway are sure to have names this check is unessecary
-                                if(way.getNodes().get(0).getName() != null){
-                                    mapData.addRoadsNodes(way.getNodes());
+                            if (way != null) {
+                                idToWay.put(way.getId(), way);
+                                if (way.hasType()) {
+                                    mapData.addData(way);
                                 }
-
-
-
+                                way = null;
                             }
-                            if (iscycleAble) travelWay.setCycleway(cycle);
+                            if (travelWay != null) {
+                                idToWay.put(travelWay.getId(), travelWay);
+                                mapData.addRoad(travelWay);
+                                travelWay = null;
+                            }
                             break;
 
                         case "node":
-                            if (isAddress) addressNodes.add(addressNode);
+                            if (addressNode != null) {
+                                mapData.addAddress(addressNode);
+                                addressNode = null;
+                            }
+                            node = null;
                             break;
+
+                        case "relation":
+                            if (relation != null) {
+                                //mapData.add(relation)
+                            }
+                            relation = null;
                     }
                     break;
             }
         }
-        mapData.addData(coastLines);
-        mapData.addData(roads);
+
+        idToWay = null;
 
     }
 
-    private void allBooleansFalse() {
-        iscoastline = false;
-        isRoad = false;
-        iscycleAble = false;
-        isbuilding = false;
+
+    private void checkRelation(String k, String v, Relation relation) {
+        switch (k) {
+            case "type":
+                if (v.equals("restriction")) relation.setType(v);
+                break;
+            case "restriction":
+                relation.setRestriction(v);
+                break;
+            case "name":
+                relation.setName(v);
+                break;
+        }
+
     }
 
-    private void AllBooleansRelationsFalse() {
-        isFerryRoute = false;
+    private void checkTravelWay(String k, String v, TravelWay travelWay) {
+        switch (k) {
+            case "oneway":
+                if (v.equals("yes")) travelWay.setOnewayRoad();
+                break;
+            case "cycleway":
+                if (!v.equals("no")) travelWay.setNotCycleable();
+                break;
+            case "maxspeed":
+                travelWay.setMaxspeed(Integer.parseInt(v));
+                break;
+            case "name":
+                travelWay.setName(v);
+                break;
+        }
+    }
+
+    private void checkWay(String k, String v, Way way) {
+        switch (k) {
+            case "natural":
+                if (v.equals("coastline")) way.setType(v);
+                break;
+
+            case "building":
+                if (v.equals("yes")) way.setType(k);
+                break;
+
+            case "leisure":
+                if (v.equals("park")) way.setType(v);
+                break;
+
+        }
+
+    }
+
+    private void checkAddressNode(String k, String v, AddressNode addressNode) {
+        switch (k) {
+            case "addr:city" -> addressNode.setCity(v);
+            case "addr:housenumber" -> addressNode.setHousenumber((v));
+            case "addr:postcode" -> addressNode.setPostcode(Integer.parseInt(v.trim()));
+            case "addr:street" -> addressNode.setStreet(v);
+        }
+
+    }
+
+    private boolean checkHighWayType(Way way, String v) {
+        if (way == null) return false;
+        return highWayTypeHelper(v);
+
+
+    }
+
+    private boolean highWayTypeHelper(String v) {
+        if (v.equals("motorway"))  return true;
+        if (v.equals("trunk")) return true;
+        if (v.equals("primary")) return true;
+        if (v.equals("secondary")) return true;
+        if (v.equals("tertiary")) return true;
+        if (v.equals("unclassified")) return true;
+        if (v.equals("residential")) return true;
+        if (v.contains("link")) return true;
+        if (v.equals("living_street")) return true;
+        if (v.equals("pedestrian")) return true;
+        if (v.equals("road")) return true;
+        if (v.equals("footway")) return true;
+        if (v.equals("cycleway")) return true;
+
+        else return false;
     }
 }
 
