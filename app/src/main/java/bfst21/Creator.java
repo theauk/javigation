@@ -7,6 +7,8 @@ import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
 import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AlternateBinarySearchTree;
+import bfst21.file_reading.ProgressInputStream;
+import javafx.concurrent.Task;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -22,19 +24,27 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 /*
 Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
  */
-public class Creator {
+public class Creator extends Task<Void> {
     private MapData mapData;
+    private ProgressInputStream progressInputStream;
 
 
-    public Creator(MapData mapData, InputStream input) throws XMLStreamException {
+    public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
 
+        progressInputStream = new ProgressInputStream(inputStream);
+        progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
 
-        create(input);
     }
 
-    public void create(InputStream input) throws XMLStreamException {
-        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(input));
+    @Override
+    protected Void call() throws Exception {
+        create();
+        return null;
+    }
+
+    public void create() throws XMLStreamException {
+        XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(progressInputStream));
 
         AlternateBinarySearchTree<Long, Node> idToNode = new AlternateBinarySearchTree<>();
         AlternateBinarySearchTree<Long, Way> idToWay = new AlternateBinarySearchTree<>();
@@ -47,119 +57,124 @@ public class Creator {
 
 
         while (reader.hasNext()) {
-            switch (reader.next()) {
-                case START_ELEMENT:
-                    switch (reader.getLocalName()) {
-                        case "bounds":
-                            mapData.setMinX(Float.parseFloat(reader.getAttributeValue(null, "minlon")));
-                            mapData.setMaxX(Float.parseFloat(reader.getAttributeValue(null, "maxlon")));
-                            mapData.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
-                            mapData.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
-                            break;
+            if (isCancelled()) return;   //Abort task
+            else {
+                switch (reader.next()) {
+                    case START_ELEMENT:
+                        switch (reader.getLocalName()) {
+                            case "bounds":
+                                mapData.setMinX(Float.parseFloat(reader.getAttributeValue(null, "minlon")));
+                                mapData.setMaxX(Float.parseFloat(reader.getAttributeValue(null, "maxlon")));
+                                mapData.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
+                                mapData.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
+                                break;
 
-                        case "node":
-                            var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
-                            var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
-                            var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
-                            node = new Node(idNode, lon, lat);
-                            idToNode.put(idNode, node);
-                            break;
+                            case "node":
+                                var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
+                                var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
+                                var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
+                                node = new Node(idNode, lon, lat);
+                                idToNode.put(idNode, node);
+                                break;
 
-                        case "way":
-                            var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
-                            way = new Way(idWay);
-                            idToWay.put(idWay, way);
-                            break;
+                            case "way":
+                                var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
+                                way = new Way(idWay);
+                                idToWay.put(idWay, way);
+                                break;
 
-                        case "relation":
-                            relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
-                            break;
+                            case "relation":
+                                relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
+                                break;
 
-                        case "tag":
-                            var k = reader.getAttributeValue(null, "k");
-                            var v = reader.getAttributeValue(null, "v");
+                            case "tag":
+                                var k = reader.getAttributeValue(null, "k");
+                                var v = reader.getAttributeValue(null, "v");
 
-                            if (k.equals("highway")) {
-                                if (checkHighWayType(way, v)) travelWay = new TravelWay(way, v, k);
-                                way = null;
-                            }
+                                if (k.equals("highway")) {
+                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way, v, k);
+                                    way = null;
+                                }
 
-                            if (k.equals("addr:city")) {
-                                addressNode = new AddressNode(node);
+                                if (k.equals("addr:city")) {
+                                    addressNode = new AddressNode(node);
+                                    node = null;
+                                }
+
+                                if (addressNode != null) {
+                                    checkAddressNode(k, v, addressNode);
+                                }
+
+                                if (relation != null) {
+                                    checkRelation(k, v, relation);
+                                }
+
+                                if (travelWay != null) {
+                                    checkTravelWay(k, v, travelWay);
+                                }
+
+                                if (way != null) {
+                                    checkWay(k, v, way);
+                                }
+                                break;
+                            case "nd":
+                                var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
+                                way.addNode(idToNode.get(refNode));
+                                break;
+
+                            case "member":
+                                if (relation != null) {
+                                    var type = (reader.getAttributeValue(null, "type"));
+                                    var refR = Long.parseLong(reader.getAttributeValue(null, "ref"));
+                                    if (type.equals("way")) {
+                                        relation.addWay(idToWay.get(refR));
+                                    }
+                                    if (type.equals("node")) {
+                                        relation.addNode(idToNode.get(refR));
+                                    }
+                                }
+                                break;
+                        }
+                        break;
+                    case END_ELEMENT:
+                        switch (reader.getLocalName()) {
+                            case "way":
+                                if (way != null) {
+                                    idToWay.put(way.getId(), way);
+                                    if (way.hasType()) {
+                                        mapData.addData(way);
+                                    }
+                                    way = null;
+                                }
+                                if (travelWay != null) {
+                                    idToWay.put(travelWay.getId(), travelWay);
+                                    mapData.addRoad(travelWay);
+                                    travelWay = null;
+                                }
+                                break;
+
+                            case "node":
+                                if (addressNode != null) {
+                                    mapData.addAddress(addressNode);
+                                    addressNode = null;
+                                }
                                 node = null;
-                            }
+                                break;
 
-                            if (addressNode != null) {
-                                checkAddressNode(k, v, addressNode);
-                            }
-
-                            if (relation != null) {
-                                checkRelation(k, v, relation);
-                            }
-
-                            if (travelWay != null) {
-                                checkTravelWay(k, v, travelWay);
-                            }
-
-                            if (way != null) {
-                                checkWay(k, v, way);
-                            }
-                            break;
-                        case "nd":
-                            var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
-                            way.addNode(idToNode.get(refNode));
-                            break;
-
-                        case "member":
-                            if (relation != null) {
-                                var type = (reader.getAttributeValue(null, "type"));
-                                var refR = Long.parseLong(reader.getAttributeValue(null, "ref"));
-                                if (type.equals("way")) {
-                                    relation.addWay(idToWay.get(refR));
+                            case "relation":
+                                if (relation != null) {
+                                    //mapData.add(relation)
                                 }
-                                if (type.equals("node")) {
-                                    relation.addNode(idToNode.get(refR));
-                                }
-                            }
-                            break;
-                    }
-                    break;
-                case END_ELEMENT:
-                    switch (reader.getLocalName()) {
-                        case "way":
-                            if (way != null) {
-                                idToWay.put(way.getId(), way);
-                                if (way.hasType()) {
-                                    mapData.addData(way);
-                                }
-                                way = null;
-                            }
-                            if (travelWay != null) {
-                                idToWay.put(travelWay.getId(), travelWay);
-                                mapData.addRoad(travelWay);
-                                travelWay = null;
-                            }
-                            break;
-
-                        case "node":
-                            if (addressNode != null) {
-                                mapData.addAddress(addressNode);
-                                addressNode = null;
-                            }
-                            node = null;
-                            break;
-
-                        case "relation":
-                            if (relation != null) {
-                                //mapData.add(relation)
-                            }
-                            relation = null;
-                    }
-                    break;
+                                relation = null;
+                        }
+                        break;
+                }
             }
         }
 
         idToWay = null;
+        updateMessage("");
+        reader.close();
 
     }
 
