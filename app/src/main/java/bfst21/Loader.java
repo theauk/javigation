@@ -11,17 +11,13 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class Loader {
-    private final String regex = "^(?:\"(?<key>[A-Za-z]*)\" *= *\\[ *(?<red>-?\\d{1,3}) *, *(?<green>-?\\d{1,3}) *, *(?<blue>-?\\d{1,3}) *]; *)$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
+    private final String regex = "^(?:\"(?<key>[A-Za-z_]*)\" *= *\\[ *(?<red>-?\\d{1,3}) *, *(?<green>-?\\d{1,3}) *, *(?<blue>-?\\d{1,3}) *]; *(?:#.*)*)*$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
 
     public InputStream load(String filename) throws IOException {

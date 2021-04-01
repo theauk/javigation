@@ -251,7 +251,6 @@ public class Controller {
             creator.setOnRunning(e -> {
                 centerPane.setCursor(Cursor.WAIT);
                 statusLabel.textProperty().bind(creator.messageProperty());
-
                 loadingBar.progressProperty().bind(creator.progressProperty());
                 disableGui(true);
                 loaderPane.setVisible(true);
@@ -262,28 +261,27 @@ public class Controller {
                 loadingBar.progressProperty().unbind();
                 disableGui(false);
                 loaderPane.setVisible(false);
+                mapCanvas.startup();
             });
             creator.setOnCancelled(e -> {
                 centerPane.setCursor(Cursor.DEFAULT);
                 statusLabel.textProperty().unbind();
                 loadingBar.progressProperty().unbind();
-                statusLabel.setText("Cancelled!");
+                statusLabel.setText("Cancelled.");
                 disableGui(false);
             });
             creator.setOnFailed(e -> {
                 centerPane.setCursor(Cursor.DEFAULT);
                 statusLabel.textProperty().unbind();
                 loadingBar.progressProperty().unbind();
-                statusLabel.setText("Failed!");
+                statusLabel.setText("Failed.");
                 creator.exceptionProperty().get().printStackTrace();
                 disableGui(false);
             });
 
             Thread creatorThread = new Thread(creator, "Creator Thread");
-            creatorThread.setUncaughtExceptionHandler((t, e) -> System.out.println("Exception " + e + " from thread " + t));
             creatorThread.setDaemon(true);
             creatorThread.start();
-            mapCanvas.startup();
         } catch (IOException e) {
             e.printStackTrace();
         }

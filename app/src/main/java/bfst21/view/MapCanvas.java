@@ -52,12 +52,12 @@ public class MapCanvas extends Canvas
 
         for(Element element: mapData.getMapSegment())
         {
-            gc.setStroke(theme.get("coastline"));
+            gc.setStroke(theme.get(element.getType()));
             element.draw(gc);
         }
 
-        gc.setStroke(Color.RED);
-        gc.strokeLine(bounds.getMinX(), (bounds.getMaxY() + bounds.getMinY()) / 2, getWidth(), (bounds.getMaxY() + bounds.getMinY()) / 2);
+        //gc.setStroke(Color.RED);
+        //gc.strokeLine(bounds.getMinX(), (bounds.getMaxY() + bounds.getMinY()) / 2, getWidth(), (bounds.getMaxY() + bounds.getMinY()) / 2);
         //gc.strokeLine((bounds.getMinX() + bounds.getMaxX()) / 2, bounds.getMinY(), (bounds.getMinX() + bounds.getMaxX()) / 2, getHeight());
 
         gc.restore();

@@ -1,3 +1,4 @@
+#THEME COLORS ADAPTED FROM OPEN STREET MAP
 #Theme name
 name = "Default";
 
@@ -12,6 +13,21 @@ name = "Default";
 "secondary" = [244, 251, 173];
 "tertiary" = [254, 254, 254];
 "residential" = [254, 254, 254];
+
+"motorway" = [226, 122, 143];
+"trunk" = [249, 178, 156];
+"living_street" = [232, 232, 232];
+"pedestrian" = [213, 212, 227];
+"road" = [213, 213, 213];
+"footway" = [250, 128, 114]; #DOTTED
+"cycleway" = [0, 0, 255]; #DOTTED
+"unclassified" = [254, 254, 254];
+
+#Nature
+"park" = [205, 247, 201];
+
+#Building
+"yes" = [216, 208, 201];
 
 #Water
 "water" = [170, 211, 223];
