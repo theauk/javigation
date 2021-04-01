@@ -262,6 +262,7 @@ public class Controller {
                 loadingBar.progressProperty().unbind();
                 disableGui(false);
                 loaderPane.setVisible(false);
+                mapCanvas.startup();
             });
             creator.setOnCancelled(e -> {
                 centerPane.setCursor(Cursor.DEFAULT);
@@ -283,7 +284,6 @@ public class Controller {
             creatorThread.setUncaughtExceptionHandler((t, e) -> System.out.println("Exception " + e + " from thread " + t));
             creatorThread.setDaemon(true);
             creatorThread.start();
-            mapCanvas.startup();
         } catch (IOException e) {
             e.printStackTrace();
         }
