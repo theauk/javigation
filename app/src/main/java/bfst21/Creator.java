@@ -64,25 +64,24 @@ public class Creator extends Task<Void> {
                                 mapData.setMaxY(Float.parseFloat(reader.getAttributeValue(null, "minlat")) / -0.56f);
                                 mapData.setMinY(Float.parseFloat(reader.getAttributeValue(null, "maxlat")) / -0.56f);
                                 break;
-
                             case "node":
+                                updateMessage("Loading: Nodes");
                                 var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
                                 node = new Node(idNode, lon, lat);
                                 idToNode.put(idNode, node);
                                 break;
-
                             case "way":
+                                updateMessage("Loading: Ways");
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
                                 idToWay.put(idWay, way);
                                 break;
-
                             case "relation":
+                                updateMessage("Loading: Relations");
                                 relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
                                 break;
-
                             case "tag":
                                 var k = reader.getAttributeValue(null, "k");
                                 var v = reader.getAttributeValue(null, "v");

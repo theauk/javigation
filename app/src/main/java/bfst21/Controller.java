@@ -226,7 +226,7 @@ public class Controller {
         if (file != null) loadFile(file.getAbsolutePath(), file.length());
         else {
             File binaryFile = new File(getClass().getResource("/small.osm").getPath());
-            loadFile(binaryFile.getPath(), binaryFile.length()); //USE BINARY FILE
+            loadFile(binaryFile.getPath(), binaryFile.length()); //USE BINARY FILE // TODO: 4/1/21 Problem hvis man har mellemrum i sit folder name 
         }
     }
 

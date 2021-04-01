@@ -79,7 +79,7 @@ public class MapCanvas extends Canvas {
         mapData.searchInData(bounds);
     }
 
-    public void loadFile(MapData mapData) {
+    public void loadFile(MapData mapData) { // TODO: 4/1/21 Delete if not creating new MapData on load 
         this.mapData = mapData;
         reset();
     }
