@@ -220,7 +220,7 @@ public class Creator extends Task<Void> {
                 break;
 
             case "building":
-                if (v.equals("yes")) way.setType(k);
+                    way.setType(k);
                 break;
 
             case "leisure":
