@@ -26,10 +26,6 @@ public class RTreeNode {
         return leaf;
     }
 
-    public void setIsLeaf(boolean value) {
-        leaf = value;
-    }
-
     public float[] getCoordinates() {
         return coordinates;
     }
@@ -50,17 +46,13 @@ public class RTreeNode {
         return children.size() > maximumChildren;
     }
 
-    public boolean underflow() {
-        return children.size() < minimumEntrySize;
-    }
-
     public void addElementEntry(Element e) {
         entries.add(e);
     }
 
     public void addChild(RTreeNode r) {
         children.add(r);
-        r.setParent(this); // TODO: 3/22/21 do i need this
+        r.setParent(this);
     }
 
     public void addChildren(ArrayList<RTreeNode> children) {

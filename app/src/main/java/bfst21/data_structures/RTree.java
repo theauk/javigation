@@ -8,7 +8,7 @@ import bfst21.Osm_Elements.Way;
 import java.util.*;
 
 public class RTree {
-    private int minimumChildren, maximumChildren, numberOfCoordinates;
+    private final int minimumChildren, maximumChildren, numberOfCoordinates;
     private RTreeNode root;
 
     public RTree(int minimumChildren, int maximumChildren, int numberOfCoordinates) {
@@ -26,8 +26,8 @@ public class RTree {
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
             ArrayList<Element> results = new ArrayList<>();
-            if (debug) {
-                searchCoordinates = new float[]{xMin + 0.01f, xMax + (-0.01f), yMin + 0.01f, yMax + (-0.01f)}; // TODO: 3/31/21 make more stable
+            if (debug) { // TODO: 3/31/21 Delete when getting rid of debug mode
+                searchCoordinates = new float[]{xMin + 0.01f, xMax + (-0.01f), yMin + 0.01f, yMax + (-0.01f)};
                 //searchCoordinates = new float[]{xMin*0.99f, xMax*0.99f, yMin*0.99f, yMax*0.99f};
                 results.add(createDebugBoundsRectangle(searchCoordinates));
                 searchDebug(searchCoordinates, root, results);
@@ -60,7 +60,7 @@ public class RTree {
         }
     }
 
-    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<Element> results) { // TODO: 3/28/21 Laver kun firkanter på ting der intersector med bounds alt andet tegnes
+    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<Element> results) { // TODO: 3/31/21 Delete when getting rid of debug mode
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
@@ -80,14 +80,14 @@ public class RTree {
         }
     }
 
-    private Way createDebugWay(float firstCoordinate, float secondCoordinate, float thirdCoordinate, float fourthCoordinate) {
+    private Way createDebugWay(float firstCoordinate, float secondCoordinate, float thirdCoordinate, float fourthCoordinate) { // TODO: 3/31/21 Delete when getting rid of debug mode
         Way w = new Way(0);
         w.addNode(new Node(firstCoordinate, secondCoordinate));
-        w.addNode(new Node(thirdCoordinate, fourthCoordinate)); // TODO: 3/31/21 set type  w1.setType("rTreeDebug"); ? for theme?
+        w.addNode(new Node(thirdCoordinate, fourthCoordinate));
         return w;
     }
 
-    private Relation createDebugBoundsRectangle(float[] searchCoordinates) {
+    private Relation createDebugBoundsRectangle(float[] searchCoordinates) { // TODO: 3/31/21 Delete when getting rid of debug mode
         Relation r = new Relation(0);
         r.addWay(createDebugWay(searchCoordinates[0], searchCoordinates[2], searchCoordinates[0], searchCoordinates[3]));
         r.addWay(createDebugWay(searchCoordinates[0], searchCoordinates[2], searchCoordinates[1], searchCoordinates[2]));
@@ -96,7 +96,7 @@ public class RTree {
         return r;
     }
 
-    private Relation createDebugRectangleRelation(float[] coordinates) {
+    private Relation createDebugRectangleRelation(float[] coordinates) { // TODO: 3/31/21 Delete when getting rid of debug mode
         Relation r = new Relation(0);
         r.addWay(createDebugWay(coordinates[0], coordinates[2], coordinates[1], coordinates[2]));
         r.addWay(createDebugWay(coordinates[0], coordinates[2], coordinates[0], coordinates[3]));
@@ -156,13 +156,13 @@ public class RTree {
     private void adjustTree(RTreeNode originalNode, RTreeNode newNode) {
         if (originalNode.getParent() == null && (newNode == null || originalNode == newNode)) { // only root
             updateNodeCoordinates(originalNode);
-        } else if (originalNode.getParent() == null && newNode != null) {// need to join them under one root
+        } else if (originalNode.getParent() == null && newNode != null) { // need to join two nodes under one root
             createNewRoot(originalNode, newNode);
             adjustTree(root, null);
-        } else if (newNode == null) {
+        } else if (newNode == null) { // only one node
             updateNodeCoordinates(originalNode);
             adjustTree(originalNode.getParent(), null);
-        } else { // not root but two new nodes need to climb the tree
+        } else { // two nodes
             updateNodeCoordinates(originalNode);
             updateNodeCoordinates(newNode);
             adjustTree(originalNode.getParent(), newNode.getParent());
@@ -170,7 +170,6 @@ public class RTree {
     }
 
     private void createNewRoot(RTreeNode firstNode, RTreeNode secondNode) {
-        // the new root is not a leaf. Use the coordinates from one of the nodes to avoid problems with 0
         RTreeNode newRoot = new RTreeNode(createNewCoordinateArray(), false, minimumChildren, maximumChildren, null);
         newRoot.addChild(firstNode);
         newRoot.addChild(secondNode);
@@ -227,28 +226,38 @@ public class RTree {
     private RTreeNode[] splitNodeQuadraticCost(RTreeNode node) {
         ArrayList<RTreeNode> elementsToSplit = new ArrayList<>(node.getChildren());
         int[] seeds = pickSeedsQuadratic(elementsToSplit);
+        RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent());
 
         RTreeNode elementForNode = elementsToSplit.get(seeds[0]);
         RTreeNode elementForNewNode = elementsToSplit.get(seeds[1]);
 
-        if (seeds[0] < seeds[1]) {
-            elementsToSplit.remove(seeds[1]);
-            elementsToSplit.remove(seeds[0]);
-        } else {
-            elementsToSplit.remove(seeds[0]);
-            elementsToSplit.remove(seeds[1]);
-        }
+        removeElementsFromElementsToSplit(elementsToSplit, seeds[0], seeds[1]);
+        updateNodes(node, newNode, elementForNode, elementForNewNode);
+        distributeNodesQuadraticCost(elementsToSplit, node, newNode);
 
+        return new RTreeNode[]{node, newNode};
+    }
+
+    private void updateNodes(RTreeNode node, RTreeNode newNode, RTreeNode elementForNode, RTreeNode elementForNewNode) {
         node.removeChildren();
         node.addChild(elementForNode);
         node.updateCoordinate(createNewCoordinateArray());
-
-        RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent());
         newNode.addChild(elementForNewNode);
+        if (node.getParent() != null) node.getParent().addChild(newNode);
+    }
 
-        if (elementsToSplit.size() == 0) {
-            return new RTreeNode[]{node, newNode};
-        } else if (tooFewEntries(node.getChildren().size(), elementsToSplit.size())) {
+    private void removeElementsFromElementsToSplit(ArrayList<RTreeNode> elementsToSplit, int index1, int index2) {
+        if (index1 < index2) {
+            elementsToSplit.remove(index2);
+            elementsToSplit.remove(index1);
+        } else {
+            elementsToSplit.remove(index1);
+            elementsToSplit.remove(index2);
+        }
+    }
+
+    private void distributeNodesQuadraticCost(ArrayList<RTreeNode> elementsToSplit, RTreeNode node, RTreeNode newNode) {
+        if (tooFewEntries(node.getChildren().size(), elementsToSplit.size())) {
             node.addChildren(elementsToSplit);
         } else if (tooFewEntries(newNode.getChildren().size(), elementsToSplit.size())) {
             newNode.addChildren(elementsToSplit);
@@ -258,55 +267,55 @@ public class RTree {
                 nextAssignment[1].addChild(nextAssignment[0]);
             }
         }
+    }
 
-        if (node.getParent() != null) {
-            node.getParent().addChild(newNode);
-        }
-
-        return new RTreeNode[]{node, newNode};
+    private boolean tooFewEntries(int numberOfChildren, int elementsLeft) {
+        return numberOfChildren < minimumChildren && elementsLeft <= minimumChildren - numberOfChildren;
     }
 
     private RTreeNode[] pickNext(ArrayList<RTreeNode> elementsToSplit, RTreeNode node1, RTreeNode node2) {
         float greatestAreaDif = Float.NEGATIVE_INFINITY;
         int nextElementIndex = 0;
-        RTreeNode[] nextAssignment = new RTreeNode[2];
+        RTreeNode assign = null;
+        RTreeNode assignTo = null;
 
         for (int i = 0; i < elementsToSplit.size(); i++) {
             RTreeNode n = elementsToSplit.get(i);
-            float newArea1 = getNewBoundingBoxArea(node1.getCoordinates(), n.getCoordinates());
-            float newArea2 = getNewBoundingBoxArea(node2.getCoordinates(), n.getCoordinates());
-            float areaDif = Math.abs(newArea1 - newArea2);
+            float newAreaWithNode1 = getNewBoundingBoxArea(node1.getCoordinates(), n.getCoordinates());
+            float newAreaWithNode2 = getNewBoundingBoxArea(node2.getCoordinates(), n.getCoordinates());
+            float areaDif = Math.abs(newAreaWithNode1 - newAreaWithNode2);
             if (areaDif > greatestAreaDif) {
                 greatestAreaDif = areaDif;
                 nextElementIndex = i;
-                nextAssignment[0] = n;
-                nextAssignment[1] = newArea1 < newArea2 ? node1 : node2;
+                assign = n;
+                assignTo = newAreaWithNode1 < newAreaWithNode2 ? node1 : node2;
             }
         }
 
-        if (greatestAreaDif == 0) {
-            float area1 = getArea(node1.getCoordinates());
-            float area2 = getArea(node2.getCoordinates());
+        if (greatestAreaDif == 0) assignTo = resolveTies(node1, node2);
 
-            if (area1 == area2) {
-                int entries1 = node1.getChildren().size();
-                int entries2 = node2.getChildren().size();
-
-                if (entries1 == entries2) {
-                    nextAssignment[1] = node1;
-                } else {
-                    nextAssignment[1] = entries1 < entries2 ? node1 : node2;
-                }
-            } else {
-                nextAssignment[1] = area1 < area2 ? node1 : node2;
-            }
-        }
         elementsToSplit.remove(nextElementIndex);
-        return nextAssignment;
+        return new RTreeNode[]{assign, assignTo};
     }
 
-    private boolean tooFewEntries(int numberOfChildren, int elementsLeft) {
-        return numberOfChildren < minimumChildren && elementsLeft <= minimumChildren - numberOfChildren;
+    private RTreeNode resolveTies(RTreeNode node1, RTreeNode node2) {
+        float area1 = getArea(node1.getCoordinates());
+        float area2 = getArea(node2.getCoordinates());
+
+        RTreeNode assignTo;
+        if (area1 == area2) {
+            int entries1 = node1.getChildren().size();
+            int entries2 = node2.getChildren().size();
+
+            if (entries1 == entries2) {
+                assignTo = node1;
+            } else {
+                assignTo = entries1 < entries2 ? node1 : node2;
+            }
+        } else {
+            assignTo = area1 < area2 ? node1 : node2;
+        }
+        return assignTo;
     }
 
     private RTreeNode[] splitNodeLinearCost(RTreeNode node) {
@@ -315,7 +324,6 @@ public class RTree {
         float furthestSeparation = Float.NEGATIVE_INFINITY;
 
         for (int i = 0; i < numberOfCoordinates; i += 2) {
-
             int[] currentFurthestPairIndices = new int[2];
             float leftmostRightSide = Float.POSITIVE_INFINITY;
             float rightmostLeftSide = Float.NEGATIVE_INFINITY;
@@ -341,31 +349,24 @@ public class RTree {
 
             float totalWidth = Math.abs(rightmostSide - leftmostSide);
             float normalizedWidth = Math.abs(rightmostLeftSide - leftmostRightSide) / totalWidth;
+
             if (normalizedWidth > furthestSeparation && currentFurthestPairIndices[0] != currentFurthestPairIndices[1]) {
                 furthestSeparation = normalizedWidth;
                 furthestPair = currentFurthestPairIndices;
-            } else if (currentFurthestPairIndices[0] == currentFurthestPairIndices[1]) {
-                System.out.println("figure out"); // TODO: 3/31/21 what to do in this case? There should be a difference unless they are completely on top of each other all of them
             }
         }
-        return distributeNodes(node, furthestPair, elementsToSplit);
+
+        if (furthestPair[0] == furthestPair[1]) {
+            throw new RuntimeException("Same element exists twice"); // Can only happen if two elements are completely on top of each other.
+        }
+
+        return distributeNodesLinearCost(node, furthestPair, elementsToSplit);
     }
 
-    private RTreeNode[] distributeNodes(RTreeNode node, int[] furthestPair, ArrayList<RTreeNode> elementsToSplit) {
-        node.removeChildren();
-        node.addChild(elementsToSplit.get(furthestPair[0]));
-        node.updateCoordinate(createNewCoordinateArray());
-
+    private RTreeNode[] distributeNodesLinearCost(RTreeNode node, int[] furthestPair, ArrayList<RTreeNode> elementsToSplit) {
         RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent());
-        newNode.addChild(elementsToSplit.get(furthestPair[1]));
-
-        if (furthestPair[0] < furthestPair[1]) { // TODO: 3/31/21 reuse from quadratic 
-            elementsToSplit.remove(furthestPair[1]);
-            elementsToSplit.remove(furthestPair[0]);
-        } else {
-            elementsToSplit.remove(furthestPair[0]);
-            elementsToSplit.remove(furthestPair[1]);
-        }
+        updateNodes(node, newNode, elementsToSplit.get(furthestPair[0]), elementsToSplit.get(furthestPair[1]));
+        removeElementsFromElementsToSplit(elementsToSplit, furthestPair[0], furthestPair[1]);
 
         for (int i = 0; i < elementsToSplit.size(); i++) {
             if (i % 2 == 0) {
@@ -374,11 +375,6 @@ public class RTree {
                 newNode.addChild(elementsToSplit.get(i));
             }
         }
-
-        if (node.getParent() != null) {
-            node.getParent().addChild(newNode);
-        }
-
         return new RTreeNode[]{node, newNode};
     }
 
@@ -445,7 +441,6 @@ public class RTree {
         result = getPrintTree(root, level, result);
 
         while (result.get(level) != null) {
-            System.out.println("");
             System.out.println("Level: " + level);
             for (RTreeNode r : result.get(level)) {
                 if (r.getParent() == null) {
@@ -456,7 +451,6 @@ public class RTree {
             }
             level++;
         }
-        System.out.println("");
     }
 
     private HashMap<Integer, ArrayList<RTreeNode>> getPrintTree(RTreeNode theRoot, int level, HashMap<Integer, ArrayList<RTreeNode>> result) {

@@ -24,12 +24,7 @@ public class MapData {
     }
 
     public void addData(List<Element> toAdd) {
-        long startTime = System.nanoTime();
         rTree.insertAll(toAdd);
-        long endTime = System.nanoTime();
-        long time = endTime - startTime;
-        double timeSeconds = (double) time / 1000000000;
-        System.out.println("Time: " + timeSeconds);
     }
 
     public void searchInData(CanvasBounds bounds) {
