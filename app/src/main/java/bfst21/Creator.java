@@ -44,8 +44,8 @@ public class Creator extends Task<Void> {
     public void create() throws XMLStreamException {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(progressInputStream));
 
-        BinarySearchTree<Long, Node> idToNode = new BinarySearchTree<>();
-        BinarySearchTree<Long, Way> idToWay = new BinarySearchTree<>();
+        BinarySearchTree<Node> idToNode = new BinarySearchTree<>();
+        BinarySearchTree<Way> idToWay = new BinarySearchTree<>();
 
         Way way = null;
         Node node = null;

@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class BinarySearchTreeTest {
 
-    private static BinarySearchTree<Integer, Integer> binarySearchTree;
+    private static BinarySearchTree<Integer> binarySearchTree;
 
     @BeforeAll
     static void beforeAll() {

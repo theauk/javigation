@@ -5,18 +5,18 @@ import java.util.List;
 
 
 //TODO Adapted from Troels ???
-public class BinarySearchTree<Key extends Comparable<Key>, Value> {
+public class BinarySearchTree<Value> {
     List<BSTNode> BSTNodes = new ArrayList<>();
     boolean sorted = true;
 
-    public void put(Key key, Value val) {
+    public void put(long key, Value val) {
         BSTNodes.add(new BSTNode(key, val));
         sorted = false;
     }
 
-    public Value get(Key key) {
+    public Value get(long key) {
         if (!sorted) {
-            BSTNodes.sort((a, b) -> a.key.compareTo(b.key));
+            BSTNodes.sort((a, b) -> Long.compare(a.key, b.key));
             sorted = true;
         }
         int lo = 0;
@@ -24,7 +24,7 @@ public class BinarySearchTree<Key extends Comparable<Key>, Value> {
         while (lo + 1 < hi) {
             int mid = (lo + hi) / 2;
 
-            int compare = key.compareTo(BSTNodes.get(mid).key);
+            int compare = Long.compare(key,(BSTNodes.get(mid).key));
             if (compare < 0) {
                 hi = mid;
             } else {
@@ -32,18 +32,19 @@ public class BinarySearchTree<Key extends Comparable<Key>, Value> {
             }
         }
         BSTNode node = BSTNodes.get(lo);
-        return node.key.compareTo(key) == 0 ? node.val : null;
+        return Long.compare(node.key, key) == 0 ? node.val : null;
     }
 
     private class BSTNode {
-        private Key key;
-        private Value val;
+        private final long key;
+        private final Value val;
 
-        public BSTNode(Key key, Value val) {
+        public BSTNode(long key, Value val) {
             this.key = key;
             this.val = val;
 
         }
+
     }
 }
 
