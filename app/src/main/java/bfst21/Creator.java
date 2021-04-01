@@ -97,8 +97,10 @@ public class Creator extends Task<Void> {
                                 }
 
                                 if (k.equals("addr:city")) {
-                                    addressNode = new AddressNode(node);
-                                    node = null;
+                                    if(node !=null) {
+                                        addressNode = new AddressNode(node);
+                                        node = null;
+                                    }
                                 }
 
                                 if (addressNode != null) {
