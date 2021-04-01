@@ -55,6 +55,7 @@ public class Controller {
     @FXML private RadioMenuItem rTreeDebug;
 
     public void init() {
+        mapData = new MapData();
         loader = new Loader();
         loadThemes();
         openFile();
@@ -241,7 +242,8 @@ public class Controller {
 
     private void loadFile(String path, long fileSize) {
         try {
-            mapData = new MapData(); // TODO: 4/1/21 Determine if it should be "wiped" each time. Or we want something like mapData.setupTrees() where the trees are initialized. Then we can reuse MapData and it should work in Canvas
+            //mapData = new MapData(); // TODO: 4/1/21 (1) Determine if it should be "wiped" each time.
+            mapData.setupTrees(); // TODO: 4/1/21 (2) Or we want something like mapData.setupTrees() where the trees are initialized. Then we can reuse MapData and it should work in Canvas
             creator = new Creator(mapData, loader.load(path), fileSize);
             creator.setOnRunning(e -> {
                 centerPane.setCursor(Cursor.WAIT);
@@ -256,7 +258,8 @@ public class Controller {
                 loadingBar.progressProperty().unbind();
                 disableGui(false);
                 loaderPane.setVisible(false);
-                mapCanvas.loadFile(mapData);
+                //mapCanvas.loadFile(mapData); // TODO: 4/1/21 (1) delete if not (1)
+                mapCanvas.reset(); // TODO: 4/1/21 (2) It should call reset since reset also calls other necessary methods including startup();
             });
             creator.setOnCancelled(e -> {
                 centerPane.setCursor(Cursor.DEFAULT);
@@ -341,5 +344,6 @@ public class Controller {
     @FXML
     private void setRTreeDebug() {
         mapData.setRTreeDebug(rTreeDebug.isSelected()); // TODO: 3/31/21 which class should it go via?
+        mapCanvas.rTreeDebugMode();
     }
 }

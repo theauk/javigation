@@ -24,6 +24,9 @@ public class MapData {
 
     public MapData() {
         mapSegment = new ArrayList<>();
+    }
+
+    public void setupTrees() {
         rTree = new RTree(1, 30, 4);
         roadNodesTree = new KDTree<>();
         addressTree = new AddressTriesTree();

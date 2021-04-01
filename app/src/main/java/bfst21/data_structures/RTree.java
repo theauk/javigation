@@ -36,9 +36,7 @@ public class RTree {
             }
             return results;
         } else {
-            //throw new RuntimeException("No elements in the RTree"); 
-            System.out.println("No elements in the rtree"); // TODO: 3/26/21 fix this in view so that the search is not called before file has been loaded 
-            return new ArrayList<>();
+            throw new RuntimeException("No elements in the RTree");
         }
     }
 
