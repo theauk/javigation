@@ -89,7 +89,7 @@ public class Creator extends Task<Void> {
                                 var v = reader.getAttributeValue(null, "v");
 
                                 if (k.equals("highway")) {
-                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way, v, k);
+                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way,v);
                                     way = null;
                                 }
 

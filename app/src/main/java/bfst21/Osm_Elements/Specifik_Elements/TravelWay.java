@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
  * A TravelWay is walkable, cycleable and driveable.
  */
 public class TravelWay extends Way{
-    private String roadType;
+
     private String name;
     private double maxspeed;
     private boolean onewayRoad;
@@ -17,11 +17,11 @@ public class TravelWay extends Way{
     private boolean isCycleable;
     private boolean isWalkable;
 
-    public TravelWay(Way way, String roadType, String superType) {
+    public TravelWay(Way way, String roadType) {
         super(way.getId());
         super.addAllNodes(way.getNodes());
-        super.setType(superType);
-        this.roadType = roadType;
+        super.setType(roadType);
+
         setBooleans(roadType);
     }
 
@@ -59,9 +59,6 @@ public class TravelWay extends Way{
         onewayRoad = true;
     }
 
-    public String getRoadType() {
-        return roadType;
-    }
 
     public double getMaxspeed() {
         return maxspeed;
