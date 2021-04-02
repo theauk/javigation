@@ -1,14 +1,12 @@
 package bfst21.Osm_Elements.Specifik_Elements;
 
-import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 /**
  * A TravelWay is walkable, cycleable and driveable.
  */
-public class TravelWay extends Way{
+public class TravelWay extends Way {
 
     private String name;
     private double maxspeed;
@@ -25,22 +23,22 @@ public class TravelWay extends Way{
         setBooleans(roadType);
     }
 
-    private void setBooleans(String type){
-            isWalkable = true;
-            isCycleable = true;
-            isDriveable = true;
-            onewayRoad = false;
-            if(type.equals("motorway") || type.equals("trunk")){
-                setNotCycleable();
-                setNotWalkable();
-           }
-            if(type.equals("pedestrian") || type.equals("footway") || type.equals("steps")){
-                setNotDriveable();
-            }
-            if(type.equals("cycleway")){
-                setNotDriveable();
-                setNotWalkable();
-            }
+    private void setBooleans(String type) {
+        isWalkable = true;
+        isCycleable = true;
+        isDriveable = true;
+        onewayRoad = false;
+        if (type.equals("motorway") || type.equals("trunk")) {
+            setNotCycleable();
+            setNotWalkable();
+        }
+        if (type.equals("pedestrian") || type.equals("footway") || type.equals("steps")) {
+            setNotDriveable();
+        }
+        if (type.equals("cycleway")) {
+            setNotDriveable();
+            setNotWalkable();
+        }
     }
 
     public void setNotCycleable() {
@@ -51,14 +49,13 @@ public class TravelWay extends Way{
         this.isWalkable = false;
     }
 
-    public void setNotDriveable(){
+    public void setNotDriveable() {
         isDriveable = false;
     }
 
     public void setOnewayRoad() {
         onewayRoad = true;
     }
-
 
     public double getMaxspeed() {
         return maxspeed;
@@ -79,6 +76,7 @@ public class TravelWay extends Way{
     public void setName(String name) {
         this.name = name;
     }
+
     @Override
     public void draw(GraphicsContext gc) {
         //TODO Should check for one way.....

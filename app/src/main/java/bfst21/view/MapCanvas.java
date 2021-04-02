@@ -9,15 +9,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
-public class MapCanvas extends Canvas
-{
+public class MapCanvas extends Canvas {
     private MapData mapData;
     private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
+    private boolean rTreeDebug;
 
-    public void init(MapData mapData, Theme theme)
-    {
+    public void init(MapData mapData, Theme theme) {
         this.mapData = mapData;
         this.theme = theme;
         trans = new Affine();
@@ -38,8 +37,7 @@ public class MapCanvas extends Canvas
         repaint();
     }
 
-    public void repaint()
-    {
+    public void repaint() {
         GraphicsContext gc = getGraphicsContext2D();
         gc.save();
         gc.setTransform(new Affine());
@@ -50,8 +48,7 @@ public class MapCanvas extends Canvas
         gc.setTransform(trans);
         gc.setLineWidth(1 / Math.sqrt(trans.determinant()));
 
-        for(Element element: mapData.getMapSegment())
-        {
+        for (Element element : mapData.getMapSegment()) {
             gc.setStroke(theme.get("coastline"));
             element.draw(gc);
         }
@@ -63,24 +60,21 @@ public class MapCanvas extends Canvas
         gc.restore();
     }
 
-    public void zoom(double factor, Point2D center)
-    {
+    public void zoom(double factor, Point2D center) {
         trans.prependScale(factor, factor, center);
         setBounds();
         mapData.searchInData(bounds);
         repaint();
     }
 
-    public void pan(double dx, double dy)
-    {
+    public void pan(double dx, double dy) {
         trans.prependTranslation(dx, dy);
         setBounds();
         mapData.searchInData(bounds);
         repaint();
     }
 
-    public void reset()
-    {
+    public void reset() {
         trans = new Affine();
         //pan(0, 0);
         startup();
@@ -88,13 +82,11 @@ public class MapCanvas extends Canvas
         mapData.searchInData(bounds);
     }
 
-    public CanvasBounds getBounds()
-    {
+    public CanvasBounds getBounds() {
         return bounds;
     }
 
-    public void setBounds()
-    {
+    public void setBounds() {
         try {
             Point2D startCoords = getTransCoords(0, 0);
             bounds.setMinX((float) startCoords.getX());
@@ -108,25 +100,23 @@ public class MapCanvas extends Canvas
         }
     }
 
-    public Point2D getTransCoords(double x, double y) throws NonInvertibleTransformException
-    {
+    public Point2D getTransCoords(double x, double y) throws NonInvertibleTransformException {
         return trans.inverseTransform(x, y);
     }
 
-    public Point2D getGeoCoords(double x, double y) throws NonInvertibleTransformException
-    {
+    public Point2D getGeoCoords(double x, double y) throws NonInvertibleTransformException {
         Point2D geoCoords = getTransCoords(x, y);
 
         return new Point2D(geoCoords.getX(), -geoCoords.getY() * 0.56f);
     }
 
-    public void setTheme(Theme theme)
-    {
+    public void setTheme(Theme theme) {
         this.theme = theme;
         repaint();
     }
-    public void startup(){
-        pan(-mapData.getMinX(),-mapData.getMinY());
-        zoom((getWidth()-200)/(mapData.getMaxX()- mapData.getMinX()), new Point2D(-0.009127,-0.010532));
+
+    public void startup() {
+        pan(-mapData.getMinX(), -mapData.getMinY());
+        zoom((getWidth() - 200) / (mapData.getMaxX() - mapData.getMinX()), new Point2D(-0.009127, -0.010532));
     }
 }

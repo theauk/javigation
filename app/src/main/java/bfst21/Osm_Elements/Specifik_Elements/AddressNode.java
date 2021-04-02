@@ -13,7 +13,6 @@ public class AddressNode extends Node {
     }
 
 
-
     public String getHousenumber() {
         return housenumber;
     }

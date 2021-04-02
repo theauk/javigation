@@ -11,13 +11,9 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class Loader {
@@ -25,8 +21,8 @@ public class Loader {
     private final Pattern pattern = Pattern.compile(regex);
 
     public InputStream load(String filename) throws IOException {
-        if(filename.endsWith(".osm")) return loadOSM(filename);
-        else if(filename.endsWith(".zip")) return loadZIP(filename);
+        if (filename.endsWith(".osm")) return loadOSM(filename);
+        else if (filename.endsWith(".zip")) return loadZIP(filename);
         return null;
     }
 
@@ -41,7 +37,7 @@ public class Loader {
     }
 
     public Theme loadTheme(String file) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;

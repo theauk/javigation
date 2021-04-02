@@ -12,16 +12,14 @@ public class ProgressInputStream extends FilterInputStream {
         super(inputStream);
     }
 
-    public void addInputStreamListener(InputStreamListener inputStreamListener)
-    {
+    public void addInputStreamListener(InputStreamListener inputStreamListener) {
         this.inputStreamListener = inputStreamListener;
     }
 
     @Override
     public int read() throws IOException {
         int count = in.read();
-        if(count != -1)
-        {
+        if (count != -1) {
             totalBytes += in.read();
             inputStreamListener.onBytesRead(totalBytes);
         }

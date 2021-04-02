@@ -29,7 +29,6 @@ public class Creator extends Task<Void> {
 
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
-
         progressInputStream = new ProgressInputStream(inputStream);
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
 
@@ -90,7 +89,7 @@ public class Creator extends Task<Void> {
                                 var v = reader.getAttributeValue(null, "v");
 
                                 if (k.equals("highway")) {
-                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way,v);
+                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way, v);
                                     way = null;
                                     break;
                                 }
@@ -174,16 +173,13 @@ public class Creator extends Task<Void> {
                                 }
                                 relation = null;
                         }
-
                         break;
                 }
             }
         }
-
         idToWay = null;
         updateMessage("");
         reader.close();
-
     }
 
 
@@ -199,7 +195,6 @@ public class Creator extends Task<Void> {
                 relation.setName(v);
                 break;
         }
-
     }
 
     private void checkTravelWay(String k, String v, TravelWay travelWay) {
@@ -213,7 +208,7 @@ public class Creator extends Task<Void> {
             case "maxspeed":
                 if(v.equals("signals")){
                     travelWay.defaultMaxSpeed();
-                    // TODO: 02-04-2021 this the right thing ? 
+                    // TODO: 02-04-2021 this the right thing ?
                 } else{
                     travelWay.setMaxspeed(Integer.parseInt(v));
                 }
@@ -232,15 +227,13 @@ public class Creator extends Task<Void> {
                 break;
 
             case "building":
-                    way.setType(k);
+                way.setType(k);
                 break;
 
             case "leisure":
                 if (v.equals("park")) way.setType(v);
                 break;
-
         }
-
     }
 
     private void checkAddressNode(String k, String v, AddressNode addressNode) {
@@ -250,18 +243,15 @@ public class Creator extends Task<Void> {
             case "addr:postcode" -> addressNode.setPostcode(Integer.parseInt(v.trim()));
             case "addr:street" -> addressNode.setStreet(v);
         }
-
     }
 
     private boolean checkHighWayType(Way way, String v) {
         if (way == null) return false;
         return highWayTypeHelper(v);
-
-
     }
 
     private boolean highWayTypeHelper(String v) {
-        if (v.equals("motorway"))  return true;
+        if (v.equals("motorway")) return true;
         if (v.equals("trunk")) return true;
         if (v.equals("primary")) return true;
         if (v.equals("secondary")) return true;

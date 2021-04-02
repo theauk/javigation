@@ -2,7 +2,6 @@ package bfst21;
 
 import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
-import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
 import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.data_structures.AddressTriesTree;
@@ -21,9 +20,9 @@ public class MapData {
     private float minX, minY, maxX, maxY;
     private AddressTriesTree addressTree;
     private RoadGraph roadGraph;
+    private boolean rTreeDebug;
 
     public MapData() {
-
         mapSegment = new ArrayList<>();
         rTree = new RTree(1, 30, 4);
         roadNodesTree = new KDTree<>();
@@ -31,7 +30,7 @@ public class MapData {
         roadGraph = new RoadGraph();
     }
 
-    public void addRoad(TravelWay way){
+    public void addRoad(TravelWay way) {
         roadGraph.add(way);
         addData(way);
     }
@@ -39,22 +38,26 @@ public class MapData {
     public void addData(List<Element> toAdd) {
         rTree.insertAll(toAdd);
     }
-    public void addData(Element toAdd){
+
+    public void addData(Element toAdd) {
         rTree.insert(toAdd);
     }
 
     public void searchInData(CanvasBounds bounds) {
-        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY());
+        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug);
     }
 
+    public void setRTreeDebug(boolean selected) {
+        rTreeDebug = selected;
+    }
 
     public String getNearestRoad(float x, float y) {
         String names = "";
         try {
-            AddressNode node = roadNodesTree.getNearestNode(x,y);
+            AddressNode node = roadNodesTree.getNearestNode(x, y);
             names = node.getStreet();
             names += "   x: " + node.getxMax() + "    y: " + node.getyMax();
-        } catch (KDTreeEmptyException e){
+        } catch (KDTreeEmptyException e) {
             names = e.getMessage();
         }
         return names;
@@ -64,16 +67,15 @@ public class MapData {
         return mapSegment;
     }
 
-    public void addAddress(AddressNode node){
+    public void addAddress(AddressNode node) {
         addressTree.put(node);
         roadNodesTree.add(node);
 
     }
 
-    public AddressNode getAddressNode(String address){
+    public AddressNode getAddressNode(String address) {
         return addressTree.getAddressNode(address);
     }
-
 
 
     public float getMinX() {
