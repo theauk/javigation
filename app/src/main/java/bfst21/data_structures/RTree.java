@@ -22,6 +22,10 @@ public class RTree {
         return new float[]{Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY};
     }
 
+    /*public String getNearestRoad(float x, float y) {
+
+    }*/
+
     public ArrayList<Element> search(float xMin, float xMax, float yMin, float yMax, boolean debug) {
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
