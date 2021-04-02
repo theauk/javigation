@@ -18,6 +18,8 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -226,7 +228,17 @@ public class Controller {
         if (file != null) loadFile(file.getAbsolutePath(), file.length());
         else {
             File binaryFile = new File(getClass().getResource("/small.osm").getPath());
-            loadFile(binaryFile.getPath(), binaryFile.length()); //USE BINARY FILE // TODO: 4/1/21 Problem hvis man har mellemrum i sit folder name 
+            String path = binaryFile.getAbsolutePath();
+            path = handlePotentialSpacesInPath(path);
+            loadFile(path, binaryFile.length());
+        }
+    }
+
+    private String handlePotentialSpacesInPath(String path) {
+        try {
+            return URLDecoder.decode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return path.replaceAll("%20", " ");
         }
     }
 
