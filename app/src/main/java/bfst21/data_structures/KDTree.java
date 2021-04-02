@@ -27,21 +27,21 @@ public class KDTree<Value extends Element> {
     private List<KDTreeNode> list;
     private boolean isSorted;
 
-    public void addALl(List<Value> nodes) {
+    public void addAll(String name, List<Value> nodes) {
         if (list == null) {
             list = new ArrayList<>();
         }
         for (Value node : nodes) {
-            add(node);
+            add(name, node);
         }
 
     }
 
-    public void add(Value node) {
+    public void add(String name, Value node) {
         if (list == null) {
             list = new ArrayList<>();
         }
-        list.add(new KDTreeNode(node));
+        list.add(new KDTreeNode(name, node));
         isSorted = false;
     }
 
@@ -111,14 +111,14 @@ public class KDTree<Value extends Element> {
         return (nodes.get(mid).node.getxMax() == parent.node.getxMax() && nodes.get(mid).node.getyMax() == parent.node.getyMax());
     }
 
-    public Value getNearestNode(float x, float y) throws KDTreeEmptyException {
+    public String getNearestNode(float x, float y) throws KDTreeEmptyException {
         if (!isSorted) {
             buildTree();
         }
 
         double shortestDistance = Double.MAX_VALUE;
         KDTreeNode nearestNode = getNearestNode(root, x, y, shortestDistance, null, root.onXAxis);
-        return nearestNode.node;
+        return nearestNode.name;
 
     }
 
@@ -157,8 +157,7 @@ public class KDTree<Value extends Element> {
 
     private double getDistance(KDTreeNode from, float x, float y) {
         Point2D p = new Point2D(x, y);
-        double result = p.distance(from.node.getxMax(), from.node.getyMax());
-        return result;
+        return p.distance(from.node.getxMax(), from.node.getyMax());
     }
 
     // TODO: 26-03-2021 remove both print methods when no longer needed.
@@ -214,15 +213,16 @@ public class KDTree<Value extends Element> {
     }
 
     private class KDTreeNode {
-
+        private String name;
         private Value node;
         private KDTreeNode leftChild;
         private KDTreeNode rightChild;
         private Boolean onXAxis;
 
 
-        public KDTreeNode(Value node) {
+        public KDTreeNode(String name, Value node) {
             this.node = node;
+            this.name = name;
         }
     }
 }

@@ -2,6 +2,7 @@ package bfst21;
 
 import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
+import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
 import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.data_structures.AddressTriesTree;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapData {
-    private KDTree<AddressNode> roadNodesTree;
+    private KDTree<Node> closetRoadTree;
     private RTree rTree;
     private List<Element> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
@@ -25,7 +26,7 @@ public class MapData {
     public MapData() {
         mapSegment = new ArrayList<>();
         rTree = new RTree(1, 30, 4);
-        roadNodesTree = new KDTree<>();
+        closetRoadTree = new KDTree<>();
         addressTree = new AddressTriesTree();
         roadGraph = new RoadGraph();
     }
@@ -33,6 +34,9 @@ public class MapData {
     public void addRoad(TravelWay way) {
         roadGraph.add(way);
         addData(way);
+        if(way.getName() != null){
+            closetRoadTree.addAll(way.getName(), way.getNodes());
+        }
     }
 
     public void addData(List<Element> toAdd) {
@@ -54,9 +58,7 @@ public class MapData {
     public String getNearestRoad(float x, float y) {
         String names = "";
         try {
-            AddressNode node = roadNodesTree.getNearestNode(x, y);
-            names = node.getStreet();
-            names += "   x: " + node.getxMax() + "    y: " + node.getyMax();
+            names = closetRoadTree.getNearestNode(x, y);
         } catch (KDTreeEmptyException e) {
             names = e.getMessage();
         }
@@ -69,7 +71,6 @@ public class MapData {
 
     public void addAddress(AddressNode node) {
         addressTree.put(node);
-        roadNodesTree.add(node);
 
     }
 
