@@ -167,8 +167,8 @@ public class Controller {
         double dx = e.getX() - lastMouse.getX();
         double dy = e.getY() - lastMouse.getY();
 
-        mapCanvas.setCursor(Cursor.CLOSED_HAND);
         if (e.isPrimaryButtonDown()) {
+            mapCanvas.setCursor(Cursor.CLOSED_HAND);
             setBoundsLabel();
             mapCanvas.pan(dx, dy);
         }

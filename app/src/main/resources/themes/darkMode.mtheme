@@ -2,16 +2,16 @@
 name = "Dark Mode";
 
 #Background
-"background" = [19, 27, 39];
+"background" = {iColor = [19, 27, 39]};
 
 #Coastline
-"coastline" = [48, 60, 73];
+"coastline" = {iColor = [48, 60, 73]};
 
 #Roads
-"primary" = [252, 206, 144];
-"secondary" = [244, 251, 173];
-"tertiary" = [254, 254, 254];
-"residential" = [254, 254, 254];
+"primary" = {iColor = [252, 206, 144]};
+"secondary" = {iColor = [244, 251, 173]};
+"tertiary" = {iColor = [254, 254, 254]};
+"residential" = {iColor = [254, 254, 254]};
 
 #Water
-"water" = [170, 211, 223];
+"water" = {iColor = [170, 211, 223]};

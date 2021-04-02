@@ -1,6 +1,6 @@
 package bfst21;
 
-import bfst21.view.InvalidRGBValueException;
+import bfst21.Exceptions.InvalidRGBValueException;
 import bfst21.view.Theme;
 
 import java.io.*;
@@ -37,50 +37,22 @@ public class Loader {
     }
 
     public Theme loadTheme(String file) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
             int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if (line.isBlank()) continue;
-
-                Matcher matcher = pattern.matcher(line);
-
-                if (matcher.matches()) {
-                    if (matchesGroup(matcher, "name")) theme.setName(matcher.group("name"));
-                    else if (matchesGroup(matcher, "key")) {
-                        int r = Integer.parseInt(matcher.group("red"));
-                        int g = Integer.parseInt(matcher.group("green"));
-                        int b = Integer.parseInt(matcher.group("blue"));
-
-                        try {
-                            theme.put(matcher.group("key"), r, g, b);
-                        } catch (InvalidRGBValueException e) {
-                            System.err.println(e.getMessage() + "(line: " + lineNumber + ")");
-                        }
-                    }
-                } else System.err.println("Warning: Wrong syntax at: '" + line + "' (line: " + lineNumber + ")");
+                if(line.isBlank()) continue;
+                theme.parseData(line, lineNumber);
             }
-
-            if (theme.getName() == null) {
-                System.err.println("Warning: No name is set for theme file '" + file + "'! -> setting to 'Unknown'.");
-                theme.setName("?Unknown");
-            }
-            if (theme.isEmpty())
-                System.err.println("Warning: Theme '" + theme.getName() + "' is empty! All colors will be the same.");
-
             return theme;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return new Theme();
-    }
-
-    private boolean matchesGroup(Matcher matcher, String group) {
-        return matcher.group(group) != null;
+        return null;
     }
 
     /**

@@ -1,6 +1,5 @@
 package bfst21;
 
-import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
@@ -15,8 +14,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
@@ -28,11 +25,13 @@ public class Creator extends Task<Void> {
     private MapData mapData;
     private ProgressInputStream progressInputStream;
 
+
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
 
         progressInputStream = new ProgressInputStream(inputStream);
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
+
     }
 
     @Override
@@ -67,6 +66,7 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "node":
+                                updateMessage("Loading: Nodes");
                                 var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
@@ -75,12 +75,14 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "way":
+                                updateMessage("Loading: Ways");
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
                                 idToWay.put(idWay, way);
                                 break;
 
                             case "relation":
+                                updateMessage("Loading: Relations");
                                 relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
                                 break;
 
@@ -176,7 +178,6 @@ public class Creator extends Task<Void> {
         reader.close();
     }
 
-
     private void checkRelation(String k, String v, Relation relation) {
         switch (k) {
             case "type":
@@ -212,10 +213,11 @@ public class Creator extends Task<Void> {
         switch (k) {
             case "natural":
                 if (v.equals("coastline")) way.setType(v);
+                else if(v.equals("water")) way.setType(v);
                 break;
 
             case "building":
-                if (v.equals("yes")) way.setType(k);
+                way.setType(k);
                 break;
 
             case "leisure":
@@ -252,6 +254,7 @@ public class Creator extends Task<Void> {
         if (v.equals("road")) return true;
         if (v.equals("footway")) return true;
         if (v.equals("cycleway")) return true;
+
         else return false;
     }
 }
