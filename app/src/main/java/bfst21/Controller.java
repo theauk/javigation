@@ -287,7 +287,11 @@ public class Controller {
     }
 
     private void setTheme(String themeName) {
-        mapCanvas.setTheme(loader.loadTheme(themes.get(themeName)));
+        String name = themes.get(themeName);
+        Theme theme = loader.loadTheme(name);
+        scene.getStylesheets().clear();
+        if(theme.getStylesheet() != null) scene.getStylesheets().add(theme.getStylesheet());
+        mapCanvas.setTheme(theme);
     }
 
     private void setCoordsLabel(Point2D point) {

@@ -5,6 +5,7 @@ import bfst21.view.Theme;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -41,6 +42,10 @@ public class Loader {
                 if(line.isBlank()) continue;
                 theme.parseData(line, lineNumber);
             }
+
+            URL cssPath = getClass().getResource("/themes/" + file.replace(".mtheme", ".css"));
+            if(cssPath != null) theme.setStylesheet(cssPath.toString());
+
             return theme;
         } catch (IOException e) {
             e.printStackTrace();

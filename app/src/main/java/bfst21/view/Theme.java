@@ -12,11 +12,12 @@ import java.util.regex.Pattern;
 
 public class Theme
 {
-    private boolean warned;
     private final Map<String, ThemeElement> palette;
     private final ThemeElement defaultThemeElement;
+    private String stylesheet;
+    private boolean warned;
 
-    private static final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = \\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})\\])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*\\]))*\\}(?:, \\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*\\})*(?:, \\{style = \"(?<style>[a-z]+)\"\\})*(?:, \\{filled = (?<fill>true|false)\\})*;(?: *#.*)*)* *$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
+    private final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = \\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*]))*}(?:, \\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*})*(?:, \\{style = \"(?<style>[a-z]+)\"})*(?:, \\{filled = (?<fill>true|false)})*;(?: *#.*)*)* *$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
 
     public Theme()
@@ -119,6 +120,15 @@ public class Theme
         return palette.get(key);
     }
 
+    public void setStylesheet(String stylesheet)
+    {
+        this.stylesheet = stylesheet;
+    }
+
+    public String getStylesheet()
+    {
+        return stylesheet;
+    }
 
     public class ThemeElement
     {
