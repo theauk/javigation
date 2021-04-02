@@ -3,7 +3,6 @@ package bfst21;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
-import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -16,7 +15,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.FileChooser;
-import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +30,7 @@ public class Controller {
     private Loader loader;
     private Creator creator;
 
-    private Map<String, Theme> themes = new HashMap<>();
+    private Map<String, String> themes = new HashMap<>();
     private Point2D currentMouse;
     private Point2D lastMouse;
     private int zoomLevel;
@@ -67,7 +65,7 @@ public class Controller {
     }
 
     private void initView() {
-        mapCanvas.init(mapData, themes.get("Default"));
+        mapCanvas.init(mapData, loader.loadTheme(themes.get("Default")));
 
         mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> setBoundsLabel()));
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabel());
@@ -87,11 +85,11 @@ public class Controller {
 
     private void loadThemes() {
         for (String file : loader.getFilesIn("/themes", ".mtheme")) {
-            Theme theme = loader.loadTheme(file);
-            themes.put(theme.getName(), theme);
+            String themeName = Theme.parseName(file);
+            themes.put(themeName, file);
 
             if (!file.equals("default.mtheme")) {
-                RadioMenuItem item = new RadioMenuItem(theme.getName());
+                RadioMenuItem item = new RadioMenuItem(themeName);
                 item.setToggleGroup(themeGroup);
                 themeMenu.getItems().add(item);
             }
@@ -168,8 +166,8 @@ public class Controller {
         double dx = e.getX() - lastMouse.getX();
         double dy = e.getY() - lastMouse.getY();
 
-        mapCanvas.setCursor(Cursor.CLOSED_HAND);
         if (e.isPrimaryButtonDown()) {
+            mapCanvas.setCursor(Cursor.CLOSED_HAND);
             setBoundsLabel();
             mapCanvas.pan(dx, dy);
         }
@@ -252,7 +250,6 @@ public class Controller {
             creator.setOnRunning(e -> {
                 centerPane.setCursor(Cursor.WAIT);
                 statusLabel.textProperty().bind(creator.messageProperty());
-
                 loadingBar.progressProperty().bind(creator.progressProperty());
                 disableGui(true);
                 loaderPane.setVisible(true);
@@ -269,20 +266,19 @@ public class Controller {
                 centerPane.setCursor(Cursor.DEFAULT);
                 statusLabel.textProperty().unbind();
                 loadingBar.progressProperty().unbind();
-                statusLabel.setText("Cancelled!");
+                statusLabel.setText("Cancelled.");
                 disableGui(false);
             });
             creator.setOnFailed(e -> {
                 centerPane.setCursor(Cursor.DEFAULT);
                 statusLabel.textProperty().unbind();
                 loadingBar.progressProperty().unbind();
-                statusLabel.setText("Failed!");
+                statusLabel.setText("Failed.");
                 creator.exceptionProperty().get().printStackTrace();
                 disableGui(false);
             });
 
             Thread creatorThread = new Thread(creator, "Creator Thread");
-            creatorThread.setUncaughtExceptionHandler((t, e) -> System.out.println("Exception " + e + " from thread " + t));
             creatorThread.setDaemon(true);
             creatorThread.start();
         } catch (IOException e) {
@@ -291,7 +287,11 @@ public class Controller {
     }
 
     private void setTheme(String themeName) {
-        mapCanvas.setTheme(themes.get(themeName));
+        String name = themes.get(themeName);
+        Theme theme = loader.loadTheme(name);
+        scene.getStylesheets().clear();
+        if(theme.getStylesheet() != null) scene.getStylesheets().add(theme.getStylesheet());
+        mapCanvas.setTheme(theme);
     }
 
     private void setCoordsLabel(Point2D point) {

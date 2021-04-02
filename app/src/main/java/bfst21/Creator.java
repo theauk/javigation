@@ -31,7 +31,6 @@ public class Creator extends Task<Void> {
         this.mapData = mapData;
         progressInputStream = new ProgressInputStream(inputStream);
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
-
     }
 
     @Override
@@ -52,7 +51,6 @@ public class Creator extends Task<Void> {
         TravelWay travelWay = null;
         AddressNode addressNode = null;
 
-
         while (reader.hasNext()) {
             if (isCancelled()) return;   //Abort task
             else {
@@ -67,6 +65,7 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "node":
+                                updateMessage("Loading: Nodes");
                                 var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
@@ -75,12 +74,14 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "way":
+                                updateMessage("Loading: Ways");
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
                                 idToWay.put(idWay, way);
                                 break;
 
                             case "relation":
+                                updateMessage("Loading: Relations");
                                 relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
                                 break;
 
@@ -182,7 +183,6 @@ public class Creator extends Task<Void> {
         reader.close();
     }
 
-
     private void checkRelation(String k, String v, Relation relation) {
         switch (k) {
             case "type":
@@ -227,7 +227,7 @@ public class Creator extends Task<Void> {
                 break;
 
             case "building":
-                way.setType(k);
+                if(v.equals("yes")) way.setType(v);
                 break;
 
             case "leisure":
@@ -268,4 +268,3 @@ public class Creator extends Task<Void> {
         else return false;
     }
 }
-
