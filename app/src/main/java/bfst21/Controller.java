@@ -3,7 +3,6 @@ package bfst21;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
-import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -16,7 +15,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.FileChooser;
-import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +30,7 @@ public class Controller {
     private Loader loader;
     private Creator creator;
 
-    private Map<String, Theme> themes = new HashMap<>();
+    private Map<String, String> themes = new HashMap<>();
     private Point2D currentMouse;
     private Point2D lastMouse;
     private int zoomLevel;
@@ -66,7 +64,7 @@ public class Controller {
     }
 
     private void initView() {
-        mapCanvas.init(mapData, themes.get("Default"));
+        mapCanvas.init(mapData, loader.loadTheme(themes.get("Default")));
 
         mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> setBoundsLabel()));
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabel());
@@ -86,11 +84,11 @@ public class Controller {
 
     private void loadThemes() {
         for (String file : loader.getFilesIn("/themes", ".mtheme")) {
-            Theme theme = loader.loadTheme(file);
-            themes.put(theme.getName(), theme);
+            String themeName = Theme.parseName(file);
+            themes.put(themeName, file);
 
             if (!file.equals("default.mtheme")) {
-                RadioMenuItem item = new RadioMenuItem(theme.getName());
+                RadioMenuItem item = new RadioMenuItem(themeName);
                 item.setToggleGroup(themeGroup);
                 themeMenu.getItems().add(item);
             }
@@ -288,7 +286,7 @@ public class Controller {
     }
 
     private void setTheme(String themeName) {
-        mapCanvas.setTheme(themes.get(themeName));
+        mapCanvas.setTheme(loader.loadTheme(themes.get(themeName)));
     }
 
     private void setCoordsLabel(Point2D point) {

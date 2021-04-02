@@ -213,11 +213,11 @@ public class Creator extends Task<Void> {
         switch (k) {
             case "natural":
                 if (v.equals("coastline")) way.setType(v);
-                else if(v.equals("water")) way.setType(v);
                 break;
 
             case "building":
-                way.setType(k);
+                if(v.equals("yes")) way.setType(v);
+                else way.setType(k);
                 break;
 
             case "leisure":

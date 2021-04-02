@@ -2,6 +2,9 @@ package bfst21.view;
 
 import javafx.scene.paint.Color;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -9,17 +12,15 @@ import java.util.regex.Pattern;
 
 public class Theme
 {
-    private String name;
     private boolean warned;
     private final Map<String, ThemeElement> palette;
     private final ThemeElement defaultThemeElement;
 
-    private final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = \\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})\\])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*\\]))*\\}(?:, \\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*\\})*(?:, \\{style = \"(?<style>[a-z]+)\"\\})*(?:, \\{filled = (?<fill>true|false)\\})*;(?: *#.*)*)* *$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
+    private static final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = \\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})\\])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*\\]))*\\}(?:, \\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*\\})*(?:, \\{style = \"(?<style>[a-z]+)\"\\})*(?:, \\{filled = (?<fill>true|false)\\})*;(?: *#.*)*)* *$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
 
     public Theme()
     {
-        name = "?";
         palette = new HashMap<>();
         defaultThemeElement = new ThemeElement();
         defaultThemeElement.setMapColor(new MapColor(Color.rgb(0, 0, 0), Color.rgb(0, 0, 0)));
@@ -37,8 +38,7 @@ public class Theme
 
         if(matcher.matches())
         {
-            if(matchesGroup(matcher, "name")) setName(matcher.group("name"));
-            else if(matchesGroup(matcher, "key"))
+            if(matchesGroup(matcher, "key"))
             {
                 ThemeElement themeElement = new ThemeElement();
 
@@ -74,6 +74,34 @@ public class Theme
         else System.err.println("Warning: Wrong syntax at: '" + data + "' (line: " + line + ")");
     }
 
+    public static String parseName(String file)
+    {
+        String regex = "^ *name = \"(?<name>[A-Za-z0-9 ]+)\";(?: *#.*)* *$";
+        Pattern pattern = Pattern.compile(regex);
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(Theme.class.getResourceAsStream("/themes/" + file)))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if(line.isBlank()) continue;
+
+                Matcher matcher = pattern.matcher(line);
+
+                if(matcher.matches())
+                {
+                    line = matcher.group("name");
+                    break;
+                }
+            }
+
+            return line;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     private boolean matchesGroup(Matcher matcher, String group)
     {
         return matcher.group(group) != null;
@@ -83,7 +111,7 @@ public class Theme
     {
         if(palette.get(key) == null)
         {
-            if(!warned) System.err.println("Warning: Key '" + key + "' is not supported. Returning default.");
+            if(!warned) System.err.println("Warning: Key '" + key + "' is loaded but not supported by the theme. Returning default.");
             warned = true;
 
             return defaultThemeElement;
@@ -91,15 +119,6 @@ public class Theme
         return palette.get(key);
     }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
 
     public class ThemeElement
     {
