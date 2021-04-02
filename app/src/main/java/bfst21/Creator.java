@@ -28,10 +28,8 @@ public class Creator extends Task<Void> {
 
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
-
         progressInputStream = new ProgressInputStream(inputStream);
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
-
     }
 
     @Override
@@ -91,12 +89,12 @@ public class Creator extends Task<Void> {
                                 var v = reader.getAttributeValue(null, "v");
 
                                 if (k.equals("highway")) {
-                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way,v);
+                                    if (checkHighWayType(way, v)) travelWay = new TravelWay(way, v);
                                     way = null;
                                 }
 
                                 if (k.equals("addr:city")) {
-                                    if(node !=null) {
+                                    if (node != null) {
                                         addressNode = new AddressNode(node);
                                         node = null;
                                     }
@@ -172,7 +170,6 @@ public class Creator extends Task<Void> {
                 }
             }
         }
-
         idToWay = null;
         updateMessage("");
         reader.close();
@@ -217,7 +214,6 @@ public class Creator extends Task<Void> {
 
             case "building":
                 if(v.equals("yes")) way.setType(v);
-                else way.setType(k);
                 break;
 
             case "leisure":
@@ -241,7 +237,7 @@ public class Creator extends Task<Void> {
     }
 
     private boolean highWayTypeHelper(String v) {
-        if (v.equals("motorway"))  return true;
+        if (v.equals("motorway")) return true;
         if (v.equals("trunk")) return true;
         if (v.equals("primary")) return true;
         if (v.equals("secondary")) return true;

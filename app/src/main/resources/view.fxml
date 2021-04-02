@@ -39,6 +39,9 @@
                         <MenuItem fx:id="zoomInItem" text="Zoom in" onAction="#zoom" accelerator="CTRL + PLUS"/>
                         <MenuItem fx:id="zoomOutItem" text="Zoom out" onAction="#zoom" accelerator="CTRL + MINUS"/>
                     </Menu>
+                    <Menu text="Debug">
+                        <RadioMenuItem fx:id="rTreeDebug" text="R-tree" onAction="#setRTreeDebug"/>
+                    </Menu>
                 </MenuBar>
             </top>
             <center>

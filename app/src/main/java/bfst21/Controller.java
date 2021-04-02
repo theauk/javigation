@@ -52,6 +52,7 @@ public class Controller {
     @FXML private MenuItem zoomOutItem;
     @FXML private RadioMenuItem defaultThemeItem;
     @FXML private ToggleGroup themeGroup;
+    @FXML private RadioMenuItem rTreeDebug;
 
     public void init(MapData mapData) {
         this.mapData = mapData;
@@ -338,5 +339,10 @@ public class Controller {
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Open Street Map File", "*.osm", "*.zip"));
 
         return fileChooser;
+    }
+
+    @FXML
+    private void setRTreeDebug() {
+        mapData.setRTreeDebug(rTreeDebug.isSelected()); // TODO: 3/31/21 which class should it go via?
     }
 }

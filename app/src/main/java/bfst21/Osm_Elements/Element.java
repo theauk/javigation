@@ -18,16 +18,16 @@ public abstract class Element implements Spatializable {
         return id;
     }
 
-    public void setType(String type){
-        this.type = type;
-    }
-
-    public String getType(){
+    public String getType() {
         return type;
     }
 
-    public boolean hasType(){
-        return type !=null;
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public boolean hasType() {
+        return type != null;
 
     }
 
@@ -52,4 +52,5 @@ public abstract class Element implements Spatializable {
     public float[] getCoordinates() {
         return new float[]{xMin, xMax, yMin, yMax};
     }
+
 }

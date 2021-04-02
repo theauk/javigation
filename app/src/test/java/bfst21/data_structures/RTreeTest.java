@@ -64,21 +64,28 @@ class RTreeTest {
     }
 
     @Test
+    void linearSplitTest() {
+        rTree.insert(w1);
+        rTree.insert(w2);
+        rTree.insert(w3);
+        rTree.insert(w4);
+        rTree.printTree();
+    }
+
+    @Test
     void searchTest() {
 
-        RTreeNode r1 = new RTreeNode(w1.getCoordinates(), false, 0, 1, null, 0);
-        RTreeNode r2 = new RTreeNode(w2.getCoordinates(), false, 0, 1, r1, 1);
+        RTreeNode r1 = new RTreeNode(w1.getCoordinates(), false, 0, 1, null);
+        RTreeNode r2 = new RTreeNode(w2.getCoordinates(), false, 0, 1, r1);
         r1.addChild(r2);
-        RTreeNode r3 = new RTreeNode(w3.getCoordinates(), true, 0, 1, r2, 2);
+        RTreeNode r3 = new RTreeNode(w3.getCoordinates(), true, 0, 1, r2);
         r2.addChild(r3);
-
-        rTree.setRoot(r1);
 
         r1.addElementEntry(w1);
         r2.addElementEntry(w2);
         r3.addElementEntry(w3);
 
-        System.out.println(rTree.search(6, 10, 0, -5 / 0.56f).size());
+        System.out.println(rTree.search(6, 10, 0, -5 / 0.56f, false).size());
         /*assertEquals(2, rTree.search(6, 10, 0, -5/0.56f).size());
         assertEquals(3, rTree.search(0, 10, 0, -10/0.56f).size());
         assertEquals(0, rTree.search(10, 20, -10/0.56f, -20/0.56f).size());
@@ -91,19 +98,14 @@ class RTreeTest {
     void insertNoOverFlowRootTest() {
 
         rTree.insert(w1);
-        System.out.println("root cor: " + Arrays.toString(rTree.getRoot().getCoordinates()));
 
         System.out.println("");
         System.out.println("--SECOND--");
         rTree.insert(w2);
-        System.out.println("Current root coordinates after insert: " + Arrays.toString(rTree.getRoot().getCoordinates()));
-        System.out.println(rTree.getRoot().getChildren().size());
 
         System.out.println("");
         System.out.println("--THIRD--");
         rTree.insert(w3);
-        System.out.println("root cor: " + Arrays.toString(rTree.getRoot().getCoordinates()));
-        System.out.println(rTree.getRoot().getChildren().size());
 
         System.out.println("");
         System.out.println("--FOURTH--");
@@ -131,20 +133,12 @@ class RTreeTest {
         rTree.insert(w6);
         rTree.insert(w6);
 
-        /*float[] rootCoordinates = rTree.getRoot().getCoordinates();
-        assertEquals(1.0, rootCoordinates[0]);
-        assertEquals(10.0, rootCoordinates[1]);
-        assertEquals(2, rTree.getRoot().getChildren().size());*/
-
-        System.out.println("");
-        System.out.println("Final root coordinates: " + Arrays.toString(rTree.getRoot().getCoordinates()));
-
         System.out.println("");
 
         rTree.printTree();
 
         long startTime = System.nanoTime();
-        ArrayList<Element> result = rTree.search(-10, 18, -63, 5);
+        ArrayList<Element> result = rTree.search(-10, 18, -63, 5, false);
         long estimatedTime = System.nanoTime() - startTime;
         double elapsedTimeInSecond = (double) estimatedTime / 1_000_000_000;
         System.out.println(elapsedTimeInSecond + " seconds");

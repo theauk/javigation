@@ -31,7 +31,7 @@ public class Loader {
     }
 
     public Theme loadTheme(String file) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
