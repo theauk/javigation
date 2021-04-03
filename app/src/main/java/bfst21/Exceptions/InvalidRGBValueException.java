@@ -1,4 +1,4 @@
-package bfst21.view;
+package bfst21.Exceptions;
 
 public class InvalidRGBValueException extends Exception {
     private final int r;

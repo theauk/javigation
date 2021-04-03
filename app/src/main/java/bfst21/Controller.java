@@ -32,7 +32,7 @@ public class Controller {
     private Loader loader;
     private Creator creator;
 
-    private Map<String, Theme> themes = new HashMap<>();
+    private Map<String, String> themes = new HashMap<>();
     private Point2D currentMouse;
     private Point2D lastMouse;
     private int zoomLevel;
@@ -65,7 +65,7 @@ public class Controller {
     }
 
     private void initView() {
-        mapCanvas.init(mapData, themes.get("Default"));
+        mapCanvas.init(mapData, loader.loadTheme(themes.get("Default")));
 
         mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> setBoundsLabel()));
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabel());
@@ -85,11 +85,11 @@ public class Controller {
 
     private void loadThemes() {
         for (String file : loader.getFilesIn("/themes", ".mtheme")) {
-            Theme theme = loader.loadTheme(file);
-            themes.put(theme.getName(), theme);
+            String themeName = Theme.parseName(file);
+            themes.put(themeName, file);
 
             if (!file.equals("default.mtheme")) {
-                RadioMenuItem item = new RadioMenuItem(theme.getName());
+                RadioMenuItem item = new RadioMenuItem(themeName);
                 item.setToggleGroup(themeGroup);
                 themeMenu.getItems().add(item);
             }
@@ -144,14 +144,14 @@ public class Controller {
                 CanvasBounds cb = mapCanvas.getBounds();
                 //System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
                 //System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                printDistance(new Point2D((-cb.getMinY() * 0.56f), cb.getMinX()), new Point2D((-cb.getMinY() * 0.56f), cb.getMaxX()));
+                printDistance(new Point2D((cb.getMinY() * -0.56f), cb.getMinX()), new Point2D((cb.getMinY() * -0.56f), cb.getMaxX()));
             } else if (amount < 0 && zoomLevel != MIN_ZOOM_LEVEL) {
                 zoomLevel--;
                 mapCanvas.zoom(factor, center);
                 CanvasBounds cb = mapCanvas.getBounds();
                 //System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
                 //System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                printDistance(new Point2D((-cb.getMinY() * 0.56f), cb.getMinX()), new Point2D((-cb.getMinY() * 0.56f), cb.getMaxX()));
+                printDistance(new Point2D((cb.getMinY() * -0.56f), cb.getMinX()), new Point2D((cb.getMinY() * -0.56f), cb.getMaxX()));
             }
 
             setBoundsLabel();
@@ -166,8 +166,8 @@ public class Controller {
         double dx = e.getX() - lastMouse.getX();
         double dy = e.getY() - lastMouse.getY();
 
-        mapCanvas.setCursor(Cursor.CLOSED_HAND);
         if (e.isPrimaryButtonDown()) {
+            mapCanvas.setCursor(Cursor.CLOSED_HAND);
             setBoundsLabel();
             mapCanvas.pan(dx, dy);
         }
@@ -277,20 +277,19 @@ public class Controller {
                 centerPane.setCursor(Cursor.DEFAULT);
                 statusLabel.textProperty().unbind();
                 loadingBar.progressProperty().unbind();
-                statusLabel.setText("Cancelled!");
+                statusLabel.setText("Cancelled.");
                 disableGui(false);
             });
             creator.setOnFailed(e -> {
                 centerPane.setCursor(Cursor.DEFAULT);
                 statusLabel.textProperty().unbind();
                 loadingBar.progressProperty().unbind();
-                statusLabel.setText("Failed!");
+                statusLabel.setText("Failed.");
                 creator.exceptionProperty().get().printStackTrace();
                 disableGui(false);
             });
 
             Thread creatorThread = new Thread(creator, "Creator Thread");
-            creatorThread.setUncaughtExceptionHandler((t, e) -> System.out.println("Exception " + e + " from thread " + t));
             creatorThread.setDaemon(true);
             creatorThread.start();
         } catch (IOException e) {
@@ -299,7 +298,11 @@ public class Controller {
     }
 
     private void setTheme(String themeName) {
-        mapCanvas.setTheme(themes.get(themeName));
+        String name = themes.get(themeName);
+        Theme theme = loader.loadTheme(name);
+        scene.getStylesheets().clear();
+        if(theme.getStylesheet() != null) scene.getStylesheets().add(theme.getStylesheet());
+        mapCanvas.setTheme(theme);
     }
 
     private void setCoordsLabel(Point2D point) {

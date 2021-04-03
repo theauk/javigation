@@ -69,6 +69,10 @@ public class TravelWay extends Way {
         return name;
     }
 
+    public void defaultMaxSpeed(){
+        maxspeed = 80;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

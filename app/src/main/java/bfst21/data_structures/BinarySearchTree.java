@@ -1,65 +1,41 @@
 package bfst21.data_structures;
 
-// Adapted from Algorithms 4th ed. p. 398-399
-public class BinarySearchTree<Key extends Comparable<Key>, Value> {
+import bfst21.Osm_Elements.Element;
 
-    private BSTNode root;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
-    public int size() {
-        return size(root);
+
+//TODO Adapted from Troels ???
+public class BinarySearchTree<Value extends Element> {
+    List<Value> values = new ArrayList<>();
+    boolean sorted = true;
+
+    public void put(Value val) {
+        values.add(val);
+        sorted = false;
     }
 
-    private int size(BSTNode x) {
-        if (x == null) return 0;
-        else return x.N;
-    }
-
-    public Value get(Key key) {
-        return get(root, key);
-    }
-
-    private Value get(BSTNode x, Key key) {
-        if (x == null) return null;
-
-        int compare = key.compareTo(x.key);
-        if (compare < 0) {
-            return get(x.left, key);
-        } else if (compare > 0) {
-            return get(x.right, key);
-        } else {
-            return x.val;
+    public Value get(long key) {
+        if (!sorted) {
+            values.sort(Comparator.comparingLong(Value::getId));
+            sorted = true;
         }
-    }
+        int lo = 0;
+        int hi = values.size();
+        while (lo + 1 < hi) {
+            int mid = (lo + hi) / 2;
 
-    public void put(Key key, Value val) {
-        root = put(root, key, val);
-    }
-
-    private BSTNode put(BSTNode x, Key key, Value val) {
-        if (x == null) return new BSTNode(key, val, 1);
-
-        int compare = key.compareTo(x.key);
-        if (compare < 0) {
-            x.left = put(x.left, key, val);
-        } else if (compare > 0) {
-            x.right = put(x.right, key, val);
-        } else {
-            throw new RuntimeException("Keys are not unique");
+            int compare = Long.compare(key,(values.get(mid).getId()));
+            if (compare < 0) {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
         }
-        x.N = size(x.left) + size(x.right) + 1;
-        return x;
-    }
-
-    private class BSTNode {
-        private Key key;
-        private Value val;
-        private BSTNode left, right;
-        private int N;
-
-        public BSTNode(Key key, Value val, int N) {
-            this.key = key;
-            this.val = val;
-            this.N = N;
-        }
+        Value val = values.get(lo);
+        return Long.compare(val.getId(), key) == 0 ? val : null;
     }
 }
+

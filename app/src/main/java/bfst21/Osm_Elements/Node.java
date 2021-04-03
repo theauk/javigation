@@ -2,7 +2,7 @@ package bfst21.Osm_Elements;
 
 import javafx.scene.canvas.GraphicsContext;
 
-public class Node extends Element {
+public class Node extends Element{
 
     public Node(long id, float lon, float lat) {
         super(id);
