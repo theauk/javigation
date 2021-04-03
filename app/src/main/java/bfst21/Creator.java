@@ -36,7 +36,7 @@ public class Creator extends Task<Void> {
         progressInputStream = new ProgressInputStream(inputStream);
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
         nodesNotCreateKeys = new HashSet<>();
-        nodesNotCreateValues= new HashSet<>();
+        nodesNotCreateValues = new HashSet<>();
         setupNodesNotCreate();
 
         totalNodes = 0;
@@ -82,13 +82,11 @@ public class Creator extends Task<Void> {
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
                                 node = new Node(idNode, lon, lat);
                                 totalNodes += 1;
-                                idToNode.put(idNode, node);
                                 break;
                             case "way":
                                 updateMessage("Loading: Ways");
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
-                                idToWay.put(way);
                                 break;
                             case "relation":
                                 updateMessage("Loading: Relations");
@@ -98,7 +96,11 @@ public class Creator extends Task<Void> {
                                 var k = reader.getAttributeValue(null, "k");
                                 var v = reader.getAttributeValue(null, "v");
 
-                                if(node != null && checkNodesNotCreate(k, v)) {
+                                if(k.equals("name") && v.equals("Ved Mønten")) {
+                                    System.out.println("v: Ved Mønten");
+                                }
+
+                                if (node != null && checkNodesNotCreate(k, v)) { // TODO: 4/3/21 delete
                                     nodesNotCreateCount += 1;
                                 }
 
@@ -108,7 +110,7 @@ public class Creator extends Task<Void> {
                                     break;
                                 }
 
-                                if(node != null){
+                                if (node != null) {
                                     if (k.equals("addr:city")) {
                                         addressNode = new AddressNode(node);
                                         node = null;
@@ -138,7 +140,7 @@ public class Creator extends Task<Void> {
                                 }
                                 break;
                             case "nd":
-                                if(way != null) {
+                                if (way != null) {
                                     var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
                                     way.addNode(idToNode.get(refNode));
                                 }
@@ -171,6 +173,9 @@ public class Creator extends Task<Void> {
                                 if (travelWay != null) {
                                     idToWay.put(travelWay);
                                     mapData.addRoad(travelWay);
+                                    /*if(travelWay.getName().equals("Ved Mønten")) {
+                                        System.out.println("Travelway insert: Ved Mønten");
+                                    }*/
                                     travelWay = null;
                                 }
                                 break;
@@ -180,8 +185,7 @@ public class Creator extends Task<Void> {
                                     mapData.addAddress(addressNode);
                                     addressNode = null;
 
-                                } else if(node != null) {
-
+                                } else if (node != null) {
                                     idToNode.put(node);
                                     node = null;
                                 }
@@ -189,7 +193,7 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "relation":
-                                if (relation != null) {
+                                if (relation != null) { // TODO: 4/3/21 fix
                                     //mapData.add(relation)
                                 }
                                 relation = null;
@@ -200,34 +204,124 @@ public class Creator extends Task<Void> {
         }
         idToWay = null;
         updateMessage("");
-        System.out.println("Total Nodes: " + totalNodes);
+        /*System.out.println("Total Nodes: " + totalNodes);
         System.out.println("Nodes with Keys not create: " + notKeys);
         System.out.println("Nodes with Values not create: " + notValues);
         System.out.println("Total nodes not create: " + nodesNotCreateCount);
         float per = (float) nodesNotCreateCount / (float) totalNodes * 100;
-        System.out.println("Percentage that can be skipped: " + per + " %");
+        System.out.println("Percentage that can be skipped: " + per + " %");*/
         reader.close();
     }
 
-    private void setupNodesNotCreate() {
+    private void checkRelation(String k, String v, Relation relation) {
+        switch (k) {
+            case "type":
+                if (v.equals("restriction")) relation.setType(v);
+                break;
+            case "restriction":
+                relation.setRestriction(v);
+                break;
+            case "name":
+                relation.setName(v);
+                break;
+        }
+    }
+
+    private void checkTravelWay(String k, String v, TravelWay travelWay) {
+        switch (k) {
+            case "oneway":
+                if (v.equals("yes")) travelWay.setOnewayRoad();
+                break;
+            case "cycleway":
+                if (!v.equals("no")) travelWay.setNotCycleable();
+                break;
+            case "maxspeed":
+                if (v.equals("signals")) {
+                    travelWay.defaultMaxSpeed();
+                    // TODO: 02-04-2021 this the right thing ?
+                } else {
+                    try {
+                        travelWay.setMaxspeed(Integer.parseInt(v));
+                    } catch (NumberFormatException e) {
+                        travelWay.defaultMaxSpeed();
+                        System.out.println("Max speed exception: " + v);
+                    }
+                }
+
+                break;
+            case "name":
+                travelWay.setName(v);
+                break;
+        }
+    }
+
+    private void checkWay(String k, String v, Way way) {
+        switch (k) {
+            case "natural":
+                if (v.equals("coastline")) way.setType(v);
+                break;
+
+            case "building":
+                if (v.equals("yes")) way.setType(v);
+                break;
+
+            case "leisure":
+                if (v.equals("park")) way.setType(v);
+                break;
+        }
+    }
+
+    private void checkAddressNode(String k, String v, AddressNode addressNode) {
+        switch (k) {
+            case "addr:city" -> addressNode.setCity(v);
+            case "addr:housenumber" -> addressNode.setHousenumber((v));
+            case "addr:postcode" -> addressNode.setPostcode(Integer.parseInt(v.trim()));
+            case "addr:street" -> addressNode.setStreet(v);
+        }
+    }
+
+    private boolean checkHighWayType(Way way, String v) {
+        if (way == null) return false;
+        return highWayTypeHelper(v);
+    }
+
+    private boolean highWayTypeHelper(String v) {
+        if (v.equals("motorway")) return true;
+        if (v.equals("trunk")) return true;
+        if (v.equals("primary")) return true;
+        if (v.equals("secondary")) return true;
+        if (v.equals("tertiary")) return true;
+        if (v.equals("unclassified")) return true;
+        if (v.equals("residential")) return true;
+        if (v.contains("link")) return true;
+        if (v.equals("living_street")) return true;
+        if (v.equals("pedestrian")) return true;
+        if (v.equals("road")) return true;
+        if (v.equals("footway")) return true;
+        if (v.equals("cycleway")) return true;
+
+        else return false;
+    }
+
+    private void setupNodesNotCreate() { // TODO: 4/3/21 Make it delete the nodes + do not creating ways / relations with those tags either
         nodesNotCreateKeys.add("aerialway");
-        nodesNotCreateKeys.add("aeroway"); // TODO: 4/2/21 ?
+        nodesNotCreateKeys.add("aeroway");
         nodesNotCreateKeys.add("amenity");
-        nodesNotCreateKeys.add("barrier"); // TODO: 4/2/21 ?
-        nodesNotCreateKeys.add("boundary"); // TODO: 4/2/21 ?
+        nodesNotCreateKeys.add("barrier");
+        nodesNotCreateKeys.add("boundary");
         nodesNotCreateKeys.add("craft");
         nodesNotCreateKeys.add("emergency");
-        nodesNotCreateKeys.add("geological"); // TODO: 4/2/21 ?
-        nodesNotCreateKeys.add("healthcare"); // TODO: 4/2/21 ?
-        nodesNotCreateKeys.add("historic"); // TODO: 4/2/21 ?
-        nodesNotCreateKeys.add("man_made"); // TODO: 4/2/21 ?
+        nodesNotCreateKeys.add("geological");
+        nodesNotCreateKeys.add("healthcare");
+        nodesNotCreateKeys.add("historic");
+        nodesNotCreateKeys.add("man_made");
         nodesNotCreateKeys.add("military");
         nodesNotCreateKeys.add("office");
         nodesNotCreateKeys.add("power");
         nodesNotCreateKeys.add("shop");
         nodesNotCreateKeys.add("sport");
         nodesNotCreateKeys.add("telecom");
-        nodesNotCreateKeys.add("tourism"); // TODO: 4/2/21 ?
+        nodesNotCreateKeys.add("tourism");
 
         nodesNotCreateKeys.add("comment");
         nodesNotCreateKeys.add("email");
@@ -285,94 +379,9 @@ public class Creator extends Task<Void> {
     private boolean checkNodesNotCreate(String k, String v) {
         if (nodesNotCreateKeys.contains(k)) {
             notKeys += 1;
-        } else if(nodesNotCreateValues.contains(v)) {
+        } else if (nodesNotCreateValues.contains(v)) {
             notValues += 1;
         }
         return nodesNotCreateKeys.contains(k) || nodesNotCreateValues.contains(v);
-    }
-
-    private void checkRelation(String k, String v, Relation relation) {
-        switch (k) {
-            case "type":
-                if (v.equals("restriction")) relation.setType(v);
-                break;
-            case "restriction":
-                relation.setRestriction(v);
-                break;
-            case "name":
-                relation.setName(v);
-                break;
-        }
-    }
-
-    private void checkTravelWay(String k, String v, TravelWay travelWay) {
-        switch (k) {
-            case "oneway":
-                if (v.equals("yes")) travelWay.setOnewayRoad();
-                break;
-            case "cycleway":
-                if (!v.equals("no")) travelWay.setNotCycleable();
-                break;
-            case "maxspeed":
-                if(v.equals("signals")){
-                    travelWay.defaultMaxSpeed();
-                    // TODO: 02-04-2021 this the right thing ?
-                } else{
-                    travelWay.setMaxspeed(Integer.parseInt(v));
-                }
-
-                break;
-            case "name":
-                travelWay.setName(v);
-                break;
-        }
-    }
-
-    private void checkWay(String k, String v, Way way) {
-        switch (k) {
-            case "natural":
-                if (v.equals("coastline")) way.setType(v);
-                break;
-
-            case "building":
-                if(v.equals("yes")) way.setType(v);
-                break;
-
-            case "leisure":
-                if (v.equals("park")) way.setType(v);
-                break;
-        }
-    }
-
-    private void checkAddressNode(String k, String v, AddressNode addressNode) {
-        switch (k) {
-            case "addr:city" -> addressNode.setCity(v);
-            case "addr:housenumber" -> addressNode.setHousenumber((v));
-            case "addr:postcode" -> addressNode.setPostcode(Integer.parseInt(v.trim()));
-            case "addr:street" -> addressNode.setStreet(v);
-        }
-    }
-
-    private boolean checkHighWayType(Way way, String v) {
-        if (way == null) return false;
-        return highWayTypeHelper(v);
-    }
-
-    private boolean highWayTypeHelper(String v) {
-        if (v.equals("motorway")) return true;
-        if (v.equals("trunk")) return true;
-        if (v.equals("primary")) return true;
-        if (v.equals("secondary")) return true;
-        if (v.equals("tertiary")) return true;
-        if (v.equals("unclassified")) return true;
-        if (v.equals("residential")) return true;
-        if (v.contains("link")) return true;
-        if (v.equals("living_street")) return true;
-        if (v.equals("pedestrian")) return true;
-        if (v.equals("road")) return true;
-        if (v.equals("footway")) return true;
-        if (v.equals("cycleway")) return true;
-
-        else return false;
     }
 }
