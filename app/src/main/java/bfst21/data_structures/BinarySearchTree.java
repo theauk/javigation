@@ -1,50 +1,41 @@
 package bfst21.data_structures;
 
+import bfst21.Osm_Elements.Element;
+
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 
 //TODO Adapted from Troels ???
-public class BinarySearchTree<Value> {
-    List<BSTNode> BSTNodes = new ArrayList<>();
+public class BinarySearchTree<Value extends Element> {
+    List<Value> values = new ArrayList<>();
     boolean sorted = true;
 
-    public void put(long key, Value val) {
-        BSTNodes.add(new BSTNode(key, val));
+    public void put(Value val) {
+        values.add(val);
         sorted = false;
     }
 
     public Value get(long key) {
         if (!sorted) {
-            BSTNodes.sort((a, b) -> Long.compare(a.key, b.key));
+            values.sort(Comparator.comparingLong(Value::getId));
             sorted = true;
         }
         int lo = 0;
-        int hi = BSTNodes.size();
+        int hi = values.size();
         while (lo + 1 < hi) {
             int mid = (lo + hi) / 2;
 
-            int compare = Long.compare(key,(BSTNodes.get(mid).key));
+            int compare = Long.compare(key,(values.get(mid).getId()));
             if (compare < 0) {
                 hi = mid;
             } else {
                 lo = mid;
             }
         }
-        BSTNode node = BSTNodes.get(lo);
-        return Long.compare(node.key, key) == 0 ? node.val : null;
-    }
-
-    private class BSTNode {
-        private final long key;
-        private final Value val;
-
-        public BSTNode(long key, Value val) {
-            this.key = key;
-            this.val = val;
-
-        }
-
+        Value val = values.get(lo);
+        return Long.compare(val.getId(), key) == 0 ? val : null;
     }
 }
 

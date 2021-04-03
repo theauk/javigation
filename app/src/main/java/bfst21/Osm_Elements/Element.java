@@ -14,7 +14,7 @@ public abstract class Element implements Spatializable {
         this.id = id;
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
@@ -52,5 +52,6 @@ public abstract class Element implements Spatializable {
     public float[] getCoordinates() {
         return new float[]{xMin, xMax, yMin, yMax};
     }
+
 
 }

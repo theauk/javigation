@@ -70,14 +70,13 @@ public class Creator extends Task<Void> {
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
                                 node = new Node(idNode, lon, lat);
-                                idToNode.put(idNode, node);
                                 break;
 
                             case "way":
                                 updateMessage("Loading: Ways");
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
-                                idToWay.put(idWay, way);
+                                idToWay.put(way);
                                 break;
 
                             case "relation":
@@ -125,8 +124,10 @@ public class Creator extends Task<Void> {
                                 }
                                 break;
                             case "nd":
-                                var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
-                                way.addNode(idToNode.get(refNode));
+                                if(way != null) {
+                                    var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
+                                    way.addNode(idToNode.get(refNode));
+                                }
                                 break;
 
                             case "member":
@@ -147,14 +148,14 @@ public class Creator extends Task<Void> {
                         switch (reader.getLocalName()) {
                             case "way":
                                 if (way != null) {
-                                    idToWay.put(way.getId(), way);
+                                    idToWay.put(way);
                                     if (way.hasType()) {
                                         mapData.addData(way);
                                     }
                                     way = null;
                                 }
                                 if (travelWay != null) {
-                                    idToWay.put(travelWay.getId(), travelWay);
+                                    idToWay.put(travelWay);
                                     mapData.addRoad(travelWay);
                                     travelWay = null;
                                 }
@@ -164,8 +165,13 @@ public class Creator extends Task<Void> {
                                 if (addressNode != null) {
                                     mapData.addAddress(addressNode);
                                     addressNode = null;
+
+                                } else if(node != null) {
+
+                                    idToNode.put(node);
+                                    node = null;
                                 }
-                                node = null;
+
                                 break;
 
                             case "relation":
