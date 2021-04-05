@@ -14,13 +14,15 @@ plugins {
 
 javafx {
     version = "15.0.1"
-    modules = [ 'javafx.controls', 'javafx.fxml' ]
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.base', 'javafx.graphics' ]
 }
 
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
+    mavenCentral()
 }
+mainClassName = 'bfst21.Launcher'
 
 dependencies {
     // Use JUnit Jupiter API for testing.
@@ -38,11 +40,27 @@ application {
     mainClass = 'bfst21.Launcher'
 }
 compileJava.options.encoding = 'UTF-8'
-tasks.named('test') {
+//tasks.named('test') {
     // Use junit platform for unit tests.
-    useJUnitPlatform()
-}
+//    useJUnitPlatform()
+//}
 
 run {
     //args = ['src/main/resources/map.osm']
+}
+
+jar {
+    from {
+        configurations.runtime.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes 'Main-Class': 'bfst21.Launcher'
+    }
+
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
 }
