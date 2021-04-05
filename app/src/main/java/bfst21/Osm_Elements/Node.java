@@ -1,8 +1,13 @@
 package bfst21.Osm_Elements;
 
+import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import javafx.scene.canvas.GraphicsContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Node extends Element{
+    private List<TravelWay> partOfWays;
 
     public Node(long id, float lon, float lat) {
         super(id);
@@ -29,6 +34,16 @@ public class Node extends Element{
         this.xMax = lon;
         this.yMin = lat;
         this.yMax = lat;
+    }
+    public void addReferenceToTravelWay(TravelWay tw){
+        if(partOfWays == null){
+         partOfWays = new ArrayList<>();
+        }
+        partOfWays.add(tw);
+    }
+
+    public List<TravelWay> getReferencedTravelWays(){
+        return partOfWays;
     }
 
     @Override

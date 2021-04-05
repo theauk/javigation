@@ -8,8 +8,7 @@ public class Relation extends NodeHolder {
 
     private ArrayList<Way> ways;
     private String name;
-    private String restriction; // probably shouldn't be string - ex. it's so if the relation is a route for bicycle
-    // route have distances.
+    private String restriction;
 
     public Relation(long id) {
         super(id);

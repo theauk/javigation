@@ -25,7 +25,7 @@ public abstract class NodeHolder extends Element {
         }
     }
 
-    private void checkMaxAndMin(Node node) {
+    protected void checkMaxAndMin(Node node) {
         if (nodes.size() > 1) {
             checkX(node.getxMin());
             checkY(node.getyMin());

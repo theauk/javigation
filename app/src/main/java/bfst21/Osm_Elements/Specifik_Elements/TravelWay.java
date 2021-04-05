@@ -1,5 +1,6 @@
 package bfst21.Osm_Elements.Specifik_Elements;
 
+import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -19,8 +20,11 @@ public class TravelWay extends Way {
         super(way.getId());
         super.addAllNodes(way.getNodes());
         super.setType(roadType);
-
+        maxspeed = 50; // default????
         setBooleans(roadType);
+        for(Node n: nodes){
+            n.addReferenceToTravelWay(this);
+        }
     }
 
     private void setBooleans(String type) {
@@ -28,7 +32,7 @@ public class TravelWay extends Way {
         isCycleable = true;
         isDriveable = true;
         onewayRoad = false;
-        if (type.equals("motorway") || type.equals("trunk")) {
+        if (type.contains("motorway") || type.contains("trunk")) {
             setNotCycleable();
             setNotWalkable();
         }
@@ -70,6 +74,7 @@ public class TravelWay extends Way {
     }
 
     public void defaultMaxSpeed(){
+        // TODO: 03-04-2021  should probably be type based 
         maxspeed = 80;
     }
 

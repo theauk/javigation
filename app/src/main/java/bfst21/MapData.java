@@ -4,6 +4,7 @@ import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
+
 import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.data_structures.AddressTriesTree;
 import bfst21.data_structures.KDTree;
@@ -12,6 +13,7 @@ import bfst21.data_structures.RoadGraph;
 import bfst21.view.CanvasBounds;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class MapData {
@@ -35,7 +37,7 @@ public class MapData {
         roadGraph.add(way);
         addDataRTree(way);
         if(way.getName() != null){
-            closetRoadTree.addAll(way.getName(), way.getNodes());
+            closetRoadTree.addAll(way.getNodes());
         }
     }
 
@@ -57,8 +59,16 @@ public class MapData {
 
     public String getNearestRoad(float x, float y) {
         String names = "";
+        HashSet<String> list = new HashSet<>();
         try {
-            names = closetRoadTree.getNearestNode(x, y);
+            Node node =  closetRoadTree.getNearestNode(x,y);
+            if(node.getReferencedTravelWays() != null){
+                for(TravelWay tw : node.getReferencedTravelWays()){
+                    if(tw.getName()!=null)list.add(tw.getName());
+                }
+                names = String.join(", ", list);
+            }
+
         } catch (KDTreeEmptyException e) {
             names = e.getMessage();
         }
@@ -72,6 +82,10 @@ public class MapData {
     public void addAddress(AddressNode node) {
         addressTree.put(node);
 
+    }
+
+    public void buildTree(){
+        closetRoadTree.buildTree();
     }
 
     public AddressNode getAddressNode(String address) {

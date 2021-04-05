@@ -35,7 +35,7 @@ public class BinarySearchTree<Value extends Element> {
             }
         }
         Value val = values.get(lo);
-        return Long.compare(val.getId(), key) == 0 ? val : null;
+        return val.getId() == key ? val : null;
     }
 }
 
