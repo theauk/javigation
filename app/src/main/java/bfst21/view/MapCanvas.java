@@ -24,12 +24,12 @@ public class MapCanvas extends Canvas {
         widthProperty().addListener(((observable, oldValue, newValue) -> {
             setBounds();
             repaint();
-            pan((newValue.floatValue() - oldValue.floatValue()),0);
+            pan((newValue.floatValue() - oldValue.floatValue())/2,0);
         }));
         heightProperty().addListener((observable, oldValue, newValue) -> {
             setBounds();
             repaint();
-            pan(0,newValue.floatValue() - oldValue.floatValue());
+            pan(0,(newValue.floatValue() - oldValue.floatValue())/2);
         });
 
         repaint();
@@ -109,7 +109,6 @@ public class MapCanvas extends Canvas {
 
     public void reset() {
         trans = new Affine();
-        //pan(0, 0); // TODO: 4/1/21 ???
         startup();
         setBounds();
         mapData.searchInData(bounds);
