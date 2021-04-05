@@ -24,10 +24,12 @@ public class MapCanvas extends Canvas {
         widthProperty().addListener(((observable, oldValue, newValue) -> {
             setBounds();
             repaint();
+            pan((newValue.floatValue() - oldValue.floatValue()),0);
         }));
         heightProperty().addListener((observable, oldValue, newValue) -> {
             setBounds();
             repaint();
+            pan(0,newValue.floatValue() - oldValue.floatValue());
         });
 
         repaint();
