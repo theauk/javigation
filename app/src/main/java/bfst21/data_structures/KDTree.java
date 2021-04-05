@@ -16,6 +16,7 @@ public class KDTree<Value extends Element> {
     private int startDim;
     private int numCor;
     private int numDim;
+    private int duplicateCount = 0;
 
     public KDTree(int startDim, int numCor) {
         this.startDim = startDim;
@@ -86,6 +87,10 @@ public class KDTree<Value extends Element> {
             root = medNode;
         }
 
+        if (medNode == parent) {
+            duplicateCount++; // TODO: 4/5/21 Why is it zero? 
+        }
+
         medNode.leftChild = buildTree(nodes.subList(0, med), dim + numDim, medNode);
         medNode.rightChild = buildTree(nodes.subList(med + 1, nodes.size()), dim + numDim, medNode);
 
@@ -93,8 +98,9 @@ public class KDTree<Value extends Element> {
     }
 
     public String getNearestNode(float x, float y) throws KDTreeEmptyException {
-        if (!isSorted) {
+        if (!isSorted) { // TODO: 4/5/21 should preferably be sorted before first search because this way it makes the program freeze momentarily
             buildTree(list, startDim, null);
+            System.out.println("Duplicates: " + duplicateCount);
             isSorted = true;
         }
 
@@ -128,10 +134,10 @@ public class KDTree<Value extends Element> {
             return currentNearest;
         }
 
-        double minDistance = getDistance(currentNearest, new float[]{x, y});
-        double thisDistance = getDistance(currentNode, new float[]{x, y});
+        double currentDistance = getDistance(currentNode, new float[]{x, y});
+        double minimumDistance = getDistance(currentNearest, new float[]{x, y});
 
-        if (thisDistance < minDistance) {
+        if (currentDistance < minimumDistance) {
             currentNearest = currentNode;
         }
 
