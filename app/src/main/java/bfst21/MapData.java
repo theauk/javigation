@@ -66,9 +66,7 @@ public class MapData {
                 for(TravelWay tw : node.getReferencedTravelWays()){
                     if(tw.getName()!=null)list.add(tw.getName());
                 }
-                for (String s : list){
-                    names += s + ", ";
-                }
+                names = String.join(", ", list);
             }
 
         } catch (KDTreeEmptyException e) {
