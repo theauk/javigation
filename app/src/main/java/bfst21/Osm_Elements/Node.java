@@ -1,5 +1,8 @@
 package bfst21.Osm_Elements;
 
+import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
+import javafx.scene.canvas.GraphicsContext;
+
 import java.util.ArrayList;
 import java.util.List;
 

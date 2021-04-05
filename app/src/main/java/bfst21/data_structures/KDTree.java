@@ -24,7 +24,6 @@ public class KDTree<Value extends Element> {
     };
     private KDTreeNode root;
     private List<KDTreeNode> list;
-    private boolean isSorted;
     private int startDim;
     private int numCor;
     private int numDim;
@@ -34,7 +33,6 @@ public class KDTree<Value extends Element> {
         this.numCor = numCor;
         numDim = numCor / 2;
         list = new ArrayList<>();
-        isSorted = false;
     }
 
     private Comparator<KDTreeNode> getComparatorFromDimension(int dim) {
@@ -45,12 +43,14 @@ public class KDTree<Value extends Element> {
         return (low + high) / 2;
     }
 
-    public void addAll(String name, List<Value> nodes) {
+    public void addAll(List<Value> nodes) {
         for (Value node : nodes) {
-            list.add(new KDTreeNode(name, node));
+            list.add(new KDTreeNode(node));
         }
     }
-
+    public void buildTree(){
+        buildTree(list, startDim);
+    }
     private KDTreeNode buildTree(List<KDTreeNode> nodes, int dim) {
         if (nodes.isEmpty()) {
             return null;
@@ -73,13 +73,10 @@ public class KDTree<Value extends Element> {
         return medNode;
     }
 
-    public String getNearestNode(float x, float y) throws KDTreeEmptyException {
-        if (!isSorted) { // TODO: 4/5/21 should preferably be sorted before first search because this way it makes the program freeze momentarily
-            buildTree(list, startDim);
-            isSorted = true;
-        }
+    public Value getNearestNode(float x, float y) throws KDTreeEmptyException {
+
         KDTreeNode nearestNode = getNearestNode(x, y, root, null);
-        return nearestNode.name;
+        return nearestNode.node;
     }
 
     private boolean possibleCloserNode(Double shortestDistance, KDTreeNode currentNode, float x, float y) {
@@ -141,12 +138,12 @@ public class KDTree<Value extends Element> {
             System.out.println("");
             System.out.println("Level: " + level);
             for (KDTreeNode node : result.get(level)) {
-                System.out.println("Node id: " + node.node.getId() + " : x: " + node.node.getxMax() + " y: " + node.node.getyMax() + " axis: " + node.onXAxis + " name: " + node.name);
+                System.out.println("Node id: " + node.node.getId() + " : x: " + node.node.getxMax() + " y: " + node.node.getyMax() + " axis: " + node.onXAxis + " name: ");
                 if (node.leftChild != null) {
-                    System.out.println("Has left child, id: " + node.leftChild.node.getId() + " name: " + node.leftChild.name);
+                    System.out.println("Has left child, id: " + node.leftChild.node.getId() + " name: ");
                 }
                 if (node.rightChild != null) {
-                    System.out.println("Has right child, id: " + node.rightChild.node.getId() + " name: " + node.rightChild.name);
+                    System.out.println("Has right child, id: " + node.rightChild.node.getId() + " name: ");
                 }
             }
             level++;
@@ -181,7 +178,7 @@ public class KDTree<Value extends Element> {
         private Boolean onXAxis;
 
 
-        public KDTreeNode(String name, Value node) {
+        public KDTreeNode(Value node) {
             this.node = node;
         }
     }

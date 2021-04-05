@@ -150,7 +150,7 @@ public class Creator extends Task<Void> {
                                 if (way != null) {
                                     idToWay.put(way);
                                     if (way.hasType()) {
-                                        mapData.addData(way);
+                                        mapData.addDataRTree(way);
                                     }
                                     way = null;
                                 }
@@ -184,6 +184,7 @@ public class Creator extends Task<Void> {
                 }
             }
         }
+        mapData.buildTree();
         idToWay = null;
         updateMessage("");
         reader.close();
