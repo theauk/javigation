@@ -9,87 +9,16 @@ import javafx.scene.canvas.GraphicsContext;
  */
 public class TravelWay extends Way {
 
-    private String name;
-    private double maxspeed;
-    private boolean onewayRoad;
-    private boolean isDriveable;
-    private boolean isCycleable;
-    private boolean isWalkable;
 
     public TravelWay(Way way, String roadType) {
         super(way.getId());
         super.addAllNodes(way.getNodes());
         super.setType(roadType);
-        maxspeed = 50; // default????
-        setBooleans(roadType);
-        for(Node n: nodes){
-            n.addReferenceToTravelWay(this);
-        }
+        // default????
+
     }
 
-    private void setBooleans(String type) {
-        isWalkable = true;
-        isCycleable = true;
-        isDriveable = true;
-        onewayRoad = false;
-        if (type.contains("motorway") || type.contains("trunk")) {
-            setNotCycleable();
-            setNotWalkable();
-        }
-        if (type.equals("pedestrian") || type.equals("footway") || type.equals("steps")) {
-            setNotDriveable();
-        }
-        if (type.equals("cycleway")) {
-            setNotDriveable();
-            setNotWalkable();
-        }
-    }
 
-    public void setNotCycleable() {
-        this.isCycleable = false;
-    }
 
-    public void setNotWalkable() {
-        this.isWalkable = false;
-    }
 
-    public void setNotDriveable() {
-        isDriveable = false;
-    }
-
-    public void setOnewayRoad() {
-        onewayRoad = true;
-    }
-
-    public double getMaxspeed() {
-        return maxspeed;
-    }
-
-    public void setMaxspeed(double maxspeed) {
-        this.maxspeed = maxspeed;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void defaultMaxSpeed(){
-        // TODO: 03-04-2021  should probably be type based 
-        maxspeed = 80;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public void draw(GraphicsContext gc) {
-        //TODO Should check for one way.....
-        gc.beginPath();
-        gc.moveTo(nodes.get(0).getxMin(), nodes.get(0).getyMin());
-        for (var node : nodes) {
-            gc.lineTo(node.getxMin(), node.getyMin());
-        }
-        gc.stroke();
-    }
 }

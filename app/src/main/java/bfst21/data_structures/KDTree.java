@@ -51,6 +51,7 @@ public class KDTree<Value extends Element> {
     public void buildTree(){
         buildTree(list, startDim);
     }
+
     private KDTreeNode buildTree(List<KDTreeNode> nodes, int dim) {
         if (nodes.isEmpty()) {
             return null;

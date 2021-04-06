@@ -5,7 +5,7 @@ import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
 import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import bfst21.Osm_Elements.Way;
-import bfst21.data_structures.BinarySearchTree;
+import bfst21.data_structures.*;
 import bfst21.file_reading.ProgressInputStream;
 import javafx.concurrent.Task;
 
@@ -48,8 +48,12 @@ public class Creator extends Task<Void> {
         Way way = null;
         Node node = null;
         Relation relation = null;
-        TravelWay travelWay = null;
         AddressNode addressNode = null;
+
+        KDTree<Node> highWayRoadNodes = new KDTree<>(2,4);
+        RTree rTree = new RTree(1, 30, 4);
+        RoadGraph roadGraph = new RoadGraph();
+        AddressTriesTree addressTree = new AddressTriesTree();
 
         while (reader.hasNext()) {
             if (isCancelled()) return;   //Abort task
@@ -88,12 +92,6 @@ public class Creator extends Task<Void> {
                                 var k = reader.getAttributeValue(null, "k");
                                 var v = reader.getAttributeValue(null, "v");
 
-                                if (k.equals("highway")) {
-                                    travelWay = checkHighWayType(way,k,v);
-                                    if(travelWay != null)  way = null;
-                                    break;
-                                }
-
                                 if(node != null){
                                     if (k.equals("addr:city")) {
                                         addressNode = new AddressNode(node);
@@ -102,9 +100,13 @@ public class Creator extends Task<Void> {
                                     break;
                                 }
 
-
                                 if (addressNode != null) {
                                     checkAddressNode(k, v, addressNode);
+                                    break;
+                                }
+
+                                if (way != null) {
+                                    checkWay(k, v, way);
                                     break;
                                 }
 
@@ -113,16 +115,8 @@ public class Creator extends Task<Void> {
                                     break;
                                 }
 
-                                if (travelWay != null) {
-                                    checkTravelWay(k, v, travelWay);
-                                    break;
-                                }
-
-                                if (way != null) {
-                                    checkWay(k, v, way);
-                                    break;
-                                }
                                 break;
+
                             case "nd":
                                 if(way != null) {
                                     var refNode = Long.parseLong(reader.getAttributeValue(null, "ref"));
@@ -146,24 +140,9 @@ public class Creator extends Task<Void> {
                         break;
                     case END_ELEMENT:
                         switch (reader.getLocalName()) {
-                            case "way":
-                                if (way != null) {
-                                    idToWay.put(way);
-                                    if (way.hasType()) {
-                                        mapData.addDataRTree(way);
-                                    }
-                                    way = null;
-                                }
-                                if (travelWay != null) {
-                                    idToWay.put(travelWay);
-                                    mapData.addRoad(travelWay);
-                                    travelWay = null;
-                                }
-                                break;
-
                             case "node":
                                 if (addressNode != null) {
-                                    mapData.addAddress(addressNode);
+                                    addressTree.put(addressNode);
                                     addressNode = null;
 
                                 } else if(node != null) {
@@ -171,21 +150,34 @@ public class Creator extends Task<Void> {
                                     idToNode.put(node);
                                     node = null;
                                 }
-
                                 break;
+
+                            case "way":
+                                if (way != null) {
+                                    idToWay.put(way);
+                                    if (way.hasType()) {
+                                        rTree.insert(way);
+                                    }
+                                    if(way.isHighWay() && way.hasName()){
+                                        highWayRoadNodes.addAll(way.getNodes());
+                                    }
+                                    way = null;
+                                }
+                                break;
+
 
                             case "relation":
                                 if (relation != null) {
                                     //mapData.add(relation)
                                 }
                                 relation = null;
+                                break;
                         }
                         break;
                 }
             }
         }
-        mapData.buildTree();
-        idToWay = null;
+        mapData.addDataTrees(highWayRoadNodes, rTree, roadGraph, addressTree);
         updateMessage("");
         reader.close();
     }
@@ -206,27 +198,7 @@ public class Creator extends Task<Void> {
 
     private void checkTravelWay(String k, String v, TravelWay travelWay) {
         switch (k) {
-            case "oneway":
-                if (v.equals("yes")) travelWay.setOnewayRoad();
-                break;
-            case "cycleway":
-                if (!v.equals("no")) travelWay.setNotCycleable();
-                break;
-            case "maxspeed":
-               try{
-                    travelWay.setMaxspeed(Integer.parseInt(v));
-                } catch (NumberFormatException e){
-                   travelWay.defaultMaxSpeed();
-               }
-               break;
 
-            case "source:maxspeed":
-                if(v.equals("DK:urban")) travelWay.setMaxspeed(50);
-                break;
-
-            case "name":
-                travelWay.setName(v);
-                break;
         }
     }
 
@@ -243,6 +215,32 @@ public class Creator extends Task<Void> {
             case "leisure":
                 if (v.equals("park")) way.setType(v);
                 break;
+            case "highway":
+                checkHighWayType(way,v);
+                break;
+            case "oneway":
+                if (v.equals("yes")) way.setOnewayRoad();
+                break;
+            case "cycleway":
+                if (!v.equals("no")) way.setNotCycleable();
+                break;
+
+            case "maxspeed":
+                try{
+                    way.setMaxspeed(Integer.parseInt(v));
+                } catch (NumberFormatException e){
+                }
+                break;
+
+            case "source:maxspeed":
+                if(v.equals("DK:urban")) way.setMaxspeed(50);
+                if(v.equals("DK:rural")) way.setMaxspeed(80);
+                if(v.equals("DK:motorway")) way.setMaxspeed(130);
+                break;
+
+            case "name":
+                way.setName(v);
+                break;
         }
     }
 
@@ -255,68 +253,53 @@ public class Creator extends Task<Void> {
         }
     }
 
-    private TravelWay checkHighWayType(Way way, String k, String v) {
-        if (way == null) return null;
-        TravelWay tw;
+    private void checkHighWayType(Way way, String v) {
 
         if(v.equals("motorway")){
-            tw = new TravelWay(way, v);
-            tw.setMaxspeed(130);
-            return tw;
+            way.setType(v,true);
+            way.setMaxspeed(130);
+            return;
         }
 
         if(v.equals("living_street")){
-            tw = new TravelWay(way, v);
-            tw.setMaxspeed(15);
-            return tw;
+            way.setType(v,true);
+            way.setMaxspeed(15);
+            return;
         }
 
         if(v.equals("unclassified")){
-            tw = new TravelWay(way, v);
-            tw.setMaxspeed(50);
-            return tw;
+            way.setType(v,true);
+            way.setMaxspeed(50);
+            return;
         }
 
         if(v.equals("residential")){
-            tw = new TravelWay(way, v);
-            tw.setMaxspeed(50);
-            return tw;
+            way.setType(v,true);
+            way.setMaxspeed(50);
+            return;
         }
 
         if(v.contains("trunk")){
             //motortrafikvej
-            tw = new TravelWay(way, v);
-            tw.setMaxspeed(80);
-            return tw;
+            way.setType(v,true);
+            way.setMaxspeed(80);
+            return;
         }
 
-        if(v.equals("primary")){
-            // TODO: 05-04-2021 Difficult to know if in city or out of city
-            tw = new TravelWay(way, v);
-            return tw;
-        }
+        if(restOfHighWays(v)) way.setType(v,true);
+    }
 
-        if(v.contains("secondary")){
-            tw = new TravelWay(way, v);
+    public boolean restOfHighWays(String v){
+        if(v.equals("primary")) return true;
 
-            return tw;
-        }
+        if(v.contains("secondary")) return true;
 
-        if(v.contains("link")){
-            tw = new TravelWay(way, v);
-            return tw;
-        }
+        if(v.contains("link")) return true;
 
-        if(v.contains("tertiary")){
-            tw = new TravelWay(way, v);
-            return tw;
-        }
+        if(v.contains("tertiary")) return true;
 
-        if(v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway")){
-            tw = new TravelWay(way, v);
-            return tw;
-        }
-
-        else return null;
+        if(v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway"))
+            return true;
+        else  return false;
     }
 }

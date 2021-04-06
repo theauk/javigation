@@ -5,7 +5,7 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
 
-import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
+import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AddressTriesTree;
 import bfst21.data_structures.KDTree;
 import bfst21.data_structures.RTree;
@@ -27,27 +27,21 @@ public class MapData {
 
     public MapData() {
         mapSegment = new ArrayList<>();
-        rTree = new RTree(1, 30, 4);
-        closetRoadTree = new KDTree<>(0, 4);
-        addressTree = new AddressTriesTree();
-        roadGraph = new RoadGraph();
+
     }
 
-    public void addRoad(TravelWay way) {
-        roadGraph.add(way);
-        addDataRTree(way);
-        if(way.getName() != null){
-            closetRoadTree.addAll(way.getNodes());
-        }
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, RoadGraph roadGraph,AddressTriesTree addressTree ){
+        this.rTree = rTree;
+        this.closetRoadTree = highWayRoadNodes;
+        this.addressTree = addressTree;
+        this.roadGraph = roadGraph;
+        buildTrees();
     }
 
-    public void addData(List<Element> toAdd) {
-        rTree.insertAll(toAdd);
+    private void buildTrees() {
+        closetRoadTree.buildTree();
     }
 
-    public void addDataRTree(Element toAdd) {
-        rTree.insert(toAdd);
-    }
 
     public void searchInData(CanvasBounds bounds) {
         mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug);
@@ -62,9 +56,9 @@ public class MapData {
         HashSet<String> list = new HashSet<>();
         try {
             Node node =  closetRoadTree.getNearestNode(x,y);
-            if(node.getReferencedTravelWays() != null){
-                for(TravelWay tw : node.getReferencedTravelWays()){
-                    if(tw.getName()!=null)list.add(tw.getName());
+            if(node.getReferencedHighWays() != null){
+                for(Way way : node.getReferencedHighWays()){
+                    if(way.getName()!=null)list.add(way.getName());
                 }
                 for (String s : list){
                     names += s + ", ";
@@ -81,14 +75,7 @@ public class MapData {
         return mapSegment;
     }
 
-    public void addAddress(AddressNode node) {
-        addressTree.put(node);
 
-    }
-
-    public void buildTree(){
-        closetRoadTree.buildTree();
-    }
 
     public AddressNode getAddressNode(String address) {
         return addressTree.getAddressNode(address);

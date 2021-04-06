@@ -1,13 +1,12 @@
 package bfst21.Osm_Elements;
 
-import bfst21.Osm_Elements.Specifik_Elements.TravelWay;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Node extends Element{
-    private List<TravelWay> partOfWays;
+    private List<Way> partOfWays;
 
     public Node(long id, float lon, float lat) {
         super(id);
@@ -35,14 +34,14 @@ public class Node extends Element{
         this.yMin = lat;
         this.yMax = lat;
     }
-    public void addReferenceToTravelWay(TravelWay tw){
+    public void addReferenceToHighWay(Way way){
         if(partOfWays == null){
          partOfWays = new ArrayList<>();
         }
-        partOfWays.add(tw);
+        partOfWays.add(way);
     }
 
-    public List<TravelWay> getReferencedTravelWays(){
+    public List<Way> getReferencedHighWays(){
         return partOfWays;
     }
 
