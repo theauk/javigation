@@ -54,9 +54,9 @@ public class KDTreeTest {
         w1.addNode(n4);
 
 
-        tree.addAll("Navn", w1.getNodes());
-        tree.testBuild();
-        tree.printTree();
+        //tree.addAll("Navn", w1.getNodes());
+        //tree.testBuild();
+        //tree.printTree();
     }
 
     @AfterAll
