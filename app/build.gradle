@@ -8,6 +8,7 @@
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
+    id 'java-library'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.9'
 }
@@ -59,7 +60,7 @@ jar {
         }
     }
     manifest {
-        attributes 'Main-Class': 'bfst21.Launcher'
+        attributes 'Main-Class': 'main.java.bfst21.Launcher'
     }
 
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
