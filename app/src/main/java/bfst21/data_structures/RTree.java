@@ -2,7 +2,6 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
-import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
 
 import java.util.*;
@@ -22,7 +21,12 @@ public class RTree {
         splitInsertResults = new ArrayList<>();
     }
 
-    public float[] createNewCoordinateArray() {
+    /**
+     * Used to create a new coordinate array with the maximum MMB values for a new node. Ensures that the new node's MMB coordinates
+     * afterward can be updated correctly.
+     * @return A float array with the min x, max x, min y, and min y coordinates.
+     */
+    private float[] createNewCoordinateArray() {
         return new float[]{Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY};
     }
 
@@ -30,16 +34,24 @@ public class RTree {
 
     }*/
 
+    /**
+     * Recursively searches the R-tree by going through the nodes whose minimum bounding box intersects with the search bounds.
+     * If debug is selected, elements to visualize the elements' minimum bounding boxes are also created along with a rectangle to visualize the canvas bounds.
+     * @param xMin The minimum x-coordinate of the canvas.
+     * @param xMax The maximum x-coordinate of the canvas.
+     * @param yMin The minimum y-coordinate of the canvas.
+     * @param yMax The maximum y-coordinate of the canvas.
+     * @param debug True if debug mode is selected. Otherwise, false.
+     * @return An ArrayList with the Element objects that intersect with the search bounds.
+     */
     public ArrayList<Element> search(float xMin, float xMax, float yMin, float yMax, boolean debug) {
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
             ArrayList<Element> results = new ArrayList<>();
             if (debug) {
                 float change = xMin * 0.0005f;
-
                 searchCoordinates = new float[]{xMin + change, xMax + (-change), yMin + change, yMax + (-change)};
-                //searchCoordinates = new float[]{xMin*0.99f, xMax*0.99f, yMin*0.99f, yMax*0.99f};
-                results.addAll(createDebugBoundsRectangle(searchCoordinates));
+                results.addAll(createDebugCanvasBoundsRectangle(searchCoordinates));
                 searchDebug(searchCoordinates, root, results);
             } else {
                 search(searchCoordinates, root, results);
@@ -73,7 +85,7 @@ public class RTree {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
                     if (intersects(searchCoordinates, e.getCoordinates())) {
-                        results.add(createDebugRectangleRelation(e.getCoordinates()));
+                        results.addAll(createDebugElementRectangle(e.getCoordinates()));
                         results.add(e);
                     }
                 }
@@ -88,6 +100,21 @@ public class RTree {
         }
     }
 
+    private Boolean intersects(float[] coordinates1, float[] coordinates2) {
+        for (int i = 0; i < numberOfCoordinates; i += 2) {
+            if (specificCoordinatesDoesNotIntersect(coordinates1[i], coordinates2[i + 1])) {
+                return false;
+            } else if (specificCoordinatesDoesNotIntersect(coordinates2[i], coordinates1[i + 1])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean specificCoordinatesDoesNotIntersect(float minCoordinateFirstElement, float maxCoordinateSecondElement) {
+        return minCoordinateFirstElement >= maxCoordinateSecondElement;
+    }
+
     private Way createDebugWay(float firstCoordinate, float secondCoordinate, float thirdCoordinate, float fourthCoordinate) {
         Way w = new Way(0);
         w.addNode(new Node(firstCoordinate, secondCoordinate));
@@ -95,7 +122,7 @@ public class RTree {
         return w;
     }
 
-    private ArrayList<Way> createDebugBoundsRectangle(float[] searchCoordinates) {
+    private ArrayList<Way> createDebugCanvasBoundsRectangle(float[] searchCoordinates) {
         ArrayList<Way> ways = new ArrayList<>();
         ways.add(createDebugWay(searchCoordinates[0], searchCoordinates[2], searchCoordinates[0], searchCoordinates[3]));
         ways.add(createDebugWay(searchCoordinates[0], searchCoordinates[2], searchCoordinates[1], searchCoordinates[2]));
@@ -107,21 +134,20 @@ public class RTree {
         return ways;
     }
 
-    private Relation createDebugRectangleRelation(float[] coordinates) {
-        Relation r = new Relation(0);
-        r.addWay(createDebugWay(coordinates[0], coordinates[2], coordinates[1], coordinates[2]));
-        r.addWay(createDebugWay(coordinates[0], coordinates[2], coordinates[0], coordinates[3]));
-        r.addWay(createDebugWay(coordinates[1], coordinates[2], coordinates[1], coordinates[3]));
-        r.addWay(createDebugWay(coordinates[0], coordinates[3], coordinates[1], coordinates[3]));
-        return r;
+    private ArrayList<Way> createDebugElementRectangle(float[] coordinates) {
+        ArrayList<Way> ways = new ArrayList<>();
+        ways.add(createDebugWay(coordinates[0], coordinates[2], coordinates[1], coordinates[2]));
+        ways.add(createDebugWay(coordinates[0], coordinates[2], coordinates[0], coordinates[3]));
+        ways.add(createDebugWay(coordinates[1], coordinates[2], coordinates[1], coordinates[3]));
+        ways.add(createDebugWay(coordinates[0], coordinates[3], coordinates[1], coordinates[3]));
+        return ways;
     }
 
-    public void insertAll(List<Element> elements) {
-        for (Element e : elements) {
-            insert(e);
-        }
-    }
-
+    /**
+     * Insert an Element into the R-tree by choosing a leaf, which requires the smallest MMB increase. Afterward, checks if it is necessary to
+     * create a new root, split nodes, and adjust MMB coordinates.
+     * @param element The Element object to insert.
+     */
     public void insert(Element element) {
         if (root == null) {
             root = new RTreeNode(element.getCoordinates(), true, minimumChildren, maximumChildren, null);
@@ -137,18 +163,13 @@ public class RTree {
         }
     }
 
-    private void checkOverflow(RTreeNode node) {
-        if (node.overflow()) { // TODO: 3/31/21 Decide on split method 
-            //RTreeNode[] result = splitNodeShuffle(node);
-            RTreeNode[] result = splitNodeQuadraticCost(node);
-            //RTreeNode[] result = splitNodeLinearCost(node);
-            adjustTree(result[0], result[1]);
-            checkOverflow(node.getParent());
-        } else {
-            adjustTree(node, null);
-        }
-    }
-
+    /**
+     * Recursively chooses a leaf where a new element can be placed. The method finds the child whose MMB requires the least increase
+     * if the new element is inserted.
+     * @param element The Element object to insert.
+     * @param node The current node whose children should be checked.
+     * @return RTreeNode which is a leaf where the new element can be placed.
+     */
     private RTreeNode chooseLeaf(Element element, RTreeNode node) {
         if (node.isLeaf()) {
             return node;
@@ -164,22 +185,48 @@ public class RTree {
         }
     }
 
-    private void adjustTree(RTreeNode originalNode, RTreeNode newNode) {
-        if (originalNode.getParent() == null && (newNode == null || originalNode == newNode)) { // only root
-            updateNodeCoordinates(originalNode);
-        } else if (originalNode.getParent() == null && newNode != null) { // need to join two nodes under one root
-            createNewRoot(originalNode, newNode);
-            adjustTree(root, null);
-        } else if (newNode == null) { // only one node
-            updateNodeCoordinates(originalNode);
-            adjustTree(originalNode.getParent(), null);
-        } else { // two nodes
-            updateNodeCoordinates(originalNode);
-            updateNodeCoordinates(newNode);
-            adjustTree(originalNode.getParent(), newNode.getParent());
+    /**
+     * Checks if a node has more elements than the maximum allowed. If yes, the node is split and the tree is adjusted.
+     * @param node The Node object to check for overflow.
+     */
+    private void checkOverflow(RTreeNode node) {
+        if (node.overflow()) { // TODO: 3/31/21 Decide on split method 
+            //RTreeNode[] result = splitNodeShuffle(node);
+            RTreeNode[] result = splitNodeQuadraticCost(node);
+            //RTreeNode[] result = splitNodeLinearCost(node);
+            adjustTree(result[0], result[1]);
+            checkOverflow(node.getParent());
+        } else {
+            adjustTree(node, null);
         }
     }
 
+    /**
+     * Recursively adjusts RTreeNode(s) to ensure that MMBs have the right coordinates and a new root is created if necessary.
+     * @param firstNode The first node to adjust.
+     * @param secondNode The second node to adjust. Might be null if it is only the root or a single node that should be adjusted.
+     */
+    private void adjustTree(RTreeNode firstNode, RTreeNode secondNode) {
+        if (firstNode.getParent() == null && (secondNode == null || firstNode == secondNode)) { // only the root should be updated
+            updateNodeMMBCoordinates(firstNode);
+        } else if (firstNode.getParent() == null && secondNode != null) { // need to join two nodes under one root and adjust the root
+            createNewRoot(firstNode, secondNode);
+            adjustTree(root, null);
+        } else if (secondNode == null) { // only one node to adjust
+            updateNodeMMBCoordinates(firstNode);
+            adjustTree(firstNode.getParent(), null);
+        } else { // two nodes to adjust
+            updateNodeMMBCoordinates(firstNode);
+            updateNodeMMBCoordinates(secondNode);
+            adjustTree(firstNode.getParent(), secondNode.getParent());
+        }
+    }
+
+    /**
+     * Creates a new root for two nodes and thus grows the R-tree's height by one.
+     * @param firstNode The first RTreeNode.
+     * @param secondNode The second RTreeNode.
+     */
     private void createNewRoot(RTreeNode firstNode, RTreeNode secondNode) {
         RTreeNode newRoot = new RTreeNode(createNewCoordinateArray(), false, minimumChildren, maximumChildren, null);
         newRoot.addChild(firstNode);
@@ -188,7 +235,11 @@ public class RTree {
         adjustTree(firstNode, secondNode);
     }
 
-    private void updateNodeCoordinates(RTreeNode node) {
+    /**
+     * Updates a node's MMB coordinates to ensure that all its children's coordinates are included.
+     * @param node The RtreeNode whose coordinates should be updated.
+     */
+    private void updateNodeMMBCoordinates(RTreeNode node) {
         float[] newCoordinates = createNewCoordinateArray();
         for (RTreeNode childNode : node.getChildren()) {
             for (int i = 0; i < numberOfCoordinates; i += 2) {
@@ -203,6 +254,12 @@ public class RTree {
         node.updateCoordinate(newCoordinates);
     }
 
+    /**
+     * Splits a node's children by first shuffling the children ArrayList and then inserting them into two new nodes.
+     * The method reuses the old node by removing its children and inserting the new ones. The other children are inserted into a new node.
+     * @param node The RTreeNode that needs to be split.
+     * @return An array with the two new RTree nodes.
+     */
     private RTreeNode[] splitNodeShuffle(RTreeNode node) {
 
         RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent());
@@ -228,12 +285,18 @@ public class RTree {
         newNode.addChildren(childrenForNewNode);
 
         if (node.getParent() != null) {
+            // set the parent of the new node to the old node's parent
             node.getParent().addChild(newNode);
         }
-
         return new RTreeNode[]{node, newNode};
     }
 
+    /**
+     * Splits a node by finding the two children nodes who if put together would create the biggest MMB.
+     * Then the rest of the elements are distributed based on which assignment would lead to the smallest MMB increase.
+     * @param node The RTreeNode to split.
+     * @return An array with the two new RTree nodes.
+     */
     private RTreeNode[] splitNodeQuadraticCost(RTreeNode node) {
         ArrayList<RTreeNode> elementsToSplit = new ArrayList<>(node.getChildren());
         int[] seeds = pickSeedsQuadratic(elementsToSplit);
@@ -249,14 +312,34 @@ public class RTree {
         return new RTreeNode[]{node, newNode};
     }
 
-    private void updateNodes(RTreeNode node, RTreeNode newNode, RTreeNode elementForNode, RTreeNode elementForNewNode) {
-        node.removeChildren();
-        node.addChild(elementForNode);
-        node.updateCoordinate(createNewCoordinateArray());
-        newNode.addChild(elementForNewNode);
-        if (node.getParent() != null) node.getParent().addChild(newNode);
+    /**
+     * Determines the two nodes, which if put in the same node would lead to the biggest MMB.
+     * @param elementsToSplit An ArrayList with RTreeNodes that should be split.
+     * @return The indices of the nodes that would create the biggest MMB.
+     */
+    private int[] pickSeedsQuadratic(ArrayList<RTreeNode> elementsToSplit) {
+        int[] mostWastefulNodesIndices = new int[2];
+        float largestArea = Float.NEGATIVE_INFINITY;
+
+        for (int i = 0; i < elementsToSplit.size() - 1; i++) {
+            for (int j = i + 1; j < elementsToSplit.size(); j++) {
+                float currentArea = findAreaDifference(elementsToSplit.get(i).getCoordinates(), elementsToSplit.get(j).getCoordinates());
+                if (currentArea > largestArea) {
+                    mostWastefulNodesIndices[0] = i;
+                    mostWastefulNodesIndices[1] = j;
+                    largestArea = currentArea;
+                }
+            }
+        }
+        return mostWastefulNodesIndices;
     }
 
+    /**
+     * Remove elements based on their indices from the list of elements.
+     * @param elementsToSplit An ArrayList with the RTreeNodes that need to be split.
+     * @param index1 The first index to remove an RTreeNode from.
+     * @param index2 The second index to remove an RTreeNode from.
+     */
     private void removeElementsFromElementsToSplit(ArrayList<RTreeNode> elementsToSplit, int index1, int index2) {
         if (index1 < index2) {
             elementsToSplit.remove(index2);
@@ -267,6 +350,29 @@ public class RTree {
         }
     }
 
+    /**
+     * Update two nodes by removing children and updating with the new children.
+     * The parent of the new node is also updated to match the other node.
+     * @param node The first node to assign children to. The node is reused and thus has its old children removed.
+     * @param newNode The new node to assign children to.
+     * @param elementForNode The children for the first node.
+     * @param elementForNewNode The children for the second node.
+     */
+    private void updateNodes(RTreeNode node, RTreeNode newNode, RTreeNode elementForNode, RTreeNode elementForNewNode) {
+        node.removeChildren();
+        node.addChild(elementForNode);
+        node.updateCoordinate(createNewCoordinateArray());
+        newNode.addChild(elementForNewNode);
+        if (node.getParent() != null) node.getParent().addChild(newNode);
+    }
+
+    /**
+     * Distributes the remaining elements. If one of the nodes needs the rest of the elements to have the minimum number of elements,
+     * the elements are assigned to it. Otherwise, the elements are assigned based on which assignment would create the smallest MMB.
+     * @param elementsToSplit An ArrayList of RTreeNodes to split.
+     * @param node The first node to assign elements to.
+     * @param newNode The second node to assign elements to.
+     */
     private void distributeNodesQuadraticCost(ArrayList<RTreeNode> elementsToSplit, RTreeNode node, RTreeNode newNode) {
         if (tooFewEntries(node.getChildren().size(), elementsToSplit.size())) {
             node.addChildren(elementsToSplit);
@@ -280,10 +386,26 @@ public class RTree {
         }
     }
 
+    /**
+     * Checks if an element has less than the minimum children amount and if there are not more elements left than the number
+     * required to reach the minimum number of elements.
+     * @param numberOfChildren The number of children in a node.
+     * @param elementsLeft The number of elements left to split.
+     * @return True, if the rest of the elements should be inserted into the node. Otherwise, false.
+     */
     private boolean tooFewEntries(int numberOfChildren, int elementsLeft) {
         return numberOfChildren < minimumChildren && elementsLeft <= minimumChildren - numberOfChildren;
     }
 
+    /**
+     * Picks the next node to assign an element to. Finds the requires MMB increase if an element is inserted into the two nodes.
+     * This is repeated for all the nodes and the element with the greatest difference between the two MMb increases are chosen
+     * and assigned to the node requiring the smallest MMB increase.
+     * @param elementsToSplit An ArrayList with RTreeNodes to split.
+     * @param node1 The first RTreeNode, which the elements can be placed in.
+     * @param node2 The second RTreeNode, which the elements can be placed in.
+     * @return An array with the two input nodes with updated children.
+     */
     private RTreeNode[] pickNext(ArrayList<RTreeNode> elementsToSplit, RTreeNode node1, RTreeNode node2) {
         float greatestAreaDif = Float.NEGATIVE_INFINITY;
         int nextElementIndex = 0;
@@ -303,12 +425,21 @@ public class RTree {
             }
         }
 
+        // If the greatest difference is zero, then we need to resolve the tie.
         if (greatestAreaDif == 0) assignTo = resolveTies(node1, node2);
 
         elementsToSplit.remove(nextElementIndex);
         return new RTreeNode[]{assign, assignTo};
     }
 
+    /**
+     * Resolves a tie where inserting an element would require the same MMB increase.
+     * Choose the node with the smallest MMB area. If they have the same, choose the one with the smallest number of entries.
+     * Otherwise, assign to the first node.
+     * @param node1 The first RTreeNode.
+     * @param node2 The second RTreeNode.
+     * @return The RTreeNode where the element should be inserted.
+     */
     private RTreeNode resolveTies(RTreeNode node1, RTreeNode node2) {
         float area1 = getArea(node1.getCoordinates());
         float area2 = getArea(node2.getCoordinates());
@@ -319,16 +450,27 @@ public class RTree {
             int entries2 = node2.getChildren().size();
 
             if (entries1 == entries2) {
+                // assign to the first node.
                 assignTo = node1;
             } else {
+                // assign to the one with the smallest number of entries.
                 assignTo = entries1 < entries2 ? node1 : node2;
             }
         } else {
+            // assign to the one with the smallest area.
             assignTo = area1 < area2 ? node1 : node2;
         }
         return assignTo;
     }
 
+    /**
+     * Splits a node's children by finding the element pair whose normalized distance between the rightmost left side
+     * and the leftmost right side is the greatest. The method checks all dimensions and the normalized distance is
+     * found by dividing by the length of the entire set on that dimension. Afterward, the rest of the nodes are
+     * distributed.
+     * @param node The RTreeNode to split.
+     * @return An array with two RTreeNodes with updated children.
+     */
     private RTreeNode[] splitNodeLinearCost(RTreeNode node) {
         ArrayList<RTreeNode> elementsToSplit = new ArrayList<>(node.getChildren());
         int[] furthestPair = new int[2];
@@ -342,18 +484,18 @@ public class RTree {
             float rightmostSide = Float.NEGATIVE_INFINITY;
 
             for (int j = 0; j < elementsToSplit.size(); j++) {
-                if (elementsToSplit.get(j).getCoordinates()[i] > rightmostLeftSide) {
+                if (elementsToSplit.get(j).getCoordinates()[i] > rightmostLeftSide) { // for the rightmost left side
                     rightmostLeftSide = elementsToSplit.get(j).getCoordinates()[i];
                     currentFurthestPairIndices[0] = j;
                 }
-                if (elementsToSplit.get(j).getCoordinates()[i + 1] < leftmostRightSide) {
+                if (elementsToSplit.get(j).getCoordinates()[i + 1] < leftmostRightSide) { // for the leftmost right side
                     leftmostRightSide = elementsToSplit.get(j).getCoordinates()[i + 1];
                     currentFurthestPairIndices[1] = j;
                 }
-                if (elementsToSplit.get(j).getCoordinates()[i] < leftmostSide) {
+                if (elementsToSplit.get(j).getCoordinates()[i] < leftmostSide) { // for the greatest width
                     leftmostSide = elementsToSplit.get(j).getCoordinates()[i];
                 }
-                if (elementsToSplit.get(j).getCoordinates()[i + 1] > rightmostSide) {
+                if (elementsToSplit.get(j).getCoordinates()[i + 1] > rightmostSide) { // for the greatest width
                     rightmostSide = elementsToSplit.get(j).getCoordinates()[i + 1];
                 }
             }
@@ -370,10 +512,16 @@ public class RTree {
         if (furthestPair[0] == furthestPair[1]) {
             throw new RuntimeException("Same element exists twice"); // Can only happen if two elements are completely on top of each other.
         }
-
         return distributeNodesLinearCost(node, furthestPair, elementsToSplit);
     }
 
+    /**
+     * Distributes the rest of the nodes to split by going through the list and either assigning them to the first or the second node-
+     * @param node The node that can be reused.
+     * @param furthestPair The indices of the pair of elements that are furthest from each other.
+     * @param elementsToSplit An ArrayList with the RTreeNodes to split.
+     * @return An array with two RTreeNodes and their updated children-
+     */
     private RTreeNode[] distributeNodesLinearCost(RTreeNode node, int[] furthestPair, ArrayList<RTreeNode> elementsToSplit) {
         RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent());
         updateNodes(node, newNode, elementsToSplit.get(furthestPair[0]), elementsToSplit.get(furthestPair[1]));
@@ -389,6 +537,11 @@ public class RTree {
         return new RTreeNode[]{node, newNode};
     }
 
+    /**
+     * Get the area of a MMB.
+     * @param coordinates The MMB's coordinates.
+     * @return The area as a float.
+     */
     private float getArea(float[] coordinates) {
         float area = 1;
         for (int i = 0; i < numberOfCoordinates - 1; i += 2) {
@@ -397,6 +550,12 @@ public class RTree {
         return Math.abs(area);
     }
 
+    /**
+     * Determines the updated MMB area if an element is inserted into a different element.
+     * @param coordinatesFirstNode The coordinates of the first element.
+     * @param coordinateSecondNode The coordinates of the second element.
+     * @return The new area as a float.
+     */
     private float getNewBoundingBoxArea(float[] coordinatesFirstNode, float[] coordinateSecondNode) {
         float[] newCoordinates = new float[numberOfCoordinates];
 
@@ -407,23 +566,12 @@ public class RTree {
         return getArea(newCoordinates);
     }
 
-    private int[] pickSeedsQuadratic(ArrayList<RTreeNode> elementsToSplit) {
-        int[] mostWastefulNodesIndices = new int[2];
-        float largestArea = Float.NEGATIVE_INFINITY;
-
-        for (int i = 0; i < elementsToSplit.size() - 1; i++) {
-            for (int j = i + 1; j < elementsToSplit.size(); j++) {
-                float currentArea = findAreaDifference(elementsToSplit.get(i).getCoordinates(), elementsToSplit.get(j).getCoordinates());
-                if (currentArea > largestArea) {
-                    mostWastefulNodesIndices[0] = i;
-                    mostWastefulNodesIndices[1] = j;
-                    largestArea = currentArea;
-                }
-            }
-        }
-        return mostWastefulNodesIndices;
-    }
-
+    /**
+     * Finds the area difference between two MMB.
+     * @param firstCoordinates The first coordinates.
+     * @param secondCoordinates The second coordinates.
+     * @return The area difference as a float.
+     */
     private float findAreaDifference(float[] firstCoordinates, float[] secondCoordinates) {
         float areaWithBoth = getNewBoundingBoxArea(firstCoordinates, secondCoordinates);
         float areaElement1 = getArea(firstCoordinates);
@@ -431,21 +579,9 @@ public class RTree {
         return areaWithBoth - areaElement1 - areaElement2;
     }
 
-    private Boolean intersects(float[] coordinates1, float[] coordinates2) {
-        for (int i = 0; i < numberOfCoordinates; i += 2) {
-            if (specificCoordinatesDoesNotIntersect(coordinates1[i], coordinates2[i + 1])) {
-                return false;
-            } else if (specificCoordinatesDoesNotIntersect(coordinates2[i], coordinates1[i + 1])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean specificCoordinatesDoesNotIntersect(float minCoordinateFirstElement, float maxCoordinateSecondElement) {
-        return minCoordinateFirstElement >= maxCoordinateSecondElement;
-    }
-
+    /**
+     * Visualizes the R-Tree by printing the nodes, their information, and their level.
+     */
     public void printTree() {
         int level = 0;
         HashMap<Integer, ArrayList<RTreeNode>> result = new HashMap<>();
