@@ -167,7 +167,9 @@ public class Creator extends Task<Void> {
                                 updateMessage("Loading: Relations");
                                 if (relation != null) {
                                     if(relation.hasType()){
-                                        rTree.insert(relation);
+                                        if(relation.getType().equals("restriction")){
+                                            roadGraph.addRestriction(relation);
+                                        }else rTree.insert(relation);
                                     }
                                 }
                                 relation = null;
