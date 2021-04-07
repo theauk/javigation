@@ -72,7 +72,7 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "node":
-                                updateMessage("Loading: Nodes");
+
                                 var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
@@ -80,14 +80,14 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "way":
-                                updateMessage("Loading: Ways");
+
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
                                 idToWay.put(way);
                                 break;
 
                             case "relation":
-                                updateMessage("Loading: Relations");
+
                                 relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
                                 break;
 
@@ -137,6 +137,7 @@ public class Creator extends Task<Void> {
                     case END_ELEMENT:
                         switch (reader.getLocalName()) {
                             case "node":
+                                updateMessage("Loading: Nodes");
                                 if (node != null) {
                                     if(node.isAddress()){
                                         addressTree.put(node);
@@ -148,6 +149,7 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "way":
+                                updateMessage("Loading: Ways");
                                 if (way != null) {
                                     idToWay.put(way);
                                     if (way.hasType()) {
@@ -162,6 +164,7 @@ public class Creator extends Task<Void> {
 
 
                             case "relation":
+                                updateMessage("Loading: Relations");
                                 if (relation != null) {
                                     if(relation.hasType()){
                                         rTree.insert(relation);
