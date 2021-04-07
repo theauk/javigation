@@ -20,9 +20,7 @@ javafx {
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
-    mavenCentral()
 }
-mainClassName = 'bfst21.Launcher'
 
 dependencies {
     // Use JUnit Jupiter API for testing.
@@ -49,17 +47,15 @@ run {
     //args = ['src/main/resources/map.osm']
 }
 
+mainClassName = 'bfst21.Launcher'
 jar {
-    from {
-        configurations.runtime.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
     manifest {
         attributes 'Main-Class': 'bfst21.Launcher'
+    }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
 
     exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
