@@ -13,13 +13,21 @@ public class KDTree<Value extends Element> {
     private final Comparator<KDTreeNode> comparatorX = new Comparator<KDTreeNode>() {
         @Override
         public int compare(KDTreeNode p1, KDTreeNode p2) {
-            return Double.compare(p1.node.getxMax(), p2.node.getxMax());
+            int c = Float.compare(p1.node.getxMax(), p2.node.getxMax());
+            if(c==0 && Float.compare(p1.node.getyMax(), p2.node.getyMax()) ==0 ){
+                p2.isDuplicate = true;
+            }
+            return c;
         }
     };
     private final Comparator<KDTreeNode> comparatorY = new Comparator<KDTreeNode>() {
         @Override
         public int compare(KDTreeNode p1, KDTreeNode p2) {
-            return Double.compare(p1.node.getyMax(), p2.node.getyMax());
+            int c = Float.compare(p1.node.getyMax(), p2.node.getyMax());
+            if(c==0 && Float.compare(p1.node.getxMax(), p2.node.getxMax()) ==0 ){
+                p2.isDuplicate = true;
+            }
+            return c;
         }
     };
     private KDTreeNode root;
@@ -27,6 +35,7 @@ public class KDTree<Value extends Element> {
     private int startDim;
     private int numCor;
     private int numDim;
+    private boolean noDuplicates;
 
     public KDTree(int startDim, int numCor) {
         this.startDim = startDim;
@@ -35,11 +44,12 @@ public class KDTree<Value extends Element> {
         list = new ArrayList<>();
     }
 
+
     private Comparator<KDTreeNode> getComparatorFromDimension(int dim) {
         return dim == 0 ? comparatorX : comparatorY;
     }
 
-    public int getMedian(int low, int high) {
+    private int getMedian(int low, int high) {
         return (low + high) / 2;
     }
 
@@ -59,6 +69,10 @@ public class KDTree<Value extends Element> {
 
         Comparator<KDTreeNode> comp = getComparatorFromDimension(dim % numCor);
         nodes.sort(comp);
+        if(!noDuplicates){
+            removeDuplicates(nodes);
+            noDuplicates = true;
+        }
 
         int med = getMedian(0, nodes.size());
         KDTreeNode medNode = nodes.get(med);
@@ -72,6 +86,10 @@ public class KDTree<Value extends Element> {
         medNode.rightChild = buildTree(nodes.subList(med + 1, nodes.size()), dim + numDim);
 
         return medNode;
+    }
+
+    private void removeDuplicates(List<KDTreeNode> nodes) {
+        nodes.removeIf(n -> n.isDuplicate);
     }
 
     public Value getNearestNode(float x, float y) throws KDTreeEmptyException {
@@ -176,8 +194,8 @@ public class KDTree<Value extends Element> {
         private Value node;
         private KDTreeNode leftChild;
         private KDTreeNode rightChild;
-        private Boolean onXAxis;
-
+        private boolean onXAxis;
+        private boolean isDuplicate;
 
         public KDTreeNode(Value node) {
             this.node = node;
