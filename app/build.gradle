@@ -58,5 +58,6 @@ jar {
         }
     }
 
-    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA' // TODO: 08-04-21 this is not needed to make a runnable jar file.
+    //TODO: 08-04-21 will look it up again.
 }
