@@ -1,76 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import bfst21.view.MapCanvas?>
+<?import bfst21.view.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-<Scene xmlns="http://javafx.com/javafx"
+<Scene xmlns="https://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
        fx:controller="bfst21.Controller"
        fx:id="scene"
+       stylesheets="view.css"
 >
-    <root>
-        <BorderPane prefWidth="680" prefHeight="520">
-            <top>
-                <MenuBar>
-                    <Menu text="File">
-                        <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
+    <BorderPane>
+        <prefWidth>
+            <View fx:constant="WIDTH"/>
+        </prefWidth>
+        <prefHeight>
+            <View fx:constant="HEIGHT"/>
+        </prefHeight>
+        <top>
+            <MenuBar>
+                <Menu text="File">
+                    <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Cancel" onAction="#cancelLoad" accelerator="CTRL + W"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem text="Exit" onAction="#exit"/>
+                </Menu>
+
+                <Menu text="View">
+                    <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
+                    <SeparatorMenuItem/>
+                    <RadioMenuItem fx:id="showUIItem" text="Show UI" selected="true" accelerator="CTRL + T"/>
+                    <SeparatorMenuItem/>
+                    <Menu fx:id="themeMenu" text="Change Theme...">
+                        <RadioMenuItem fx:id="defaultThemeItem" text="Default" selected="true">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="themeGroup"/>
+                            </toggleGroup>
+                        </RadioMenuItem>
                         <SeparatorMenuItem/>
-                        <MenuItem text="Cancel" onAction="#cancelLoad" accelerator="CTRL + W"/>
-                        <SeparatorMenuItem/>
-                        <MenuItem text="Exit" onAction="#exit"/>
                     </Menu>
-                    <Menu text="View">
-                        <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
-                        <SeparatorMenuItem/>
-                        <Menu fx:id="themeMenu" text="Change Theme...">
-                            <RadioMenuItem fx:id="defaultThemeItem" text="Default" selected="true">
-                                <toggleGroup>
-                                    <ToggleGroup fx:id="themeGroup"/>
-                                </toggleGroup>
-                            </RadioMenuItem>
-                            <SeparatorMenuItem/>
-                        </Menu>
-                        <SeparatorMenuItem/>
-                        <MenuItem fx:id="zoomInItem" text="Zoom in" onAction="#zoom" accelerator="CTRL + PLUS"/>
-                        <MenuItem fx:id="zoomOutItem" text="Zoom out" onAction="#zoom" accelerator="CTRL + MINUS"/>
-                    </Menu>
-                    <Menu text="Debug">
-                        <RadioMenuItem fx:id="rTreeDebug" text="R-tree" onAction="#setRTreeDebug"/>
-                    </Menu>
-                </MenuBar>
-            </top>
-            <center>
-                <StackPane fx:id="centerPane">
-                    <Pane fx:id="mapPane">
-                        <MapCanvas fx:id="mapCanvas"
-                                   width="${mapPane.width}"
-                                   height="${mapPane.height}"
-                                   onScroll="#onScroll"
-                                   onMousePressed="#onMousePressed"
-                                   onMouseDragged="#onMouseDragged"
-                                   onMouseMoved="#onMouseMoved"
-                                   onMouseReleased="#onMouseReleased"
-                        />
-                    </Pane>
-                    <VBox fx:id="loaderPane" alignment="CENTER" style="-fx-background-color: rgb(180, 180, 180);">
-                        <ProgressIndicator fx:id="loadingBar" progress="0"/>
-                        <Label fx:id="statusLabel" text="Waiting"/>
+                    <SeparatorMenuItem/>
+                    <MenuItem fx:id="zoomInItem" text="Zoom in" onAction="#zoom" accelerator="CTRL + PLUS"/>
+                    <MenuItem fx:id="zoomOutItem" text="Zoom out" onAction="#zoom" accelerator="CTRL + MINUS"/>
+                </Menu>
+
+                <Menu text="Debug">
+                    <RadioMenuItem fx:id="informationBoard" text="Information Board" selected="true"/>
+                    <SeparatorMenuItem/>
+                    <RadioMenuItem fx:id="rTreeDebug" text="R-tree" onAction="#setRTreeDebug"/>
+                </Menu>
+            </MenuBar>
+        </top>
+        <center>
+            <StackPane fx:id="centerPane">
+                <Pane fx:id="mapPane">
+                    <MapCanvas fx:id="mapCanvas"
+                               width="${mapPane.width}"
+                               height="${mapPane.height}"
+                               onScroll="#onScroll"
+                               onMousePressed="#onMousePressed"
+                               onMouseDragged="#onMouseDragged"
+                               onMouseMoved="#onMouseMoved"
+                               onMouseReleased="#onMouseReleased"
+                    />
+                </Pane>
+
+                <AnchorPane id="uiControl" visible="${showUIItem.selected}" pickOnBounds="false">
+                    <VBox spacing="5" alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20" pickOnBounds="false">
+                        <Button fx:id="zoomInButton" text="+" onAction="#zoom"/>
+                        <Slider fx:id="zoomSlider" pickOnBounds="false" orientation="VERTICAL">
+                            <min>
+                                <MapCanvas fx:constant="MIN_ZOOM_LEVEL"/>
+                            </min>
+                            <max>
+                                <MapCanvas fx:constant="MAX_ZOOM_LEVEL"/>
+                            </max>
+                        </Slider>
+                        <Button fx:id="zoomOutButton" text="-" prefWidth="${zoomInButton.width}" onAction="#zoom"/>
                     </VBox>
-                </StackPane>
-            </center>
-            <bottom>
-                <HBox alignment="CENTER_RIGHT">
-                    <Label fx:id="boundsLabel" style="-fx-padding: 5;"/>
-                    <Label fx:id="coordsLabel" text="CanvasCoords: 0.0, 0.0" style="-fx-padding: 5;"/>
-                    <Label fx:id="geoCoordsLabel" text="GeoCoords: 0.0, 0.0" style="-fx-padding: 5;"/>
-                    <Slider fx:id="zoomSlider" showTickLabels="true" showTickMarks="true"/>
-                </HBox>
-            </bottom>
-        </BorderPane>
-    </root>
+
+                    <Label id="copyRight" text="&#169;2021 Group 10" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" mouseTransparent="true">
+                        <padding>
+                            <Insets right="5"/>
+                        </padding>
+                    </Label>
+                    <VBox id="informationPane" visible="${informationBoard.selected}" minWidth="270" minHeight="150" maxWidth="270" maxHeight="150" spacing="5" AnchorPane.topAnchor="5" AnchorPane.rightAnchor="5">
+                        <padding>
+                            <Insets top="5" bottom="5" left="5" right="5"/>
+                        </padding>
+                        <Label fx:id="nearestRoadLabel" text="Nearest Road: N/A"/>
+                        <Label fx:id="coordsLabel" text="Coordinates: (0.0, 0.0)"/>
+                        <Label fx:id="geoCoordsLabel" text="Geo-coordinates: (0.0, 0.0)"/>
+                        <Separator/>
+                        <HBox id="boundsPane">
+                            <AnchorPane>
+                                <Label fx:id="boundsTL" text="(0.0, 0.0)" AnchorPane.topAnchor="0"/>
+                                <Label fx:id="boundsBL" text="(0.0, 0.0)" textAlignment="RIGHT" alignment="CENTER_RIGHT" AnchorPane.bottomAnchor="0"/>
+                            </AnchorPane>
+                            <HBox id="bounds" minWidth="100" minHeight="60" maxWidth="100" maxHeight="60" alignment="CENTER">
+                                <Label text="Bounds"/>
+                            </HBox>
+                            <AnchorPane>
+                                <Label fx:id="boundsTR" text="(0.0, 0.0)" AnchorPane.topAnchor="0" />
+                                <Label fx:id="boundsBR" text="(0.0, 0.0)" AnchorPane.bottomAnchor="0"/>
+                            </AnchorPane>
+                        </HBox>
+                    </VBox>
+
+                    <HBox id="scalePane" prefWidth="50" prefHeight="5" alignment="CENTER" AnchorPane.leftAnchor="5" AnchorPane.bottomAnchor="5" mouseTransparent="true">
+                        <Label fx:id="scaleLabel" text="- - -">
+                        </Label>
+                    </HBox>
+                </AnchorPane>
+
+                <VBox fx:id="loaderPane" alignment="CENTER" style="-fx-background-color: rgb(180, 180, 180);">
+                    <ProgressIndicator fx:id="loadingBar" progress="0"/>
+                    <Label fx:id="statusLabel" text="Waiting"/>
+                </VBox>
+            </StackPane>
+        </center>
+    </BorderPane>
 </Scene>

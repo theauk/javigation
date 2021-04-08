@@ -1,0 +1,60 @@
+#zoomSlider .thumb {
+    -fx-background-radius: 0;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 10px;
+}
+
+#zoomSlider .thumb:hover {
+    -fx-cursor: closed_hand;
+}
+
+#zoomSlider .track {
+    -fx-background-color: #2F2F2F;
+}
+
+#zoomSlider .track:hover {
+    -fx-cursor: hand;
+}
+
+#uiControl .button:hover {
+    -fx-cursor: hand;
+}
+
+#copyRight {
+    -fx-font-size: 10px;
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+#scalePane {
+    -fx-border-width: 0 1 0 1;
+    -fx-border-color: black;
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+#informationPane {
+    -fx-border-color: rgba(0, 0, 0, 0.2);
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+}
+
+#informationPane .label {
+    -fx-text-fill: rgba(0, 0, 0, 0.4);
+}
+
+#informationPane #bounds {
+    -fx-border-color: rgba(255, 0, 0, 0.4);
+    -fx-background-color: rgba(255, 255, 255, 0.4);
+}
+
+#informationPane:hover {
+    -fx-border-color: rgba(0, 0, 0, 0.7);
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+#informationPane:hover #bounds {
+    -fx-border-color: rgba(255, 0, 0, 0.7);
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+#informationPane:hover .label {
+    -fx-text-fill: rgba(0, 0, 0, 0.7);
+}
