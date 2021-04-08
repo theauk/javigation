@@ -509,7 +509,7 @@ public class RTree {
             }
         }
 
-        if (furthestPair[0] == furthestPair[1]) {
+        if (elementsToSplit.get(furthestPair[0]) == elementsToSplit.get(furthestPair[1])) {
             throw new RuntimeException("Same element exists twice"); // Can only happen if two elements are completely on top of each other.
         }
         return distributeNodesLinearCost(node, furthestPair, elementsToSplit);
