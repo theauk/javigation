@@ -38,10 +38,10 @@ application {
     mainClass = 'bfst21.Launcher'
 }
 compileJava.options.encoding = 'UTF-8'
-//tasks.named('test') {
-    // Use junit platform for unit tests.
-//    useJUnitPlatform()
-//}
+tasks.named('test') {
+    //Use junit platform for unit tests.
+    useJUnitPlatform()
+}
 
 run {
     //args = ['src/main/resources/map.osm']
