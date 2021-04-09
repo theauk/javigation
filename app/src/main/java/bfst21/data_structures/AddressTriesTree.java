@@ -1,7 +1,6 @@
 package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Node;
-import bfst21.Osm_Elements.Specifik_Elements.AddressNode;
 
 import java.util.List;
 
@@ -15,21 +14,21 @@ public class AddressTriesTree {
      * Not yet implemented!
      *
      */
-    public void put(AddressNode node){
+    public void put(Node node){
 
     }
 
     /**
      * Not yet implemented!
      */
-    public AddressNode getAddressNode(String address){
+    public Node getAddressNode(String address){
         return null;
     }
 
     /**
      * Not yet Implemented
      */
-    public List<AddressNode> getPossibleAddresses(String address){
+    public List<Node> getPossibleAddresses(String address){
         return null;
     }
 }
