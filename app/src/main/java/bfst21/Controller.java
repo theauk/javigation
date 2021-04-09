@@ -18,77 +18,85 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class Controller {
-    private final int MAX_ZOOM_LEVEL = 100;
-    private final int MIN_ZOOM_LEVEL = 0;
-    private final int ZOOM_FACTOR = 32;
-
     private MapData mapData;
     private Loader loader;
     private Creator creator;
 
-    private Map<String, String> themes = new HashMap<>();
-    private Point2D currentMouse;
+    private Map<String, String> themes;
     private Point2D lastMouse;
-    private int zoomLevel;
-    private boolean viaSlider = true;
+    private boolean viaZoomSlider = true;
 
     @FXML private MapCanvas mapCanvas;
+
     @FXML private Scene scene;
     @FXML private StackPane centerPane;
     @FXML private VBox loaderPane;
-    @FXML private ProgressIndicator loadingBar;
-    @FXML private Label boundsLabel;
+
     @FXML private Label coordsLabel;
     @FXML private Label geoCoordsLabel;
+    @FXML private Label nearestRoadLabel;
     @FXML private Label statusLabel;
+    @FXML private Label scaleLabel;
+    @FXML private Label boundsTR;
+    @FXML private Label boundsBR;
+    @FXML private Label boundsTL;
+    @FXML private Label boundsBL;
+
+    @FXML private ProgressIndicator loadingBar;
     @FXML private Slider zoomSlider;
+
     @FXML private Menu themeMenu;
     @FXML private MenuItem resetItem;
     @FXML private MenuItem zoomInItem;
     @FXML private MenuItem zoomOutItem;
+
+    @FXML private Button zoomInButton;
+    @FXML private Button zoomOutButton;
     @FXML private RadioMenuItem defaultThemeItem;
-    @FXML private ToggleGroup themeGroup;
     @FXML private RadioMenuItem rTreeDebug;
+
+    @FXML private ToggleGroup themeGroup;
 
     public void init() {
         mapData = new MapData();
         loader = new Loader();
+        themes = new HashMap<>();
         loadThemes();
-        openFile();
         initView();
+        openFile();
     }
 
     private void initView() {
-        mapCanvas.init(mapData, loader.loadTheme(themes.get("Default")));
-
-        mapCanvas.widthProperty().addListener(((observable, oldValue, newValue) -> setBoundsLabel()));
-        mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabel());
-
-        zoomSlider.setValue(zoomLevel);
-        zoomSlider.setMax(MAX_ZOOM_LEVEL);
-        zoomSlider.setMin(MIN_ZOOM_LEVEL);
-        zoomSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (viaSlider) {
-                if (newValue.intValue() > oldValue.intValue()) zoom(ZOOM_FACTOR);
-                else if (newValue.intValue() < oldValue.intValue()) zoom(-ZOOM_FACTOR);
-            }
-        });
-
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
     }
 
+    private void initUI() {
+        mapCanvas.init(mapData, loader.loadTheme(themes.get("Default")));
+        mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
+        mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
+
+        zoomSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(viaZoomSlider) zoom(newValue.intValue() - oldValue.intValue());
+        });
+
+        scaleLabel.textProperty().bind(mapCanvas.getRatio());
+    }
+
     private void loadThemes() {
-        for (String file : loader.getFilesIn("/themes", ".mtheme")) {
+        for(String file : loader.getFilesIn("/themes", ".mtheme")) {
             String themeName = Theme.parseName(file);
             themes.put(themeName, file);
 
-            if (!file.equals("default.mtheme")) {
+            if(!file.equals("default.mtheme")) {
                 RadioMenuItem item = new RadioMenuItem(themeName);
                 item.setToggleGroup(themeGroup);
                 themeMenu.getItems().add(item);
@@ -97,68 +105,49 @@ public class Controller {
     }
 
     /**
-     * Called when a ScrollEvent is raised. Zooms in on the MapCanvas at the Mouse's coordinates.
+     * Called when a ScrollEvent is fired. Zooms in on the MapCanvas at the Mouse's coordinates.
      *
      * @param e the ScrollEvent associated with the caller.
      */
     @FXML
     private void onScroll(ScrollEvent e) {
-        viaSlider = false;
-        zoom(e.getDeltaY(), new Point2D(e.getX(), e.getY()));
+        zoom((e.getDeltaY() > 0), new Point2D(e.getX(), e.getY()));
     }
 
     /**
-     * Zoom in or out on the MapCanvas via the MenuBar.
+     * Zoom in or out on the MapCanvas via a Node.
      *
      * @param e the ActionEvent associated with the caller.
      */
     @FXML
     private void zoom(ActionEvent e) {
-        viaSlider = false;
-        if (e.getSource().equals(zoomInItem)) zoom(ZOOM_FACTOR);
-        else if (e.getSource().equals(zoomOutItem)) zoom(-ZOOM_FACTOR);
+        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton)) zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        else if (e.getSource().equals(zoomOutItem)  || e.getSource().equals(zoomOutButton)) zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
     }
 
     /**
-     * Zooms in or out on the MapCanvas at the center point of the Canvas.
+     * Zoom in or out on the MapCanvas based on levels to be zoomed.
      *
-     * @param amount the zoom amount.
+     * @param levels the amount of zoom levels to be zoomed in or out.
      */
-    private void zoom(double amount) {
-        zoom(amount, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+    private void zoom(int levels) {
+        if(levels > 0) mapCanvas.zoom(true, levels);
+        else if(levels < 0) mapCanvas.zoom(false, levels);
+        setBoundsLabels();
     }
 
     /**
-     * Zooms in or out on the MapCanvas within a certain zoom level at a certain point.
+     * Zoom in on the mapCanvas at a specific pivot point.
      *
-     * @param amount the zoom amount.
-     * @param center the zoom center as a 2D point.
+     * @param zoomIn to zoom in or not.
+     * @param center the pivot point to zoom in at.
      */
-    private void zoom(double amount, Point2D center) {
-        if (zoomLevel >= MIN_ZOOM_LEVEL && zoomLevel <= MAX_ZOOM_LEVEL) {
-            double factor = Math.pow(1.01, amount);
-
-            if (amount > 0 && zoomLevel != MAX_ZOOM_LEVEL) {
-                zoomLevel++;
-                mapCanvas.zoom(factor, center);
-                CanvasBounds cb = mapCanvas.getBounds();
-                //System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                //System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                printDistance(new Point2D((cb.getMinY() * -0.56f), cb.getMinX()), new Point2D((cb.getMinY() * -0.56f), cb.getMaxX()));
-            } else if (amount < 0 && zoomLevel != MIN_ZOOM_LEVEL) {
-                zoomLevel--;
-                mapCanvas.zoom(factor, center);
-                CanvasBounds cb = mapCanvas.getBounds();
-                //System.out.println("Point 1: (" + cb.getMinX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                //System.out.println("Point 2: (" + cb.getMaxX() + ", " + (-cb.getMinY() * 0.56f) + ")");
-                printDistance(new Point2D((cb.getMinY() * -0.56f), cb.getMinX()), new Point2D((cb.getMinY() * -0.56f), cb.getMaxX()));
-            }
-
-            setBoundsLabel();
-        }
-
-        if (!viaSlider) zoomSlider.setValue(zoomLevel);
-        viaSlider = true;
+    private void zoom(boolean zoomIn, Point2D center) {
+        viaZoomSlider = false;
+        mapCanvas.zoom(zoomIn, center);
+        zoomSlider.setValue(mapCanvas.getZoomLevel());
+        setBoundsLabels();
+        viaZoomSlider = true;
     }
 
     @FXML
@@ -168,43 +157,23 @@ public class Controller {
 
         if (e.isPrimaryButtonDown()) {
             mapCanvas.setCursor(Cursor.CLOSED_HAND);
-            setBoundsLabel();
+            setBoundsLabels();
             mapCanvas.pan(dx, dy);
         }
 
-        currentMouse = new Point2D(e.getX(), e.getY());
         onMousePressed(e);
     }
 
     @FXML
     private void onMouseMoved(MouseEvent e) {
         mapCanvas.setCursor(Cursor.DEFAULT);
-        setCoordsLabel(new Point2D(e.getX(), e.getY()));
-        currentMouse = new Point2D(e.getX(), e.getY());
-    }
-
-    public void printDistance(Point2D start, Point2D end) {
-        int earthRadius = 6371000; //in meters
-        double lat1 = start.getX() * Math.PI / 180;
-        double lat2 = end.getX() * Math.PI / 180;
-        double lon1 = start.getY();
-        double lon2 = end.getY();
-
-        double deltaLat = (lat2 - lat1) * Math.PI / 180;
-        double deltaLon = (lon2 - lon1) * Math.PI / 180;
-
-        double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = earthRadius * c;
-
-        //System.out.println(round(distance, 1) + " m");
+        setLabels(new Point2D(e.getX(), e.getY()));
     }
 
     @FXML
     private void onMousePressed(MouseEvent e) {
         lastMouse = new Point2D(e.getX(), e.getY());
-        currentMouse = new Point2D(e.getX(), e.getY());
-        setCoordsLabel(new Point2D(e.getX(), e.getY()));
+        setLabels(lastMouse);
     }
 
     @FXML
@@ -216,9 +185,8 @@ public class Controller {
     private void resetView() {
         mapCanvas.reset();
         themeGroup.selectToggle(defaultThemeItem);
-        zoomLevel = MIN_ZOOM_LEVEL;
-        zoomSlider.setValue(MIN_ZOOM_LEVEL);
-        setCoordsLabel(currentMouse);
+        //zoomSlider.setValue(zoomSlider.getMin());
+        setLabels(lastMouse);
     }
 
     @FXML
@@ -228,18 +196,13 @@ public class Controller {
         if (file != null) loadFile(file.getAbsolutePath(), file.length());
         else {
             File binaryFile = new File(getClass().getResource("/small.osm").getPath());
-            String path = binaryFile.getAbsolutePath();
-            path = handlePotentialSpacesInPath(path);
+            String path = handlePotentialSpacesInPath(binaryFile.getAbsolutePath());
             loadFile(path, binaryFile.length());
         }
     }
 
     private String handlePotentialSpacesInPath(String path) {
-        try {
-            return URLDecoder.decode(path, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            return path.replaceAll("%20", " ");
-        }
+        return URLDecoder.decode(path, StandardCharsets.UTF_8);
     }
 
     @FXML
@@ -256,37 +219,10 @@ public class Controller {
         try {
             mapData = new MapData();
             creator = new Creator(mapData, loader.load(path), fileSize);
-            creator.setOnRunning(e -> {
-                centerPane.setCursor(Cursor.WAIT);
-                statusLabel.textProperty().bind(creator.messageProperty());
-                loadingBar.progressProperty().bind(creator.progressProperty());
-                disableGui(true);
-                loaderPane.setVisible(true);
-            });
-            creator.setOnSucceeded(e -> {
-                centerPane.setCursor(Cursor.DEFAULT);
-                statusLabel.textProperty().unbind();
-                loadingBar.progressProperty().unbind();
-                disableGui(false);
-                loaderPane.setVisible(false);
-                mapCanvas.loadFile(mapData);
-                mapCanvas.reset();
-            });
-            creator.setOnCancelled(e -> {
-                centerPane.setCursor(Cursor.DEFAULT);
-                statusLabel.textProperty().unbind();
-                loadingBar.progressProperty().unbind();
-                statusLabel.setText("Cancelled.");
-                disableGui(false);
-            });
-            creator.setOnFailed(e -> {
-                centerPane.setCursor(Cursor.DEFAULT);
-                statusLabel.textProperty().unbind();
-                loadingBar.progressProperty().unbind();
-                statusLabel.setText("Failed.");
-                creator.exceptionProperty().get().printStackTrace();
-                disableGui(false);
-            });
+            creator.setOnRunning(e -> loadRunning());
+            creator.setOnSucceeded(e -> loadSuccess());
+            creator.setOnCancelled(e -> loadCancelled());
+            creator.setOnFailed(e -> loadFailed());
 
             Thread creatorThread = new Thread(creator, "Creator Thread");
             creatorThread.setDaemon(true);
@@ -294,6 +230,40 @@ public class Controller {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void loadRunning() {
+        centerPane.setCursor(Cursor.WAIT);
+        statusLabel.textProperty().bind(creator.messageProperty());
+        loadingBar.progressProperty().bind(creator.progressProperty());
+        loaderPane.setVisible(true);
+        disableGui(true);
+    }
+
+    private void loadSuccess() {
+        cleanupLoad("");
+        loaderPane.setVisible(false);
+        initUI();
+        //mapCanvas.reset();
+    }
+
+    private void loadFailed() {
+        mapCanvas = new MapCanvas();
+        cleanupLoad("Failed.");
+        creator.exceptionProperty().get().printStackTrace();
+    }
+
+    private void loadCancelled() {
+        mapCanvas = new MapCanvas();
+        cleanupLoad("Cancelled.");
+    }
+
+    private void cleanupLoad(String status) {
+        centerPane.setCursor(Cursor.DEFAULT);
+        statusLabel.textProperty().unbind();
+        loadingBar.progressProperty().unbind();
+        statusLabel.setText(status);
+        disableGui(false);
     }
 
     private void setTheme(String themeName) {
@@ -304,36 +274,36 @@ public class Controller {
         mapCanvas.setTheme(theme);
     }
 
-    private void setCoordsLabel(Point2D point) {
+    private void setLabels(Point2D point) {
         try {
             Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
             Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
-
-            //double x = round(coords.getX(), 1);
-            //double y = round(coords.getY(), 1);
-            // coordsLabel.setText("CanvasCoords: " + x + ", " + y);
-
-            // TODO: 26-03-2021 Visning af roadnavne skal være mere hensigtsmæssigt
-            //x = round(geoCoords.getX(), 7);
-            //y = round(geoCoords.getY(), 7);
-            //geoCoordsLabel.setText(mapData.getNearestRoad((float)coords.getX(), (float) coords.getY()));
-            //geoCoordsLabel.setText("(" + geoCoords.getX() + ", " + geoCoords.getY() + ")");
-            double x = round(geoCoords.getX(), 5);
-            double y = round(geoCoords.getY(), 5);
-            y = -y / 0.56f;
-            coordsLabel.setText("CanvasCoords: " + x + ", " + y);
-            //geoCoordsLabel.setText("GeoCoords : " + x + ", "+ y);
-            float xNear = (float) geoCoords.getX(); // TODO: 4/3/21 Delete if less precision is okay
-            float yNear = - (float)geoCoords.getY() / 0.56f;
-            geoCoordsLabel.setText(mapData.getNearestRoad(xNear, yNear));
+            setCoordsLabel((float) coords.getX(), (float) coords.getY());
+            setGeoCoordsLabel((float) geoCoords.getX(), (float) geoCoords.getY());
+            setNearestRoadLabel(geoCoords.getX(), geoCoords.getY());
         } catch (NonInvertibleTransformException e) {
             e.printStackTrace();
         }
     }
 
-    private void setBoundsLabel() {
+    private void setCoordsLabel(float x, float y) {
+        coordsLabel.setText("Coordinates: (" + round(x, 1) + ", " + round(y, 1) + ")");
+    }
+
+    private void setGeoCoordsLabel(float x, float y) {
+        geoCoordsLabel.setText("Geo-coordinates: (" + round(x, 7) + ", " + round(y, 7) + ")");
+    }
+
+    private void setNearestRoadLabel(double x, double y) {
+        nearestRoadLabel.setText("Nearest Road: " + mapData.getNearestRoad((float) x, (float) -y / 0.56f));
+    }
+
+    private void setBoundsLabels() {
         CanvasBounds bounds = mapCanvas.getBounds();
-        boundsLabel.setText("Bounds: (" + round(bounds.getMinX(), 1) + ", " + round(bounds.getMinY(), 1) + ") | (" + round(bounds.getMaxX(), 1) + ", " + round(bounds.getMaxY(), 1) + ")");
+        boundsTL.setText("(" + round(bounds.getMinX(), 1) + ", " + round(bounds.getMinY(), 1) + ")");
+        boundsTR.setText("(" + round(bounds.getMaxX(), 1) + ", " + round(bounds.getMinY(), 1) + ")");
+        boundsBL.setText("(" + round(bounds.getMinX(), 1) + ", " + round(bounds.getMaxY(), 1) + ")");
+        boundsBR.setText("(" + round(bounds.getMaxX(), 1) + ", " + round(bounds.getMaxY(), 1) + ")");
     }
 
     private double round(double number, int digits) {
