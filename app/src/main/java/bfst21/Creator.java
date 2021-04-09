@@ -96,8 +96,9 @@ public class Creator extends Task<Void> {
                                 var v = reader.getAttributeValue(null, "v");
 
                                 if(node != null){
-                                    if(checkNodesNotCreate(k,v)) node = null;
-                                    else checkAddressNode(k,v,node);
+                                    // TODO: 09-04-2021 out commented node deletion 
+                                    //if(checkNodesNotCreate(k,v)) node = null;
+                                    checkAddressNode(k,v,node);
                                     break;
                                 }
 
