@@ -9,6 +9,7 @@ public class Relation extends NodeHolder {
     private ArrayList<Way> ways;
     private String name;
     private String restriction;
+    private boolean isMultiPolygon;
 
     public Relation(long id) {
         super(id);
@@ -46,5 +47,12 @@ public class Relation extends NodeHolder {
             }
             gc.stroke();
         }
+    }
+    public void setIsMultiPolygon(){
+        isMultiPolygon = true;
+    }
+
+    public boolean isMultiPolygon(){
+        return isMultiPolygon;
     }
 }
