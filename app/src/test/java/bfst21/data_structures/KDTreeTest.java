@@ -1,16 +1,6 @@
 package bfst21.data_structures;
 
-import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Node;
-import bfst21.Osm_Elements.Way;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class KDTreeTest {
     private static KDTree<Node> tree;

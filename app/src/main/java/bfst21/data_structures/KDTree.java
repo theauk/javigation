@@ -1,6 +1,6 @@
 package bfst21.data_structures;
 
-import bfst21.Exceptions.KDTreeEmptyException;
+import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
 import javafx.geometry.Point2D;
 

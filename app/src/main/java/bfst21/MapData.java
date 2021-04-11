@@ -1,6 +1,6 @@
 package bfst21;
 
-import bfst21.Exceptions.KDTreeEmptyException;
+import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 
