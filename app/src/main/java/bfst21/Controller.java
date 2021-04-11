@@ -1,5 +1,6 @@
 package bfst21;
 
+import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
@@ -19,23 +20,20 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Controller {
     private MapData mapData;
     private Loader loader;
     private Creator creator;
+    private final String BINARY_FILE = "/small.osm";
 
     private Map<String, String> themes;
     private Point2D lastMouse = new Point2D(0, 0);
     private boolean viaZoomSlider = true;
-    private List<MenuItem> menuItems;
-    private final BooleanProperty loading = new SimpleBooleanProperty(false);
+    private final BooleanProperty loading = new SimpleBooleanProperty(true);
 
     @FXML private MapCanvas mapCanvas;
 
@@ -57,13 +55,15 @@ public class Controller {
     @FXML private Slider zoomSlider;
 
     @FXML private Menu themeMenu;
+    @FXML private MenuItem openItem;
+    @FXML private MenuItem cancelItem;
     @FXML private MenuItem resetItem;
+    @FXML private RadioMenuItem showUIItem;
     @FXML private MenuItem zoomInItem;
     @FXML private MenuItem zoomOutItem;
 
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
-    @FXML private RadioMenuItem defaultThemeItem;
     @FXML private RadioMenuItem rTreeDebug;
 
     @FXML private ToggleGroup themeGroup;
@@ -72,7 +72,6 @@ public class Controller {
         mapData = new MapData();
         loader = new Loader();
         themes = new HashMap<>();
-        menuItems = new ArrayList<>();
         loadThemes();
         initView();
         openFile();
@@ -80,9 +79,13 @@ public class Controller {
 
     private void initView() {
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
-        menuItems.add(zoomInItem);
-        menuItems.add(zoomOutItem);
-        menuItems.add(resetItem);
+
+        openItem.disableProperty().bind(loading);
+        zoomInItem.disableProperty().bind(loading);
+        zoomOutItem.disableProperty().bind(loading);
+        resetItem.disableProperty().bind(loading);
+        showUIItem.disableProperty().bind(loading);
+        cancelItem.disableProperty().bind(loading.not());
     }
 
     private void initUI() {
@@ -199,17 +202,24 @@ public class Controller {
     @FXML
     private void openFile() {
         File file = showFileChooser().showOpenDialog(scene.getWindow());
+        InputStream inputStream;
+        long fileSize;
 
-        if (file != null) loadFile(file.getAbsolutePath(), file.length());
-        else {
-            File binaryFile = new File(getClass().getResource("/small.osm").getPath());
-            String path = handlePotentialSpacesInPath(binaryFile.getAbsolutePath());
-            loadFile(path, binaryFile.length());
+        try {
+            if(file != null) {
+                inputStream = loader.load(file.getPath());
+                fileSize = file.getName().endsWith(".zip") ? loader.getOSMZipEntry(file.getPath()).getSize() : file.length();
+            } else {
+                inputStream = loader.loadResource(BINARY_FILE);
+                fileSize = loader.getResourceFileSize(BINARY_FILE);
+            }
+
+            loadFile(inputStream, fileSize);
+        } catch (IOException e) {
+            statusLabel.setText("Failed: File not found.");
+        } catch (NoOSMInZipFileException e) {
+            statusLabel.setText("Failed: " + e.getMessage());
         }
-    }
-
-    private String handlePotentialSpacesInPath(String path) {
-        return URLDecoder.decode(path, StandardCharsets.UTF_8);
     }
 
     @FXML
@@ -222,21 +232,17 @@ public class Controller {
         if(loading.get()) creator.cancel();
     }
 
-    private void loadFile(String path, long fileSize) {
-        try {
-            mapData = new MapData();
-            creator = new Creator(mapData, loader.load(path), fileSize);
-            creator.setOnRunning(e -> loadRunning());
-            creator.setOnSucceeded(e -> loadSuccess());
-            creator.setOnCancelled(e -> loadCancelled());
-            creator.setOnFailed(e -> loadFailed());
+    private void loadFile(InputStream inputStream, long fileSize) {
+        mapData = new MapData();
+        creator = new Creator(mapData, inputStream, fileSize);
+        creator.setOnRunning(e -> loadRunning());
+        creator.setOnSucceeded(e -> loadSuccess());
+        creator.setOnCancelled(e -> loadCancelled());
+        creator.setOnFailed(e -> loadFailed());
 
-            Thread creatorThread = new Thread(creator, "Creator Thread");
-            creatorThread.setDaemon(true);
-            creatorThread.start();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
+        Thread creatorThread = new Thread(creator, "Creator Thread");
+        creatorThread.setDaemon(true);
+        creatorThread.start();
     }
 
     private void loadRunning() {
@@ -244,14 +250,15 @@ public class Controller {
         statusLabel.textProperty().bind(creator.messageProperty());
         loadingBar.progressProperty().bind(creator.progressProperty());
         loaderPane.setVisible(true);
-        disableGui(true);
+        loading.set(true);
     }
 
     private void loadSuccess() {
-        cleanupLoad("");
+        cleanupLoad("Working...");
         loaderPane.setVisible(false);
         initUI();
         resetView();
+        loading.set(false);
     }
 
     private void loadFailed() {
@@ -270,7 +277,6 @@ public class Controller {
         statusLabel.textProperty().unbind();
         loadingBar.progressProperty().unbind();
         statusLabel.setText(status);
-        disableGui(false);
     }
 
     private void setTheme(String themeName) {
@@ -312,13 +318,6 @@ public class Controller {
     private double round(double number, int digits) {
         double scale = Math.pow(10, digits);
         return Math.round(number * scale) / scale;
-    }
-
-    private void disableGui(boolean disable) {
-        zoomSlider.setDisable(disable);
-        zoomInItem.setDisable(disable);
-        zoomOutItem.setDisable(disable);
-        resetItem.setDisable(disable);
     }
 
     private FileChooser showFileChooser() {

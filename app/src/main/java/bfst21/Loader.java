@@ -1,5 +1,6 @@
 package bfst21;
 
+import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.view.Theme;
 
 import java.io.*;
@@ -11,28 +12,60 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class Loader {
-    public InputStream load(String filename) throws IOException {
+    public InputStream load(String filename) throws IOException, NoOSMInZipFileException {
         if(filename.endsWith(".osm")) return loadOSM(filename);
         else if(filename.endsWith(".zip")) return loadZIP(filename);
         return null;
     }
 
-    private InputStream loadZIP(String filename) throws IOException {
-        ZipInputStream zip = new ZipInputStream(new FileInputStream(filename));
-        zip.getNextEntry();
-        return zip;
+    private InputStream loadZIP(String filename) throws IOException, NoOSMInZipFileException {
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(filename));
+        ZipEntry entry;
+
+        while((entry = zipInputStream.getNextEntry()) != null) {
+            if(entry.getName().endsWith(".osm")) return zipInputStream;
+        }
+
+        throw new NoOSMInZipFileException("Zip file does not contain a zipped OSM file.");
     }
 
     private InputStream loadOSM(String filename) throws IOException {
         return new FileInputStream(filename);
     }
 
+    public ZipEntry getOSMZipEntry(String file) throws IOException, NoOSMInZipFileException {
+        ZipFile zipFile = new ZipFile(file);
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+        while(entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+
+            if(entry.getName().endsWith(".osm")) {
+                zipFile.close();
+                return entry;
+            }
+        }
+
+        throw new NoOSMInZipFileException("Zip file does not contain a zipped OSM file.");
+    }
+
+    public InputStream loadResource(String filename) {
+        return getClass().getResourceAsStream(filename);
+    }
+
+    public int getResourceFileSize(String file) throws IOException {
+        return getClass().getResource(file).openConnection().getContentLength();
+    }
+
     public Theme loadTheme(String file) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
