@@ -32,7 +32,7 @@ public class MapCanvas extends Canvas {
 
         widthProperty().addListener((observable, oldValue, newValue) -> pan((newValue.floatValue() - oldValue.floatValue()) / 2, 0));
         heightProperty().addListener((observable, oldValue, newValue) -> pan(0, (newValue.floatValue() - oldValue.floatValue()) / 2));
-        repaint();
+        updateMap();
     }
 
     public void repaint() {
@@ -45,19 +45,20 @@ public class MapCanvas extends Canvas {
 
         gc.setTransform(trans);
 
-        for(Element element: mapData.getMapSegment())
-        {
+        for(Element element: mapData.getMapSegment()) {
             drawElement(gc, element);
         }
 
         gc.setStroke(Color.RED);
-//        gc.strokeLine(mapData.getMinX(), mapData.getMinY(), mapData.getMaxX(), mapData.getMinY());
-//        gc.strokeLine(mapData.getMinX(), mapData.getMaxY(), mapData.getMaxX(), mapData.getMaxY());
-//        gc.strokeLine(mapData.getMinX(), mapData.getMinY(), mapData.getMinX(), mapData.getMaxY());
-//        gc.strokeLine(mapData.getMaxX(), mapData.getMinY(), mapData.getMaxX(), mapData.getMaxY());
+        gc.setLineDashes(getStrokeStyle("normal"));
+        gc.setLineWidth(StrokeFactory.getStrokeWidth(1, trans));
+        gc.strokeLine(mapData.getMinX(), mapData.getMinY(), mapData.getMaxX(), mapData.getMinY());
+        gc.strokeLine(mapData.getMinX(), mapData.getMaxY(), mapData.getMaxX(), mapData.getMaxY());
+        gc.strokeLine(mapData.getMinX(), mapData.getMinY(), mapData.getMinX(), mapData.getMaxY());
+        gc.strokeLine(mapData.getMaxX(), mapData.getMinY(), mapData.getMaxX(), mapData.getMaxY());
 
-//        gc.strokeLine(bounds.getMinX(), (bounds.getMaxY() + bounds.getMinY()) / 2, getWidth(), (bounds.getMaxY() + bounds.getMinY()) / 2);
-//        gc.strokeLine((bounds.getMinX() + bounds.getMaxX()) / 2, bounds.getMinY(), (bounds.getMinX() + bounds.getMaxX()) / 2, getHeight());
+        gc.strokeLine(bounds.getMinX(), (bounds.getMaxY() + bounds.getMinY()) / 2, getWidth(), (bounds.getMaxY() + bounds.getMinY()) / 2);
+        gc.strokeLine((bounds.getMinX() + bounds.getMaxX()) / 2, bounds.getMinY(), (bounds.getMinX() + bounds.getMaxX()) / 2, getHeight());
 
         gc.restore();
     }
@@ -65,8 +66,7 @@ public class MapCanvas extends Canvas {
     private void drawElement(GraphicsContext gc, Element element) {
         gc.setLineDashes(getStrokeStyle(element.getType())); //Apply stroke style
 
-        if(theme.get(element.getType()).isTwoColored())
-        {
+        if(theme.get(element.getType()).isTwoColored()) {
             gc.setLineWidth(getStrokeWidth(element.getType(), false));
             gc.setStroke(theme.get(element.getType()).getColor().getOuter());
             element.draw(gc);
@@ -76,8 +76,7 @@ public class MapCanvas extends Canvas {
         gc.setStroke(theme.get(element.getType()).getColor().getInner());   //Get and apply line color
         element.draw(gc);
 
-        if(theme.get(element.getType()).fill())
-        {
+        if(theme.get(element.getType()).fill()) {
             gc.setFill(theme.get(element.getType()).getColor().getInner());
             gc.fill();
         }
@@ -133,22 +132,38 @@ public class MapCanvas extends Canvas {
     }
 
     public void zoom(boolean zoomIn, Point2D center) {
-        if(zoomIn && zoomLevel == MAX_ZOOM_LEVEL) return;
-        else if(!zoomIn && zoomLevel == MIN_ZOOM_LEVEL) return;
+        if(!validZoom(zoomIn)) return;
 
         if(zoomIn && zoomLevel < MAX_ZOOM_LEVEL) zoomLevel++;
         else if(!zoomIn && zoomLevel > MIN_ZOOM_LEVEL) zoomLevel--;
         zoom(zoomIn ? ZOOM_FACTOR : (float) ZOOM_FACTOR / 4, center);
     }
 
+    private boolean validZoom(boolean zoomIn) {
+        return (!zoomIn || zoomLevel != MAX_ZOOM_LEVEL) && (zoomIn || zoomLevel != MIN_ZOOM_LEVEL);
+    }
+
     public void zoom(boolean zoomIn, int levels) {
-        zoomLevel += levels;
+        if(!validZoom(zoomIn)) return;
+        int levelsToZoom = levels;
+
+        if((zoomLevel + levelsToZoom) > MAX_ZOOM_LEVEL) {
+            System.err.println("Warning: Trying to zoom in more than allowed! Setting to MAX zoom level.");
+            levelsToZoom = MAX_ZOOM_LEVEL - zoomLevel;
+            zoomLevel = MAX_ZOOM_LEVEL;
+        }
+        else if((zoomLevel + levelsToZoom) < MIN_ZOOM_LEVEL) {
+            System.err.println("Warning: Trying to zoom out more than allowed! Setting to MIN zoom level.");
+            levelsToZoom = MIN_ZOOM_LEVEL + zoomLevel;
+            zoomLevel = MIN_ZOOM_LEVEL;
+        }
+        else zoomLevel += levels;
 
         double factor;
         if(zoomIn) factor = ZOOM_FACTOR;
         else factor = ZOOM_FACTOR / 4.0;
 
-        for(int i = 0; i < Math.abs(levels); i++) {
+        for(int i = 0; i < Math.abs(levelsToZoom); i++) {
             zoom(factor, new Point2D(getWidth() / 2, getHeight() / 2));
         }
     }
@@ -172,8 +187,9 @@ public class MapCanvas extends Canvas {
 
     public void reset() {
         trans = new Affine();
-        startup();
-        updateMap();
+        zoomLevel = MIN_ZOOM_LEVEL;
+        setBounds();
+        resetView();
     }
 
     public CanvasBounds getBounds() {
@@ -181,27 +197,29 @@ public class MapCanvas extends Canvas {
     }
 
     public void setBounds() {
-        try {
-            Point2D startCoords = getTransCoords(0, 0);
-            bounds.setMinX((float) startCoords.getX());
-            bounds.setMinY((float) startCoords.getY());
+        Point2D startCoords = getTransCoords(0, 0);
+        bounds.setMinX((float) startCoords.getX());
+        bounds.setMinY((float) startCoords.getY());
 
-            Point2D endCoords = getTransCoords(0 + getWidth(), 0 + getHeight());
-            bounds.setMaxX((float) endCoords.getX());
-            bounds.setMaxY((float) endCoords.getY());
+        Point2D endCoords = getTransCoords(getWidth(), getHeight());
+        bounds.setMaxX((float) endCoords.getX());
+        bounds.setMaxY((float) endCoords.getY());
+    }
+
+    public Point2D getTransCoords(double x, double y) {
+        try {
+            return trans.inverseTransform(x, y);
         } catch (NonInvertibleTransformException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 
-    public Point2D getTransCoords(double x, double y) throws NonInvertibleTransformException {
-        return trans.inverseTransform(x, y);
-    }
-
-    public Point2D getGeoCoords(double x, double y) throws NonInvertibleTransformException {
+    public Point2D getGeoCoords(double x, double y) {
         Point2D geoCoords = getTransCoords(x, y);
 
-        return new Point2D(geoCoords.getX(), -geoCoords.getY() * 0.56f);
+        return new Point2D(geoCoords.getX(), convertToGeo(geoCoords.getY()));
     }
 
     private double convertToGeo(double value) {
@@ -210,10 +228,6 @@ public class MapCanvas extends Canvas {
 
     public int getZoomLevel() {
         return zoomLevel;
-    }
-
-    public void setMapData(MapData mapData) {
-        this.mapData = mapData;
     }
 
     public void setTheme(Theme theme) {
@@ -225,22 +239,23 @@ public class MapCanvas extends Canvas {
         return ratio;
     }
 
-    public void startup() {
-        double cardWidth = mapData.getMaxX() - mapData.getMinX();
-        double boundsWidth = bounds.getMaxX() - bounds.getMinX();
-        double x2 = bounds.getMinX() + ((boundsWidth - cardWidth) / 2);
+    private void resetView() {
+        double mapWidth = mapData.getMaxX() - mapData.getMinX();             //Calculate the width of the loaded map's bounding box
+        double boundsWidth = bounds.getMaxX() - bounds.getMinX();            //Calculate the width of the view's bounding box
+        double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);  //Calculate the new x-coordinate of the map's bounding box centered in the view's.
 
-        double cardHeight = mapData.getMaxY() - mapData.getMinY();
+        double mapHeight = mapData.getMaxY() - mapData.getMinY();
         double boundsHeight = bounds.getMaxY() - bounds.getMinY();
-        double y2 = bounds.getMinY() + ((boundsHeight - cardHeight) / 2);
+        double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
 
-        double dx = (x2 - mapData.getMinX());
-        double dy = (y2 - mapData.getMinY());
+        double dx = (minXMap - mapData.getMinX());                           //Calculate the difference between the two bounding boxes min x-coordinate
+        double dy = (minYMap - mapData.getMinY());
+
+        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map
+        int levels = (int) (Math.log(zoom) / Math.log(2));                  //Calculate amount of levels to zoom in
 
         pan(dx, dy);
-
-        //pan(-mapData.getMinX(), -mapData.getMinY());
-        //zoom((getWidth() - 200) / (mapData.getMaxX() - mapData.getMinX()), new Point2D(-0.009127, -0.010532));
+        zoom(true, levels);
     }
 
     public void rTreeDebugMode() {
@@ -248,8 +263,7 @@ public class MapCanvas extends Canvas {
         repaint();
     }
 
-    private static class StrokeFactory
-    {
+    private static class StrokeFactory {
         private static final String NORMAL = "normal";
         private static final String DOTTED = "dotted";
 

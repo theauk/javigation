@@ -3,6 +3,8 @@ package bfst21;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -13,18 +15,16 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public class Controller {
     private MapData mapData;
@@ -32,8 +32,10 @@ public class Controller {
     private Creator creator;
 
     private Map<String, String> themes;
-    private Point2D lastMouse;
+    private Point2D lastMouse = new Point2D(0, 0);
     private boolean viaZoomSlider = true;
+    private List<MenuItem> menuItems;
+    private final BooleanProperty loading = new SimpleBooleanProperty(false);
 
     @FXML private MapCanvas mapCanvas;
 
@@ -70,6 +72,7 @@ public class Controller {
         mapData = new MapData();
         loader = new Loader();
         themes = new HashMap<>();
+        menuItems = new ArrayList<>();
         loadThemes();
         initView();
         openFile();
@@ -77,6 +80,9 @@ public class Controller {
 
     private void initView() {
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
+        menuItems.add(zoomInItem);
+        menuItems.add(zoomOutItem);
+        menuItems.add(resetItem);
     }
 
     private void initUI() {
@@ -184,9 +190,10 @@ public class Controller {
     @FXML
     private void resetView() {
         mapCanvas.reset();
-        themeGroup.selectToggle(defaultThemeItem);
-        //zoomSlider.setValue(zoomSlider.getMin());
+        viaZoomSlider = false;
+        zoomSlider.setValue(mapCanvas.getZoomLevel());
         setLabels(lastMouse);
+        viaZoomSlider = true;
     }
 
     @FXML
@@ -212,7 +219,7 @@ public class Controller {
 
     @FXML
     private void cancelLoad() {
-        if (creator != null) creator.cancel();
+        if(loading.get()) creator.cancel();
     }
 
     private void loadFile(String path, long fileSize) {
@@ -227,7 +234,7 @@ public class Controller {
             Thread creatorThread = new Thread(creator, "Creator Thread");
             creatorThread.setDaemon(true);
             creatorThread.start();
-        } catch (IOException e) {
+        } catch(IOException e) {
             e.printStackTrace();
         }
     }
@@ -244,7 +251,7 @@ public class Controller {
         cleanupLoad("");
         loaderPane.setVisible(false);
         initUI();
-        //mapCanvas.reset();
+        resetView();
     }
 
     private void loadFailed() {
@@ -275,15 +282,11 @@ public class Controller {
     }
 
     private void setLabels(Point2D point) {
-        try {
-            Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
-            Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
-            setCoordsLabel((float) coords.getX(), (float) coords.getY());
-            setGeoCoordsLabel((float) geoCoords.getX(), (float) geoCoords.getY());
-            setNearestRoadLabel(geoCoords.getX(), geoCoords.getY());
-        } catch (NonInvertibleTransformException e) {
-            e.printStackTrace();
-        }
+        Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
+        Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
+        setCoordsLabel((float) coords.getX(), (float) coords.getY());
+        setGeoCoordsLabel((float) geoCoords.getX(), (float) geoCoords.getY());
+        setNearestRoadLabel(geoCoords.getX(), geoCoords.getY());
     }
 
     private void setCoordsLabel(float x, float y) {
