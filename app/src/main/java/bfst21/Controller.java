@@ -4,8 +4,7 @@ import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
+import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -17,6 +16,7 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,14 @@ public class Controller {
     private Map<String, String> themes;
     private Point2D lastMouse = new Point2D(0, 0);
     private boolean viaZoomSlider = true;
-    private final BooleanProperty loading = new SimpleBooleanProperty(true);
+
+    private enum State {
+        MENU,
+        LOADING,
+        MAP
+    }
+
+    private State state = State.MENU;
 
     @FXML private MapCanvas mapCanvas;
 
@@ -58,7 +65,6 @@ public class Controller {
     @FXML private MenuItem openItem;
     @FXML private MenuItem cancelItem;
     @FXML private MenuItem resetItem;
-    @FXML private RadioMenuItem showUIItem;
     @FXML private MenuItem zoomInItem;
     @FXML private MenuItem zoomOutItem;
 
@@ -79,13 +85,7 @@ public class Controller {
 
     private void initView() {
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
-
-        openItem.disableProperty().bind(loading);
-        zoomInItem.disableProperty().bind(loading);
-        zoomOutItem.disableProperty().bind(loading);
-        resetItem.disableProperty().bind(loading);
-        showUIItem.disableProperty().bind(loading);
-        cancelItem.disableProperty().bind(openItem.disableProperty().not());
+        disableMenus();
     }
 
     private void initUI() {
@@ -201,6 +201,7 @@ public class Controller {
 
     @FXML
     private void openFile() {
+        showLoaderPane(true);
         File file = showFileChooser().showOpenDialog(scene.getWindow());
         InputStream inputStream;
         long fileSize;
@@ -208,7 +209,7 @@ public class Controller {
         try {
             if(file != null) {
                 inputStream = loader.load(file.getPath());
-                fileSize = file.getName().endsWith(".zip") ? loader.getOSMZipEntry(file.getPath()).getSize() : file.length();
+                fileSize = file.getName().endsWith(".zip") ? loader.getZipFileEntrySize(file.getPath()) : file.length();
             } else {
                 inputStream = loader.loadResource(BINARY_FILE);
                 fileSize = loader.getResourceFileSize(BINARY_FILE);
@@ -229,7 +230,7 @@ public class Controller {
 
     @FXML
     private void cancelLoad() {
-        if(loading.get()) creator.cancel();
+        creator.cancel();
     }
 
     private void loadFile(InputStream inputStream, long fileSize) {
@@ -246,32 +247,34 @@ public class Controller {
     }
 
     private void loadRunning() {
+        state = State.LOADING;
+        disableMenus();
         centerPane.setCursor(Cursor.WAIT);
-        openItem.disableProperty().bind(loading);
         statusLabel.textProperty().bind(creator.messageProperty());
         loadingBar.progressProperty().bind(creator.progressProperty());
-        loaderPane.setVisible(true);
-        loading.set(true);
     }
 
     private void loadSuccess() {
+        state = State.MAP;
+        disableMenus();
+        showLoaderPane(false);
         cleanupLoad("Working...");
-        loaderPane.setVisible(false);
         initUI();
         resetView();
-        loading.set(false);
     }
 
     private void loadFailed() {
+        state = State.MENU;
+        disableMenus();
         mapData = new MapData();
-        openItem.disableProperty().bind(loading.not());
         cleanupLoad("Failed.");
         creator.exceptionProperty().get().printStackTrace();
     }
 
     private void loadCancelled() {
+        state = State.MENU;
+        disableMenus();
         mapData = new MapData();
-        openItem.disableProperty().bind(loading.not());
         cleanupLoad("Cancelled.");
     }
 
@@ -280,6 +283,49 @@ public class Controller {
         statusLabel.textProperty().unbind();
         loadingBar.progressProperty().unbind();
         statusLabel.setText(status);
+    }
+
+    private void disableMenus() {
+        if(state == State.MENU) {
+            openItem.setDisable(false);
+            zoomInItem.setDisable(true);
+            zoomOutItem.setDisable(true);
+            resetItem.setDisable(true);
+            cancelItem.setDisable(true);
+        }
+        else if(state == State.LOADING) {
+            openItem.setDisable(true);
+            zoomInItem.setDisable(true);
+            zoomOutItem.setDisable(true);
+            resetItem.setDisable(true);
+            cancelItem.setDisable(false);
+        }
+        else if(state == State.MAP) {
+            openItem.setDisable(false);
+            zoomInItem.setDisable(false);
+            zoomOutItem.setDisable(false);
+            resetItem.setDisable(false);
+            cancelItem.setDisable(true);
+        }
+    }
+
+    private void showLoaderPane(boolean show) {
+        FadeTransition ft = new FadeTransition(Duration.millis(500), loaderPane);
+        if(show) {
+            if(loaderPane.isVisible()) return;
+            statusLabel.setText("Waiting");
+            loadingBar.setProgress(0);
+            loaderPane.setVisible(true);
+            ft.setFromValue(0);
+            ft.setToValue(1);
+        } else {
+            ft.setDelay(Duration.millis(500));
+            ft.setFromValue(1);
+            ft.setToValue(0);
+            ft.setOnFinished(e -> loaderPane.setVisible(false));
+        }
+
+        ft.play();
     }
 
     private void setTheme(String themeName) {
