@@ -17,6 +17,7 @@ public class MapCanvas extends Canvas {
     private CanvasBounds bounds;
     private Theme theme;
 
+    private boolean hasListener;
     private final int ZOOM_FACTOR = 2;
     private int zoomLevel = MIN_ZOOM_LEVEL;
     public final static int MIN_ZOOM_LEVEL = 1;
@@ -30,8 +31,12 @@ public class MapCanvas extends Canvas {
         trans = new Affine();
         bounds = new CanvasBounds();
 
-        widthProperty().addListener((observable, oldValue, newValue) -> pan((newValue.floatValue() - oldValue.floatValue()) / 2, 0));
-        heightProperty().addListener((observable, oldValue, newValue) -> pan(0, (newValue.floatValue() - oldValue.floatValue()) / 2));
+        if(!hasListener) {
+            widthProperty().addListener((observable, oldValue, newValue) -> pan((newValue.doubleValue() - oldValue.doubleValue()) / 2, 0));
+            heightProperty().addListener((observable, oldValue, newValue) -> pan(0, (newValue.doubleValue() - oldValue.doubleValue()) / 2));
+        }
+        hasListener = true;
+
         updateMap();
     }
 
