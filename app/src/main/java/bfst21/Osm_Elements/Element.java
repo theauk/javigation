@@ -14,6 +14,10 @@ public abstract class Element implements Spatializable {
         this.id = id;
     }
 
+    public Element(){
+
+    }
+
     public long getId() {
         return id;
     }

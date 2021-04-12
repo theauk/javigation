@@ -4,10 +4,12 @@ import bfst21.MapData;
 import bfst21.Osm_Elements.Element;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.event.EventTarget;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.FillRule;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
@@ -79,6 +81,8 @@ public class MapCanvas extends Canvas {
         if(theme.get(element.getType()).fill())
         {
             gc.setFill(theme.get(element.getType()).getColor().getInner());
+            gc.setFillRule(FillRule.EVEN_ODD);
+            element.draw(gc);
             gc.fill();
         }
     }

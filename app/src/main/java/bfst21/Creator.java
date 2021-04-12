@@ -96,7 +96,7 @@ public class Creator extends Task<Void> {
                                 var v = reader.getAttributeValue(null, "v");
 
                                 if(node != null){
-                                    // TODO: 09-04-2021 out commented node deletion 
+                                    // TODO: 09-04-2021 out commented node deletion
                                     //if(checkNodesNotCreate(k,v)) node = null;
                                     checkAddressNode(k,v,node);
                                     break;
@@ -131,6 +131,10 @@ public class Creator extends Task<Void> {
                                     if (type.equals("node")) {
                                         relation.addNode(idToNode.get(refR));
                                     }
+                                    var role = (reader.getAttributeValue(null, "role"));
+                                        if(role.equals("outer")) relation.LastWayOuter(true);
+                                        if(role.equals("inner")) relation.LastWayOuter(false);
+
                                 }
                                 break;
                         }
@@ -199,7 +203,7 @@ public class Creator extends Task<Void> {
                 relation.setType("bridge");
                 break;
             case "type":
-                if(v.equals("multipolygon")) relation.isMultiPolygon();
+                if(v.equals("multipolygon")) relation.setIsMultiPolygon();
                 break;
             case "building":
                 relation.setType(k);
