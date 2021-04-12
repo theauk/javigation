@@ -27,6 +27,7 @@ public class Creator extends Task<Void> {
     private HashSet<String> nodesNotCreateKeys;
     private HashSet<String> nodesNotCreateValues;
 
+    private final boolean[] touched = new boolean[3];
 
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
@@ -72,23 +73,35 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "node":
-
                                 var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
                                 var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
                                 node = new Node(idNode, lon, lat);
+
+                                if(!touched[0]) {
+                                    touched[0] = true;
+                                    updateMessage("Loading: Nodes");
+                                }
                                 break;
 
                             case "way":
-
                                 var idWay = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 way = new Way(idWay);
                                 idToWay.put(way);
+
+                                if(!touched[1]) {
+                                    updateMessage("Loading: Ways");
+                                    touched[1] = true;
+                                }
                                 break;
 
                             case "relation":
-
                                 relation = new Relation(Long.parseLong(reader.getAttributeValue(null, "id")));
+
+                                if(!touched[2]) {
+                                    updateMessage("Loading: Relations");
+                                    touched[2] = true;
+                                }
                                 break;
 
                             case "tag":
@@ -138,7 +151,6 @@ public class Creator extends Task<Void> {
                     case END_ELEMENT:
                         switch (reader.getLocalName()) {
                             case "node":
-                                updateMessage("Loading: Nodes");
                                 if (node != null) {
                                     if(node.isAddress()){
                                         addressTree.put(node);
@@ -150,7 +162,6 @@ public class Creator extends Task<Void> {
                                 break;
 
                             case "way":
-                                updateMessage("Loading: Ways");
                                 if (way != null) {
                                     idToWay.put(way);
                                     if (way.hasType()) {
@@ -163,9 +174,7 @@ public class Creator extends Task<Void> {
                                 }
                                 break;
 
-
                             case "relation":
-                                updateMessage("Loading: Relations");
                                 if (relation != null) {
                                     if(relation.hasType()){
                                         if(relation.getType().equals("restriction")){
@@ -180,8 +189,8 @@ public class Creator extends Task<Void> {
                 }
             }
         }
+        updateMessage("Finalizing...");
         mapData.addDataTrees(highWayRoadNodes, rTree, roadGraph, addressTree);
-        updateMessage("");
         reader.close();
     }
 
