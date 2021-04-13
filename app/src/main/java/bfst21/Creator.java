@@ -38,6 +38,7 @@ public class Creator extends Task<Void> {
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
         nodesNotCreateKeys = new HashSet<>();
         nodesNotCreateValues = new HashSet<>();
+
         setupNodesNotCreate();
     }
 

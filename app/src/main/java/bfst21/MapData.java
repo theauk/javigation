@@ -49,7 +49,6 @@ public class MapData {
 
     public String getNearestRoad(float x, float y) {
         String names = "";
-        HashSet<String> list = new HashSet<>();
         try {
             Node node = closetRoadTree.getNearestNode(x, y);
             names = getNodeHighWayNames(node);

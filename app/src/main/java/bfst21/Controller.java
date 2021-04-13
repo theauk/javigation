@@ -2,6 +2,7 @@ package bfst21;
 
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
+import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
@@ -435,15 +436,7 @@ public class Controller {
         Point2D geoCoords = mapCanvas.getGeoCoords(cursorPoint.getX(), cursorPoint.getY());
         Node nearestRoadNode = mapData.getNearestRoadNode((float) geoCoords.getX(), (float) -geoCoords.getY() / 0.56f);
 
-        String names = "";
-        ArrayList<String> list = new ArrayList<>();
-        if (nearestRoadNode.getReferencedHighWays() != null) {
-            for (Way way : nearestRoadNode.getReferencedHighWays()) {
-                if (way.getName() != null) list.add(way.getName());
-            }
-            names = String.join(", ", list);
-        }
-
+        String names = mapData.getNodeHighWayNames(nearestRoadNode);
         if (from) {
             textFieldFromNav.setText(names);
             currentFromNode = nearestRoadNode;
