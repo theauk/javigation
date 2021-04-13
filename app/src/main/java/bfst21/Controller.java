@@ -1,10 +1,12 @@
 package bfst21;
 
+import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
+import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -16,11 +18,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,16 +35,24 @@ public class Controller {
     private MapData mapData;
     private Loader loader;
     private Creator creator;
+    private final String BINARY_FILE = "/small.osm";
 
     private Map<String, String> themes;
-    private Point2D lastMouse;
+    private Point2D lastMouse = new Point2D(0, 0);
     private boolean viaZoomSlider = true;
+
+    private enum State {
+        MENU,
+        LOADING,
+        MAP
+    }
 
     private Node currentFromNode;
     private Node currentToNode;
 
-    @FXML
-    private MapCanvas mapCanvas;
+    private State state = State.MENU;
+
+    @FXML private MapCanvas mapCanvas;
 
     @FXML
     private Scene scene;
@@ -74,23 +85,17 @@ public class Controller {
     @FXML
     private Slider zoomSlider;
 
-    @FXML
-    private Menu themeMenu;
-    @FXML
-    private MenuItem resetItem;
-    @FXML
-    private MenuItem zoomInItem;
-    @FXML
-    private MenuItem zoomOutItem;
+    @FXML private Menu themeMenu;
+    @FXML private MenuItem openItem;
+    @FXML private MenuItem resetItem;
+    @FXML private MenuItem cancelItem;
+    @FXML private MenuItem zoomInItem;
+    @FXML private MenuItem zoomOutItem;
 
-    @FXML
-    private Button zoomInButton;
-    @FXML
-    private Button zoomOutButton;
-    @FXML
-    private RadioMenuItem defaultThemeItem;
-    @FXML
-    private RadioMenuItem rTreeDebug;
+    @FXML private Button zoomInButton;
+    @FXML private Button zoomOutButton;
+    @FXML private RadioMenuItem defaultThemeItem;
+    @FXML private RadioMenuItem rTreeDebug;
 
     @FXML
     private ToggleGroup themeGroup;
@@ -117,6 +122,7 @@ public class Controller {
 
     private void initView() {
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
+        disableMenus();
     }
 
     private void initUI() {
@@ -226,25 +232,34 @@ public class Controller {
     @FXML
     private void resetView() {
         mapCanvas.reset();
-        themeGroup.selectToggle(defaultThemeItem);
-        //zoomSlider.setValue(zoomSlider.getMin());
+        viaZoomSlider = false;
+        zoomSlider.setValue(mapCanvas.getZoomLevel());
         setLabels(lastMouse);
+        viaZoomSlider = true;
     }
 
     @FXML
     private void openFile() {
+        showLoaderPane(true);
         File file = showFileChooser().showOpenDialog(scene.getWindow());
+        InputStream inputStream;
+        long fileSize;
 
-        if (file != null) loadFile(file.getAbsolutePath(), file.length());
-        else {
-            File binaryFile = new File(getClass().getResource("/small.osm").getPath());
-            String path = handlePotentialSpacesInPath(binaryFile.getAbsolutePath());
-            loadFile(path, binaryFile.length());
+        try {
+            if(file != null) {
+                inputStream = loader.load(file.getPath());
+                fileSize = file.getName().endsWith(".zip") ? loader.getZipFileEntrySize(file.getPath()) : file.length();
+            } else {
+                inputStream = loader.loadResource(BINARY_FILE);
+                fileSize = loader.getResourceFileSize(BINARY_FILE);
+            }
+
+            loadFile(inputStream, fileSize);
+        } catch (IOException e) {
+            statusLabel.setText("Failed: File not found.");
+        } catch (NoOSMInZipFileException e) {
+            statusLabel.setText("Failed: " + e.getMessage());
         }
-    }
-
-    private String handlePotentialSpacesInPath(String path) {
-        return URLDecoder.decode(path, StandardCharsets.UTF_8);
     }
 
     @FXML
@@ -254,78 +269,119 @@ public class Controller {
 
     @FXML
     private void cancelLoad() {
-        if (creator != null) creator.cancel();
+        creator.cancel();
     }
 
-    private void loadFile(String path, long fileSize) {
-        try {
-            mapData = new MapData();
-            creator = new Creator(mapData, loader.load(path), fileSize);
-            creator.setOnRunning(e -> loadRunning());
-            creator.setOnSucceeded(e -> loadSuccess());
-            creator.setOnCancelled(e -> loadCancelled());
-            creator.setOnFailed(e -> loadFailed());
+    private void loadFile(InputStream inputStream, long fileSize) {
+        mapData = new MapData();
+        creator = new Creator(mapData, inputStream, fileSize);
+        creator.setOnRunning(e -> loadRunning());
+        creator.setOnSucceeded(e -> loadSuccess());
+        creator.setOnCancelled(e -> loadCancelled());
+        creator.setOnFailed(e -> loadFailed());
 
-            Thread creatorThread = new Thread(creator, "Creator Thread");
-            creatorThread.setDaemon(true);
-            creatorThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Thread creatorThread = new Thread(creator, "Creator Thread");
+        creatorThread.setDaemon(true);
+        creatorThread.start();
     }
 
     private void loadRunning() {
+        state = State.LOADING;
+        disableMenus();
         centerPane.setCursor(Cursor.WAIT);
         statusLabel.textProperty().bind(creator.messageProperty());
         loadingBar.progressProperty().bind(creator.progressProperty());
-        loaderPane.setVisible(true);
-        disableGui(true);
     }
 
     private void loadSuccess() {
-        cleanupLoad("");
-        loaderPane.setVisible(false);
+        state = State.MAP;
+        disableMenus();
+        showLoaderPane(false);
+        cleanupLoad();
         initUI();
-        //mapCanvas.reset();
+        resetView();
     }
 
     private void loadFailed() {
-        mapCanvas = new MapCanvas();
-        cleanupLoad("Failed.");
+        state = State.MENU;
+        disableMenus();
+        mapData = new MapData();
+        cleanupLoad();
+        statusLabel.setText("Failed.");
         creator.exceptionProperty().get().printStackTrace();
     }
 
     private void loadCancelled() {
-        mapCanvas = new MapCanvas();
-        cleanupLoad("Cancelled.");
+        state = State.MENU;
+        disableMenus();
+        mapData = new MapData();
+        cleanupLoad();
+        statusLabel.setText("Cancelled.");
     }
 
-    private void cleanupLoad(String status) {
+    private void cleanupLoad() {
         centerPane.setCursor(Cursor.DEFAULT);
         statusLabel.textProperty().unbind();
         loadingBar.progressProperty().unbind();
-        statusLabel.setText(status);
-        disableGui(false);
+    }
+
+    private void disableMenus() {
+        if(state == State.MENU) {
+            openItem.setDisable(false);
+            zoomInItem.setDisable(true);
+            zoomOutItem.setDisable(true);
+            resetItem.setDisable(true);
+            cancelItem.setDisable(true);
+        }
+        else if(state == State.LOADING) {
+            openItem.setDisable(true);
+            zoomInItem.setDisable(true);
+            zoomOutItem.setDisable(true);
+            resetItem.setDisable(true);
+            cancelItem.setDisable(false);
+        }
+        else if(state == State.MAP) {
+            openItem.setDisable(false);
+            zoomInItem.setDisable(false);
+            zoomOutItem.setDisable(false);
+            resetItem.setDisable(false);
+            cancelItem.setDisable(true);
+        }
+    }
+
+    private void showLoaderPane(boolean show) {
+        FadeTransition ft = new FadeTransition(Duration.millis(500), loaderPane);
+        if(show) {
+            if(loaderPane.isVisible()) return;
+            statusLabel.setText("Waiting");
+            loadingBar.setProgress(0);
+            loaderPane.setVisible(true);
+            ft.setFromValue(0);
+            ft.setToValue(1);
+        } else {
+            ft.setDelay(Duration.millis(500));
+            ft.setFromValue(1);
+            ft.setToValue(0);
+            ft.setOnFinished(e -> loaderPane.setVisible(false));
+        }
+
+        ft.play();
     }
 
     private void setTheme(String themeName) {
         String name = themes.get(themeName);
         Theme theme = loader.loadTheme(name);
-        scene.getStylesheets().clear();
-        if (theme.getStylesheet() != null) scene.getStylesheets().add(theme.getStylesheet());
+        scene.getStylesheets().remove(mapCanvas.getTheme().getStylesheet());
+        if(theme.getStylesheet() != null) scene.getStylesheets().add(theme.getStylesheet());
         mapCanvas.setTheme(theme);
     }
 
     private void setLabels(Point2D point) {
-        try {
-            Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
-            Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
-            setCoordsLabel((float) coords.getX(), (float) coords.getY());
-            setGeoCoordsLabel((float) geoCoords.getX(), (float) geoCoords.getY());
-            setNearestRoadLabel(geoCoords.getX(), geoCoords.getY());
-        } catch (NonInvertibleTransformException e) {
-            e.printStackTrace();
-        }
+        Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
+        Point2D geoCoords = mapCanvas.getGeoCoords(point.getX(), point.getY());
+        setCoordsLabel((float) coords.getX(), (float) coords.getY());
+        setGeoCoordsLabel((float) geoCoords.getX(), (float) geoCoords.getY());
+        setNearestRoadLabel(geoCoords.getX(), geoCoords.getY());
     }
 
     private void setCoordsLabel(float x, float y) {
@@ -351,13 +407,6 @@ public class Controller {
     private double round(double number, int digits) {
         double scale = Math.pow(10, digits);
         return Math.round(number * scale) / scale;
-    }
-
-    private void disableGui(boolean disable) {
-        zoomSlider.setDisable(disable);
-        zoomInItem.setDisable(disable);
-        zoomOutItem.setDisable(disable);
-        resetItem.setDisable(disable);
     }
 
     private FileChooser showFileChooser() {

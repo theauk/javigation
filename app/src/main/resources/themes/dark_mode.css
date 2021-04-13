@@ -6,21 +6,12 @@
     -fx-control-inner-background-alt: -fx-control-inner-background ;
 }
 
-.label{
+.label {
     -fx-text-fill: lightgray;
 }
 
 .text-field {
     -fx-prompt-text-fill: gray;
-}
-
-.titulo{
-    -fx-font-weight: bold;
-    -fx-font-size: 18px;
-}
-
-.button{
-    -fx-focus-traversable: false;
 }
 
 .button:hover{
@@ -29,6 +20,19 @@
 
 .separator *.line {
     -fx-background-color: #3C3C3C;
-    -fx-border-style: solid;
-    -fx-border-width: 1px;
+}
+
+#copyRight {
+    -fx-background-color: rgba(128, 128, 128, 0.7);
+    -fx-text-fill: rgba(211, 211, 211, 0.7);
+}
+
+#informationPane .label {
+    -fx-text-fill: rgba(255, 255, 255, 0.4);
+}
+
+#scalePane {
+    -fx-border-color: white;
+    -fx-background-color: rgba(128, 128, 128, 0.7);
+    -fx-text-fill: lightgray;
 }

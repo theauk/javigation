@@ -17,7 +17,7 @@ public class Theme
     private String stylesheet;
     private boolean warned;
 
-    private final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = \\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*]))*}(?:, \\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*})*(?:, \\{style = \"(?<style>[a-z]+)\"})*(?:, \\{filled = (?<fill>true|false)})*;(?: *#.*)*)* *$|^(?:#.*)$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
+    private final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = (?:\\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*]))*})*(?:, )?(?:\\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*})*(?:, )?(?:\\{style = \"(?<style>[a-z]+)\"})*(?:, )?(?:\\{filled = (?<fill>true|false)})*(?:, )?(?:\\{showAt = (?<zoomLevel>\\d{1,2})})*;(?: *#.*)*)* *$|^#.*$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
 
     public Theme()
@@ -25,7 +25,6 @@ public class Theme
         palette = new HashMap<>();
         defaultThemeElement = new ThemeElement();
         defaultThemeElement.setMapColor(new MapColor(Color.rgb(0, 0, 0), Color.rgb(0, 0, 0)));
-        defaultThemeElement.setStyle("normal");
     }
 
     private void put(String key, ThemeElement themeElement)
@@ -68,6 +67,7 @@ public class Theme
                 }
                 if(matchesGroup(matcher, "style")) themeElement.setStyle(matcher.group("style"));
                 if(matchesGroup(matcher, "fill")) themeElement.setFill(Boolean.parseBoolean(matcher.group("fill")));
+                if(matchesGroup(matcher, "zoomLevel")) themeElement.setZoomLevel(Byte.parseByte(matcher.group("zoomLevel")));
 
                 put(matcher.group("key"), themeElement);
             }
@@ -103,6 +103,16 @@ public class Theme
         return null;
     }
 
+    public Map<String, Byte> createZoomMap() {
+        Map<String, Byte> zoomMap = new HashMap<>();
+
+        for(String key: palette.keySet()) {
+            zoomMap.put(key,  palette.get(key).getZoomLevel());
+        }
+
+        return zoomMap;
+    }
+
     private boolean matchesGroup(Matcher matcher, String group)
     {
         return matcher.group(group) != null;
@@ -112,7 +122,7 @@ public class Theme
     {
         if(palette.get(key) == null)
         {
-            if(!warned) System.err.println("Warning: Key '" + key + "' is loaded but not supported by the theme. Returning default.");
+            if(!warned) System.err.println("Warning: Key '" + key + "' is loaded but not supported by the theme. If you want to style the element, add it to the theme.");
             warned = true;
 
             return defaultThemeElement;
@@ -137,12 +147,14 @@ public class Theme
         private int innerWidth;
         private int outerWidth;
         private boolean fill;
+        private byte zoomLevel;
 
         public ThemeElement()
         {
             style = "normal";
             innerWidth = 1;
             outerWidth = 1;
+            zoomLevel = MapCanvas.MIN_ZOOM_LEVEL;
         }
 
         public void setMapColor(MapColor mapColor)
@@ -198,6 +210,14 @@ public class Theme
         public boolean fill()
         {
             return fill;
+        }
+
+        public void setZoomLevel(byte zoomLevel) {
+            this.zoomLevel = zoomLevel;
+        }
+
+        public byte getZoomLevel() {
+            return zoomLevel;
         }
     }
 

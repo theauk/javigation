@@ -95,58 +95,58 @@ class RTreeTest {
    // }
 
 
-    @Test
-    void insertNoOverFlowRootTest() {
-
-        rTree.insert(w1);
-
-        System.out.println("");
-        System.out.println("--SECOND--");
-        rTree.insert(w2);
-
-        System.out.println("");
-        System.out.println("--THIRD--");
-        rTree.insert(w3);
-
-        System.out.println("");
-        System.out.println("--FOURTH--");
-        rTree.insert(w4);
-
-        System.out.println("");
-        System.out.println("--FIFTH--");
-        rTree.insert(w5);
-
-        System.out.println("");
-        System.out.println("--SIXTH--");
-        rTree.insert(w6);
-
-        rTree.insert(w7);
-
-
-        System.out.println("");
-        System.out.println("--SIXTH II--");
-        rTree.insert(w6);
-
-        System.out.println("");
-        System.out.println("--SIXTH III--");
-        rTree.insert(w6);
-
-        rTree.insert(w6);
-        rTree.insert(w6);
-
-        System.out.println("");
-
-        rTree.printTree();
-
-        long startTime = System.nanoTime();
-        ArrayList<Element> result = rTree.search(-10, 18, -63, 5, false);
-        long estimatedTime = System.nanoTime() - startTime;
-        double elapsedTimeInSecond = (double) estimatedTime / 1_000_000_000;
-        System.out.println(elapsedTimeInSecond + " seconds");
-
-        System.out.println("Result size: " + result.size());
-        for (Element element : result) {
-            System.out.println("NodeHolder: " + Arrays.toString(element.getCoordinates()));
-        }
-    }
+  // @Test
+  // void insertNoOverFlowRootTest() {
+  //
+  //     rTree.insert(w1);
+  //
+  //     System.out.println("");
+  //     System.out.println("--SECOND--");
+  //     rTree.insert(w2);
+  //
+  //     System.out.println("");
+  //     System.out.println("--THIRD--");
+  //     rTree.insert(w3);
+  //
+  //     System.out.println("");
+  //     System.out.println("--FOURTH--");
+  //     rTree.insert(w4);
+  //
+  //     System.out.println("");
+  //     System.out.println("--FIFTH--");
+  //     rTree.insert(w5);
+  //
+  //     System.out.println("");
+  //     System.out.println("--SIXTH--");
+  //     rTree.insert(w6);
+  //
+  //     rTree.insert(w7);
+  //
+  //
+  //     System.out.println("");
+  //     System.out.println("--SIXTH II--");
+  //     rTree.insert(w6);
+  //
+  //     System.out.println("");
+  //     System.out.println("--SIXTH III--");
+  //     rTree.insert(w6);
+  //
+  //     rTree.insert(w6);
+  //     rTree.insert(w6);
+  //
+  //     System.out.println("");
+  //
+  //     rTree.printTree();
+  //
+  //     long startTime = System.nanoTime();
+  //     ArrayList<Element> result = rTree.search(-10, 18, -63, 5, false);
+  //     long estimatedTime = System.nanoTime() - startTime;
+  //     double elapsedTimeInSecond = (double) estimatedTime / 1_000_000_000;
+  //     System.out.println(elapsedTimeInSecond + " seconds");
+  //
+  //     System.out.println("Result size: " + result.size());
+  //     for (Element element : result) {
+  //         System.out.println("NodeHolder: " + Arrays.toString(element.getCoordinates()));
+  //     }
+  // }
 }

@@ -21,9 +21,9 @@
         <top>
             <MenuBar>
                 <Menu text="File">
-                    <MenuItem text="Open" onAction="#openFile" accelerator="CTRL + O"/>
+                    <MenuItem fx:id="openItem" text="Open" onAction="#openFile" accelerator="CTRL + O"/>
                     <SeparatorMenuItem/>
-                    <MenuItem text="Cancel" onAction="#cancelLoad" accelerator="CTRL + W"/>
+                    <MenuItem fx:id="cancelItem" text="Cancel" onAction="#cancelLoad" accelerator="CTRL + W"/>
                     <SeparatorMenuItem/>
                     <MenuItem text="Exit" onAction="#exit"/>
                 </Menu>
@@ -35,7 +35,7 @@
                     <RadioMenuItem fx:id="navigationPane" text="Show Navigation Pane" selected="true"/>
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
-                        <RadioMenuItem fx:id="defaultThemeItem" text="Default" selected="true">
+                        <RadioMenuItem text="Default" selected="true">
                             <toggleGroup>
                                 <ToggleGroup fx:id="themeGroup"/>
                             </toggleGroup>

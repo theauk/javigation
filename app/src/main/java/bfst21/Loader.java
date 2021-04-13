@@ -1,5 +1,6 @@
 package bfst21;
 
+import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.view.Theme;
 
 import java.io.*;
@@ -11,28 +12,78 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class Loader {
-    public InputStream load(String filename) throws IOException {
-        if(filename.endsWith(".osm")) return loadOSM(filename);
-        else if(filename.endsWith(".zip")) return loadZIP(filename);
+    public InputStream load(String file) throws IOException, NoOSMInZipFileException {
+        if(file.endsWith(".osm")) return loadOSM(file);
+        else if(file.endsWith(".zip")) return loadZIP(file);
         return null;
     }
 
-    private InputStream loadZIP(String filename) throws IOException {
-        ZipInputStream zip = new ZipInputStream(new FileInputStream(filename));
-        zip.getNextEntry();
-        return zip;
+    /**
+     * Returns a ZipInputStream for the first OSM zip entry or
+     * throws a {@link NoOSMInZipFileException} exception if no OSM file was found.
+     *
+     * @param file the path to the file to be processed
+     * @return a ZipInputStream for the found OSM zip entry.
+     * @throws IOException if the file is not found.
+     * @throws NoOSMInZipFileException if there is no OSM file in the zip file.
+     */
+    private ZipInputStream loadZIP(String file) throws IOException, NoOSMInZipFileException {
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
+        ZipEntry entry;
+
+        while((entry = zipInputStream.getNextEntry()) != null) {
+            if(entry.getName().endsWith(".osm")) return zipInputStream;
+        }
+
+        throw new NoOSMInZipFileException("Zip file does not contain a zipped OSM file.");
     }
 
-    private InputStream loadOSM(String filename) throws IOException {
-        return new FileInputStream(filename);
+    private FileInputStream loadOSM(String file) throws IOException {
+        return new FileInputStream(file);
+    }
+
+    public InputStream loadResource(String file) {
+        return getClass().getResourceAsStream(file);
+    }
+
+    public long getResourceFileSize(String file) throws IOException {
+        return getClass().getResource(file).openConnection().getContentLengthLong();
+    }
+
+    /**
+     * Finds the first OSM zip entry in a zip file and returns the uncompressed
+     * file size of the entry.
+     *
+     * @param file the zip file to be processed
+     * @return the file size of the first found OSM entry in the zip file (in bytes).
+     * @throws IOException if file is not found.
+     * @throws NoOSMInZipFileException if there are no OSM zip entries in the zip file.
+     */
+    public long getZipFileEntrySize(String file) throws IOException, NoOSMInZipFileException {
+        ZipFile zipFile = new ZipFile(file);
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+        while(entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+
+            if(entry.getName().endsWith(".osm")) {
+                zipFile.close();
+                return entry.getSize();
+            }
+        }
+
+        throw new NoOSMInZipFileException("Zip file does not contain a zipped OSM file.");
     }
 
     public Theme loadTheme(String file) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/themes/" + file)))) {
+        try(BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
@@ -59,8 +110,8 @@ public class Loader {
      * Creates a FileSystem depending on being run from a jar file or locally. Then goes through every directory (including files)
      * and saves the name of the file if it has the specified extension.
      *
-     * @param directory The directory to be searched
-     * @param extension The file extension, we want to filter the list after
+     * @param directory the directory to be searched.
+     * @param extension the file extension, we want to filter the list after.
      * @return A List of Strings containing the name of the files/directories.
      */
     public List<String> getFilesIn(String directory, String extension) {

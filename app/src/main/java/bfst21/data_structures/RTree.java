@@ -44,14 +44,15 @@ public class RTree {
      * @param debug True if debug mode is selected. Otherwise, false.
      * @return An ArrayList with the Element objects that intersect with the search bounds.
      */
-    public ArrayList<Element> search(float xMin, float xMax, float yMin, float yMax, boolean debug) {
+    public ArrayList<ArrayList<Element>> search(float xMin, float xMax, float yMin, float yMax, boolean debug) {
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
-            ArrayList<Element> results = new ArrayList<>();
+            ArrayList<ArrayList<Element>> results = new ArrayList<>();
+            while(results.size()<5){results.add(new ArrayList<>()); }
             if (debug) {
                 float change = xMin * 0.0005f;
                 searchCoordinates = new float[]{xMin + change, xMax + (-change), yMin + change, yMax + (-change)};
-                results.addAll(createDebugCanvasBoundsRectangle(searchCoordinates));
+                results.get(0).addAll(createDebugCanvasBoundsRectangle(searchCoordinates));
                 searchDebug(searchCoordinates, root, results);
             } else {
                 search(searchCoordinates, root, results);
@@ -62,12 +63,13 @@ public class RTree {
         }
     }
 
-    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<Element> results) {
+    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
                     if (intersects(searchCoordinates, e.getCoordinates())) {
-                        results.add(e);
+                        int layer = e.getLayer();
+                        results.get(layer).add(e);
                     }
                 }
             }
@@ -80,13 +82,14 @@ public class RTree {
         }
     }
 
-    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<Element> results) {
+    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
                     if (intersects(searchCoordinates, e.getCoordinates())) {
-                        results.addAll(createDebugElementRectangle(e.getCoordinates()));
-                        results.add(e);
+                        int layer = e.getLayer();
+                        results.get(layer).addAll(createDebugElementRectangle(e.getCoordinates()));
+                        results.get(layer).add(e);
                     }
                 }
             }

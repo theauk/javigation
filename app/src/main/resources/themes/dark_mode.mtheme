@@ -17,9 +17,9 @@ name = "Dark Mode";
 "residential" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
 
 #Road links
-"motorway_link" = {iColor = [233, 144, 161], oColor = [224, 59, 115]}, {iWidth = 1, oWidth = 2};  #MISSING
-"trunk_link" = {iColor = [249, 178, 156], oColor = [249, 178, 156]}, {iWidth = 1, oWidth = 2};    #MISSING
-"tertiary_link" = {iColor = [254, 254, 254], oColor = [157, 157, 157]}, {iWidth = 1, oWidth = 2}; #MISSING
+"motorway_link" = {iColor = [233, 144, 161], oColor = [224, 59, 115]}, {iWidth = 1, oWidth = 2};
+"trunk_link" = {iColor = [249, 178, 156], oColor = [249, 178, 156]}, {iWidth = 1, oWidth = 2};
+"tertiary_link" = {iColor = [254, 254, 254], oColor = [157, 157, 157]}, {iWidth = 1, oWidth = 2};
 "primary_link" = {iColor = [252, 214, 164], oColor = [154, 105, 8]}, {iWidth = 1, oWidth = 2};
 "secondary_link" = {iColor = [247, 250, 191], oColor = [105, 121, 0]}, {iWidth = 1, oWidth = 2};
 
@@ -37,4 +37,4 @@ name = "Dark Mode";
 "yes" = {iColor = [79, 76, 74]}, {filled = true};
 
 #Water
-"water" = {iColor = [170, 211, 223]}, {filled = true}; #NOT SUPPORTED
+"water" = {iColor = [170, 211, 223]}, {filled = true};

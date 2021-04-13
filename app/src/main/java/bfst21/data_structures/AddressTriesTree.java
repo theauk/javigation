@@ -14,9 +14,11 @@ public class AddressTriesTree {
      * Not yet implemented!
      *
      */
-    public void put(Node node){
+    public void put(Node node, String city, String streetname, int postcode, String houseNumber){
 
     }
+
+
 
     /**
      * Not yet implemented!

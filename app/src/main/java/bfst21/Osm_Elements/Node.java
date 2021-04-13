@@ -9,18 +9,14 @@ public class Node extends Element {
 
     private List<Way> partOfWays;
     private ArrayList<Node> adjacentNodes;
-    private boolean isAddress;
-    private String housenumber;
-    private String city;
-    private int postcode;
-    private String street;
 
     public Node(long id, float lon, float lat) {
         super(id);
         this.xMin = lon;
         this.xMax = lon;
-        this.yMin = -lat / 0.56f;
-        this.yMax = -lat / 0.56f;
+        this.yMin = -lat/0.56f;
+        this.yMax = this.yMin;
+
     }
 
     public Node(long id, float lon, float lat, boolean nodeFromNode) {
@@ -41,9 +37,9 @@ public class Node extends Element {
         this.yMax = lat;
     }
 
-    public void addReferenceToHighWay(Way way) {
-        if (partOfWays == null) {
-            partOfWays = new ArrayList<>();
+    public void addReferenceToHighWay(Way way){
+        if(partOfWays == null){
+         partOfWays = new ArrayList<>();
         }
         partOfWays.add(way);
     }
@@ -55,43 +51,6 @@ public class Node extends Element {
     @Override
     public void draw(GraphicsContext gc) {
 
-    }
-
-    public boolean isAddress() {
-        return isAddress;
-    }
-
-    public String getHousenumber() {
-        return housenumber;
-    }
-
-    public void setHousenumber(String housenumber) {
-        this.housenumber = housenumber;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public int getPostcode() {
-        return postcode;
-    }
-
-    public void setPostcode(int postcode) {
-        this.postcode = postcode;
-    }
-
-    public String getStreet() {
-        return street;
-    }
-
-    public void setStreet(String street) {
-        isAddress = true;
-        this.street = street;
     }
 
     public void addAdjacentNode(Node n) {

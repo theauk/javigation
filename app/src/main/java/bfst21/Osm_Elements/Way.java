@@ -30,6 +30,7 @@ public class Way extends NodeHolder {
 
     private void setBooleans() {
         isHighway = true;
+        super.setLayer(3);
         if (type.contains("motorway") || type.contains("trunk")) {
             setNotCycleable();
             setNotWalkable();
