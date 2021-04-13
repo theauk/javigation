@@ -22,9 +22,6 @@ public class Way extends NodeHolder {
         super.setType(type);
         if (isHighway) {
             setBooleans();
-            for (Node n : nodes) {
-                n.addReferenceToHighWay(this);
-            }
         }
     }
 
@@ -113,11 +110,11 @@ public class Way extends NodeHolder {
     }
 
     public void updateNodesForNavigation() {
-        for (int i = 1; i < nodes.size(); i++) {
-            nodes.get(i - 1).addAdjacentNode(nodes.get(i));
-            if (!onewayRoad) {
-                nodes.get(i).addAdjacentNode(nodes.get(i - 1));
-            }
-        }
+       // for (int i = 1; i < nodes.size(); i++) {
+       //     nodes.get(i - 1).addAdjacentNode(nodes.get(i));
+       //     if (!onewayRoad) {
+       //         nodes.get(i).addAdjacentNode(nodes.get(i - 1));
+       //     }
+       // }
     }
 }

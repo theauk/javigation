@@ -6,10 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Node extends Element {
-
-    private List<Way> partOfWays;
-    private ArrayList<Node> adjacentNodes;
-
     public Node(long id, float lon, float lat) {
         super(id);
         this.xMin = lon;
@@ -37,31 +33,11 @@ public class Node extends Element {
         this.yMax = lat;
     }
 
-    public void addReferenceToHighWay(Way way){
-        if(partOfWays == null){
-         partOfWays = new ArrayList<>();
-        }
-        partOfWays.add(way);
-    }
 
-    public List<Way> getReferencedHighWays() {
-        return partOfWays;
-    }
 
     @Override
     public void draw(GraphicsContext gc) {
 
-    }
-
-    public void addAdjacentNode(Node n) {
-        if (adjacentNodes == null) {
-            adjacentNodes = new ArrayList<>();
-        }
-        adjacentNodes.add(n);
-    }
-
-    public ArrayList<Node> getAdjacentNodes() {
-        return adjacentNodes;
     }
 
 }

@@ -18,17 +18,19 @@ public class MapData {
     private AddressTriesTree addressTree;
     private RoadGraph roadGraph;
     private boolean rTreeDebug;
+    private NodeToWayMap nodeToHighWay;
 
     public MapData() {
         mapSegment = new ArrayList<>();
 
     }
 
-    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, RoadGraph roadGraph, AddressTriesTree addressTree) {
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, RoadGraph roadGraph, AddressTriesTree addressTree, NodeToWayMap nodeToWayMap) {
         this.rTree = rTree;
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
         this.roadGraph = roadGraph;
+        nodeToHighWay = nodeToWayMap;
         buildTrees();
     }
 
@@ -50,17 +52,26 @@ public class MapData {
         HashSet<String> list = new HashSet<>();
         try {
             Node node = closetRoadTree.getNearestNode(x, y);
-            if (node.getReferencedHighWays() != null) {
-                for (Way way : node.getReferencedHighWays()) {
-                    if (way.getName() != null) list.add(way.getName());
-                }
-                names = String.join(", ", list);
-            }
+            names = getNodeHighWayNames(node);
 
         } catch (KDTreeEmptyException e) {
             names = e.getMessage();
         }
         return names;
+    }
+
+    public String getNodeHighWayNames(Node node){
+        String names = "";
+        ArrayList<String> list = new ArrayList<>();
+        ArrayList<Way> ways = nodeToHighWay.getWayFromNode(node);
+        if (ways != null) {
+            for (Way way : ways) {
+                if (way.getName() != null) list.add(way.getName());
+            }
+            names = String.join(", ", list);
+        }
+        return names;
+
     }
 
     public Node getNearestRoadNode(float x, float y) {

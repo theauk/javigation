@@ -89,21 +89,21 @@ public class DijkstraSP {
 
     private void relax(Node from) {
 
-        if (from.getAdjacentNodes() != null) {
-            for (Node to : from.getAdjacentNodes()) {
-                double distanceBetweenFromTo = getDistanceBetweenTwoNodes(from, to);
-                long fromId = from.getId();
-                long toId = to.getId();
-
-                double distanceTo = distTo.get(toId) == null ? Double.POSITIVE_INFINITY : distTo.get(toId);
-
-                if (distanceTo > distTo.get(fromId) + distanceBetweenFromTo) {
-                    distTo.put(toId, distTo.get(fromId) + distanceBetweenFromTo);
-                    nodeBefore.put(toId, from);
-                    pq.put(to, distTo.get(toId)); // do not need if else because updates if it is not there and inserts if not there
-                }
-            }
-        }
+       // if (from.getAdjacentNodes() != null) {
+       //     for (Node to : from.getAdjacentNodes()) {
+       //         double distanceBetweenFromTo = getDistanceBetweenTwoNodes(from, to);
+       //         long fromId = from.getId();
+       //         long toId = to.getId();
+       //
+       //         double distanceTo = distTo.get(toId) == null ? Double.POSITIVE_INFINITY : distTo.get(toId);
+       //
+       //         if (distanceTo > distTo.get(fromId) + distanceBetweenFromTo) {
+       //             distTo.put(toId, distTo.get(fromId) + distanceBetweenFromTo);
+       //             nodeBefore.put(toId, from);
+       //             pq.put(to, distTo.get(toId)); // do not need if else because updates if it is not there and inserts if not there
+       //         }
+       //     }
+       // }
     }
 
     private double getDistanceBetweenTwoNodes(Node from, Node to) { // TODO: 4/9/21 From mapcanvas w/small changes

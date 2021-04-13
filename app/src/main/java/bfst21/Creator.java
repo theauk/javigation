@@ -61,6 +61,7 @@ public class Creator extends Task<Void> {
         RTree rTree = new RTree(1, 30, 4);
         RoadGraph roadGraph = new RoadGraph();
         AddressTriesTree addressTree = new AddressTriesTree();
+        NodeToWayMap nodeToWayMap = new NodeToWayMap();
 
         while (reader.hasNext()) {
             if (isCancelled()) return;   //Abort task
@@ -174,7 +175,9 @@ public class Creator extends Task<Void> {
                                         rTree.insert(way);
                                     }
                                     if(way.isHighWay() && way.hasName()){
+                                        nodeToWayMap.putAll(way.getNodes(), way);
                                         highWayRoadNodes.addAll(way.getNodes());
+
                                     }
                                     way = null;
                                 }
@@ -196,7 +199,7 @@ public class Creator extends Task<Void> {
             }
         }
         updateMessage("Finalizing...");
-        mapData.addDataTrees(highWayRoadNodes, rTree, roadGraph, addressTree);
+        mapData.addDataTrees(highWayRoadNodes, rTree, roadGraph, addressTree, nodeToWayMap);
         reader.close();
     }
 
