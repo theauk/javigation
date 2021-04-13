@@ -26,6 +26,9 @@ public class Creator extends Task<Void> {
     private ProgressInputStream progressInputStream;
     private HashSet<String> nodesNotCreateKeys;
     private HashSet<String> nodesNotCreateValues;
+    private String city, streetName, houseNumber;
+    private Integer postcode;
+    private boolean isAddress;
 
 
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
@@ -140,9 +143,10 @@ public class Creator extends Task<Void> {
                             case "node":
                                 updateMessage("Loading: Nodes");
                                 if (node != null) {
-                                    if(node.isAddress()){
-                                        addressTree.put(node);
+                                    if(isAddress()){
+                                        addressTree.put(node, city, streetName, postcode, houseNumber);
                                         node.setLayer(4);
+                                        nullifyAddress();
                                     } else{
                                         idToNode.put(node);
                                     }
@@ -298,11 +302,30 @@ public class Creator extends Task<Void> {
 
     private void checkAddressNode(String k, String v, Node addressNode) {
         switch (k) {
-            case "addr:city" -> addressNode.setCity(v);
-            case "addr:housenumber" -> addressNode.setHousenumber((v));
-            case "addr:postcode" -> addressNode.setPostcode(Integer.parseInt(v.trim()));
-            case "addr:street" -> addressNode.setStreet(v);
+            case "addr:city" -> city = v;
+            case "addr:housenumber" -> {
+                houseNumber = v;
+                isAddress = true;
+            }
+            case "addr:postcode" -> postcode = Integer.parseInt(v.trim());
+            case "addr:street" -> streetName = v;
         }
+    }
+
+    private void nullifyAddress(){
+        isAddress = false;
+        city = null;
+        houseNumber = null;
+        postcode = null;
+        streetName = null;
+    }
+
+    private boolean isAddress(){
+        if(city == null) return false;
+        if(postcode == null) return false;
+        if(streetName == null) return false;
+        if(houseNumber == null) return false;
+        return true;
     }
 
     private void checkHighWayType(Way way, String v) {
