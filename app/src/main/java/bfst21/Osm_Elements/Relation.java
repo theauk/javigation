@@ -76,7 +76,6 @@ public class Relation extends NodeHolder {
     }
 
     private ArrayList<Way> mergeWays(ArrayList<Way> ways) {
-        // TODO: 13-04-2021 this merging is not done as it should, its from troels and made for coastlines 
         /*
         * Inner and outer rings are created from closed ways whenever possible,
         * except when these ways become very large (on the order of 2000 nodes). W

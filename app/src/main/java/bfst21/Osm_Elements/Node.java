@@ -2,7 +2,12 @@ package bfst21.Osm_Elements;
 
 import javafx.scene.canvas.GraphicsContext;
 
-public class Node extends Element {
+import java.util.ArrayList;
+import java.util.List;
+
+public class Node extends Element{
+    private List<Way> partOfWays;
+
     public Node(long id, float lon, float lat) {
         super(id);
         this.xMin = lon;
@@ -28,6 +33,16 @@ public class Node extends Element {
         this.xMax = lon;
         this.yMin = lat;
         this.yMax = lat;
+    }
+    public void addReferenceToHighWay(Way way){
+        if(partOfWays == null){
+         partOfWays = new ArrayList<>();
+        }
+        partOfWays.add(way);
+    }
+
+    public List<Way> getReferencedHighWays(){
+        return partOfWays;
     }
 
     @Override
