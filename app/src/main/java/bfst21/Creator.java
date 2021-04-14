@@ -252,7 +252,7 @@ public class Creator extends Task<Void> {
 
             case "building":
                 if(v.equals("yes")) {
-                    way.setType(v);
+                    way.setType(k);
                     way.setLayer(2);
                 }
                 break;

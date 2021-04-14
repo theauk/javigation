@@ -10,8 +10,8 @@ import java.util.Map;
 public class Relation extends NodeHolder {
 
     private ArrayList<Way> ways;
-    private ArrayList<Way> inner;
-    private ArrayList<Way> outer;
+    private ArrayList<Node> inner;
+    private ArrayList<Node> outer;
     private String name;
     private String restriction;
     private boolean isMultiPolygon;
@@ -29,7 +29,13 @@ public class Relation extends NodeHolder {
     public void addWay(Way way) {
         if (way != null) {
             ways.add(way);
+            checkMaxAndMin(way);
         }
+    }
+
+    private void checkMaxAndMin(Way way) {
+        //if(yMin > way.getyMin())  yMin = way.getyMin();
+
     }
 
 
@@ -137,11 +143,15 @@ public class Relation extends NodeHolder {
         if (!ways.isEmpty()) {
             if (isOuter) {
                 if (outer == null) outer = new ArrayList<>();
-                outer.add(ways.get(ways.size() - 1));
+                outer.addAll(ways.get(ways.size() - 1).getNodes());
             } else {
                 if (inner == null) inner = new ArrayList<>();
-                inner.add(ways.get(ways.size() - 1));
+                inner.addAll(ways.get(ways.size() - 1).getNodes());
             }
         }
     }
+
+
+
+
 }

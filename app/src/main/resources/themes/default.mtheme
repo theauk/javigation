@@ -36,7 +36,7 @@ name = "Default";
 "park" = {iColor = [205, 247, 201], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
 
 #Building
-"yes" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};
+"building" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};
 
 #Water
 "water" = {iColor = [170, 211, 223]}, {filled = true};

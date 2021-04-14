@@ -103,7 +103,6 @@ public class MapCanvas extends Canvas {
         if(theme.get(element.getType()).fill()) {
             gc.setFill(theme.get(element.getType()).getColor().getInner());
             gc.setFillRule(FillRule.EVEN_ODD);
-            element.draw(gc);
             gc.fill();
         }
     }
