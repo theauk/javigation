@@ -18,16 +18,29 @@ public class Way extends NodeHolder {
         isHighway = false;
     }
 
-    public Way(){
+    public Way() {
         super();
         isHighway = false;
     }
 
-    public void setType(String type, boolean isHighway){
+    public static Way merge(Way first, Way second) {
+        if (first == null) return second;
+        if (second == null) return first;
+        Way merged = new Way();
+        merged.nodes.addAll(first.nodes);
+        merged.nodes.addAll(second.nodes.subList(1, second.nodes.size()));
+        return merged;
+    }
+
+    public static Way merge(Way before, Way coast, Way after) {
+        return merge(merge(before, coast), after);
+    }
+
+    public void setType(String type, boolean isHighway) {
         super.setType(type);
-        if(isHighway){
+        if (isHighway) {
             setBooleans();
-            for(Node n: nodes){
+            for (Node n : nodes) {
                 n.addReferenceToHighWay(this);
             }
         }
@@ -49,9 +62,10 @@ public class Way extends NodeHolder {
         }
     }
 
-    public boolean hasName(){
+    public boolean hasName() {
         return name != null;
     }
+
     public void setNotCycleable() {
         this.isCycleable = false;
     }
@@ -69,7 +83,7 @@ public class Way extends NodeHolder {
     }
 
     public int getMaxspeed() {
-        if(isDriveable && maxspeed == 0){
+        if (isDriveable && maxspeed == 0) {
             return 50;
         } else {
             return maxspeed;
@@ -84,12 +98,11 @@ public class Way extends NodeHolder {
         return name;
     }
 
-
     public void setName(String name) {
         this.name = name;
     }
 
-    public boolean isHighWay(){
+    public boolean isHighWay() {
         return isHighway;
     }
 
@@ -104,29 +117,16 @@ public class Way extends NodeHolder {
         gc.stroke();
     }
 
-    public boolean isWalkable(){
+    public boolean isWalkable() {
         return isWalkable;
     }
 
-    public boolean isCycleable(){
+    public boolean isCycleable() {
         return isCycleable;
     }
 
-    public boolean isOnewayRoad(){
+    public boolean isOnewayRoad() {
         return onewayRoad;
-    }
-
-    public static Way merge(Way first, Way second) {
-        if (first == null)  return second;
-        if (second == null)  return first;
-        Way merged = new Way();
-        merged.nodes.addAll(first.nodes);
-        merged.nodes.addAll(second.nodes.subList(1, second.nodes.size()));
-        return merged;
-    }
-
-    public static Way merge(Way before, Way coast, Way after) {
-        return merge(merge(before, coast), after);
     }
 
     public Node first() {
@@ -134,6 +134,6 @@ public class Way extends NodeHolder {
     }
 
     public Node last() {
-        return nodes.get(nodes.size()-1);
+        return nodes.get(nodes.size() - 1);
     }
 }

@@ -43,7 +43,7 @@ public abstract class NodeHolder extends Element {
         }
     }
 
-    private void checkX(float xValue) {
+    protected void checkX(float xValue) {
         if (xValue > xMax) {
             xMax = xValue;
         } else if (xValue < xMin) {
@@ -51,7 +51,7 @@ public abstract class NodeHolder extends Element {
         }
     }
 
-    private void checkY(float yValue) {
+    protected void checkY(float yValue) {
         if (yValue > yMax) {
             yMax = yValue;
         } else if (yValue < yMin) {

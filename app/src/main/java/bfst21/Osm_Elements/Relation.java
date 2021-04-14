@@ -1,17 +1,19 @@
 package bfst21.Osm_Elements;
 
 import javafx.scene.canvas.GraphicsContext;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Relation extends NodeHolder {
 
     private ArrayList<Way> ways;
-    private ArrayList<Node> inner;
-    private ArrayList<Node> outer;
+
+    private ArrayList<Way> innerWays;
+    private ArrayList<Way> outerWays;
+
     private String name;
     private String restriction;
     private boolean isMultiPolygon;
@@ -29,15 +31,29 @@ public class Relation extends NodeHolder {
     public void addWay(Way way) {
         if (way != null) {
             ways.add(way);
-            checkMaxAndMin(way);
+            updateCoordinates(way);
         }
     }
 
-    private void checkMaxAndMin(Way way) {
-        //if(yMin > way.getyMin())  yMin = way.getyMin();
-
+    private void updateCoordinates(Way way) {
+        checkX(way.xMin);
+        checkX(way.xMax);
+        checkY(way.yMin);
+        checkY(way.yMax);
     }
 
+    public void addInnerOuterWay(Way way, boolean inner) {
+        if (innerWays == null || outerWays == null) {
+            innerWays = new ArrayList<>();
+            outerWays = new ArrayList<>();
+        }
+        if (inner) {
+            innerWays.add(way);
+        } else {
+            outerWays.add(way);
+        }
+        updateCoordinates(way);
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -49,60 +65,25 @@ public class Relation extends NodeHolder {
 
     @Override
     public void draw(GraphicsContext gc) {
-        if (inner.size() > 0) {
-            gc.beginPath();
-            gc.moveTo(inner.get(0).getxMin(), inner.get(0).getyMin());
-            for (var node : inner) {
-                gc.lineTo(node.getxMin(), node.getyMin());
+
+        if (isMultiPolygon) {
+            if (innerWays.size() > 0) {
+                for(Way w : innerWays) {
+                    w.draw(gc);
+                }
             }
 
-        }
-
-        if (outer.size() > 0) {
-
-            gc.moveTo(outer.get(0).getxMin(), outer.get(0).getyMin());
-            for (var node : outer) {
-                gc.lineTo(node.getxMin(), node.getyMin());
+            if (outerWays.size() > 0) {
+                for(Way w : outerWays) {
+                    w.draw(gc);
+                }
             }
-            gc.stroke();
+            gc.stroke(); // TODO: 4/14/21 stroke is also inside way draw... problem?
+        } else {
+            for (Way w : ways) {
+                w.draw(gc);
+            }
         }
-
-        // TODO: 28-03-2021 make draw method
-        //gc.beginPath();
-
-        /*for (Way w : ways) {
-            gc.setStroke(Color.RED);
-            List<Node> n = w.getNodes();
-
-        }*/
-
-        /*for (Way w : ways) {
-            gc.setStroke(Color.RED);
-            gc.beginPath();
-            w.relationDraw(gc);
-            gc.stroke();
-        }*/
-
-
-            /*if(isMultiPolygon){
-                if(inner != null){
-                    for (Way way : inner) {
-                        way.draw(gc);
-                    }
-                }
-                if(outer != null){
-                    for (Way way : outer) {
-                        way.draw(gc);
-                    }
-                }
-
-                gc.fill();
-            }else {
-                for (Way way : ways) { // TODO: 3/28/21 for rtree debug
-                    way.draw(gc);
-                }
-                gc.stroke();
-            }*/
     }
 
     public void setIsMultiPolygon() {
@@ -137,21 +118,4 @@ public class Relation extends NodeHolder {
         });
         return merged;
     }
-
-
-    public void LastWayOuter(boolean isOuter) {
-        if (!ways.isEmpty()) {
-            if (isOuter) {
-                if (outer == null) outer = new ArrayList<>();
-                outer.addAll(ways.get(ways.size() - 1).getNodes());
-            } else {
-                if (inner == null) inner = new ArrayList<>();
-                inner.addAll(ways.get(ways.size() - 1).getNodes());
-            }
-        }
-    }
-
-
-
-
 }
