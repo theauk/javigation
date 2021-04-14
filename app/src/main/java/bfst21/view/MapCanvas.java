@@ -4,11 +4,9 @@ import bfst21.MapData;
 import bfst21.Osm_Elements.Element;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.event.EventTarget;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
@@ -86,25 +84,37 @@ public class MapCanvas extends Canvas {
     private void drawElement(GraphicsContext gc, Element element) {
         gc.setLineDashes(getStrokeStyle(element.getType())); //Apply stroke style
 
-        if (element.getId() == 33569) {
-            System.out.println("Tietgen");
-        }
-
         if(theme.get(element.getType()).isTwoColored()) {
-            gc.setLineWidth(getStrokeWidth(element.getType(), false));
-            gc.setStroke(theme.get(element.getType()).getColor().getOuter());
-            element.draw(gc);
+            drawOuterElement(gc, element);
         }
 
-        gc.setLineWidth(getStrokeWidth(element.getType(), true));
-        gc.setStroke(theme.get(element.getType()).getColor().getInner());   //Get and apply line color
-        element.draw(gc);
+        drawInnerElement(gc, element);
 
         if(theme.get(element.getType()).fill()) {
-            gc.setFill(theme.get(element.getType()).getColor().getInner());
-            gc.setFillRule(FillRule.EVEN_ODD);
-            gc.fill();
+            fillElement(gc, element);
         }
+    }
+
+    private void drawOuterElement(GraphicsContext gc, Element element) {
+        gc.setLineWidth(getStrokeWidth(element.getType(), false));
+        gc.setStroke(theme.get(element.getType()).getColor().getOuter());
+        gc.beginPath();
+        element.draw(gc);
+        gc.stroke();
+    }
+
+    private void drawInnerElement(GraphicsContext gc, Element element) {
+        gc.setLineWidth(getStrokeWidth(element.getType(), true));
+        gc.setStroke(theme.get(element.getType()).getColor().getInner());   //Get and apply line color
+        gc.beginPath();
+        element.draw(gc);
+        gc.stroke();
+    }
+
+    private void fillElement(GraphicsContext gc, Element element) {
+        gc.setFill(theme.get(element.getType()).getColor().getInner());
+        gc.setFillRule(FillRule.EVEN_ODD);
+        gc.fill();
     }
 
     private double[] getStrokeStyle(String type) {

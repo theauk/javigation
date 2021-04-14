@@ -1,7 +1,6 @@
 package bfst21.Osm_Elements;
 
 import javafx.scene.canvas.GraphicsContext;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,20 +64,18 @@ public class Relation extends NodeHolder {
 
     @Override
     public void draw(GraphicsContext gc) {
-
         if (isMultiPolygon) {
             if (innerWays.size() > 0) {
-                for(Way w : innerWays) {
+                for (Way w : innerWays) {
                     w.draw(gc);
                 }
             }
 
             if (outerWays.size() > 0) {
-                for(Way w : outerWays) {
+                for (Way w : outerWays) {
                     w.draw(gc);
                 }
             }
-            gc.stroke(); // TODO: 4/14/21 stroke is also inside way draw... problem?
         } else {
             for (Way w : ways) {
                 w.draw(gc);
