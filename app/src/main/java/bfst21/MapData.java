@@ -8,7 +8,6 @@ import bfst21.data_structures.*;
 import bfst21.view.CanvasBounds;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class MapData {
     private KDTree<Node> closetRoadTree;
@@ -62,7 +61,7 @@ public class MapData {
     public String getNodeHighWayNames(Node node){
         String names = "";
         ArrayList<String> list = new ArrayList<>();
-        ArrayList<Way> ways = nodeToHighWay.getWayFromNode(node);
+        ArrayList<Way> ways = nodeToHighWay.getWaysFromNode(node);
         if (ways != null) {
             for (Way way : ways) {
                 if (way.getName() != null) list.add(way.getName());
@@ -84,7 +83,7 @@ public class MapData {
     }
 
     public ArrayList<Node> getDijkstraRoute(Node from, Node to) {
-        DijkstraSP d = new DijkstraSP(from, to, "v", "f");
+        DijkstraSP d = new DijkstraSP(nodeToHighWay, from, to, "v", "f");
         ArrayList<Node> pathNodes = d.getPath();
         return pathNodes;
     }

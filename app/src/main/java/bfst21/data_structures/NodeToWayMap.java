@@ -32,7 +32,7 @@ public class NodeToWayMap {
         }
     }
 
-    public ArrayList<Way> getWayFromNode(Node node){
+    public ArrayList<Way> getWaysFromNode(Node node){
         return map.get(node.getId());
     }
 

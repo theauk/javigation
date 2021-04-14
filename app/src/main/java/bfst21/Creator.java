@@ -182,7 +182,6 @@ public class Creator extends Task<Void> {
                                 if (way != null) {
                                     idToWay.put(way);
                                     if (way.hasType()) {
-                                        way.updateNodesForNavigation();
                                         rTree.insert(way);
                                     }
                                     if(way.isHighWay() && way.hasName()){
@@ -357,32 +356,32 @@ public class Creator extends Task<Void> {
 
         if (v.equals("motorway")) {
             way.setType(v, true);
-            way.setMaxspeed(130);
+            way.setMaxSpeed(130);
             return;
         }
 
         if (v.equals("living_street")) {
             way.setType(v, true);
-            way.setMaxspeed(15);
+            way.setMaxSpeed(15);
             return;
         }
 
         if (v.equals("unclassified")) {
             way.setType(v, true);
-            way.setMaxspeed(50);
+            way.setMaxSpeed(50);
             return;
         }
 
         if (v.equals("residential")) {
             way.setType(v, true);
-            way.setMaxspeed(50);
+            way.setMaxSpeed(50);
             return;
         }
 
         if (v.contains("trunk")) {
             //motortrafikvej
             way.setType(v, true);
-            way.setMaxspeed(80);
+            way.setMaxSpeed(80);
             return;
         }
 

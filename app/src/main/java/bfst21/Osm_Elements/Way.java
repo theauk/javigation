@@ -133,12 +133,23 @@ public class Way extends NodeHolder {
         return nodes.get(nodes.size() - 1);
     }
 
-    public void updateNodesForNavigation() {
-        // for (int i = 1; i < nodes.size(); i++) {
-        //     nodes.get(i - 1).addAdjacentNode(nodes.get(i));
-        //     if (!onewayRoad) {
-        //         nodes.get(i).addAdjacentNode(nodes.get(i - 1));
-        //     }
-        // }
+    public Node getNextNode(Node currentNode) {
+        Node nextNode = null;
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            if (nodes.get(i) == currentNode) {
+                nextNode = nodes.get(i + 1);
+            }
+        }
+        return nextNode;
+    }
+
+    public Node getPreviousNode(Node currentNode) {
+        Node previousNode = null;
+        for (int i = 1; i < nodes.size(); i++) {
+            if (nodes.get(i) == currentNode) {
+                previousNode = nodes.get(i - 1);
+            }
+        }
+        return previousNode;
     }
 }

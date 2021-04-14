@@ -25,7 +25,7 @@ class NodeToWayMapTest {
         map.put(n1,w1);
         map.put(n1,w2);
         map.put(n2,w1);
-        assertEquals(2,map.getWayFromNode(n1).size());
+        assertEquals(2,map.getWaysFromNode(n1).size());
     }
 
     @AfterEach

@@ -1,6 +1,8 @@
 package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.Way;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +18,7 @@ public class DijkstraSP {
     // TODO: 4/10/21 Consider distTo and Edgefrom types => what makes sense? 
     // TODO: 4/10/21 Is distance between nodes correct? 
 
+    private NodeToWayMap nodeToWayMap;
     private Node from;
     private Node to;
     private String vehicleType;
@@ -25,7 +28,8 @@ public class DijkstraSP {
     private HashMap<Node, Double> pq;
 
 
-    public DijkstraSP(Node from, Node to, String vehicleType, String fastestOrShortest) { // TODO: 4/9/21 right now you need to wipe to create new route
+    public DijkstraSP(NodeToWayMap nodeToWayMap, Node from, Node to, String vehicleType, String fastestOrShortest) { // TODO: 4/9/21 right now you need to wipe to create new route
+        this.nodeToWayMap = nodeToWayMap;
         this.from = from;
         this.to = to;
         this.vehicleType = vehicleType;
@@ -48,9 +52,8 @@ public class DijkstraSP {
         if (n != to) {
             System.out.println("island"); // TODO: 4/12/21 fix this / do something -> happens when a route cannot be found as the last node should be "to" node'en if it worked. 
         }
-        ArrayList<Node> res = getTrack(new ArrayList<>(), n);
 
-        return res;
+        return getTrack(new ArrayList<>(), n);
     }
 
     private Node temporaryRemoveAndGetMin() {
@@ -89,21 +92,32 @@ public class DijkstraSP {
 
     private void relax(Node from) {
 
-       // if (from.getAdjacentNodes() != null) {
-       //     for (Node to : from.getAdjacentNodes()) {
-       //         double distanceBetweenFromTo = getDistanceBetweenTwoNodes(from, to);
-       //         long fromId = from.getId();
-       //         long toId = to.getId();
-       //
-       //         double distanceTo = distTo.get(toId) == null ? Double.POSITIVE_INFINITY : distTo.get(toId);
-       //
-       //         if (distanceTo > distTo.get(fromId) + distanceBetweenFromTo) {
-       //             distTo.put(toId, distTo.get(fromId) + distanceBetweenFromTo);
-       //             nodeBefore.put(toId, from);
-       //             pq.put(to, distTo.get(toId)); // do not need if else because updates if it is not there and inserts if not there
-       //         }
-       //     }
-       // }
+        ArrayList<Way> waysWithFromNode = nodeToWayMap.getWaysFromNode(from);
+        ArrayList<Node> adjacentNodes = new ArrayList<>();
+        for(Way w : waysWithFromNode) { // TODO: 4/14/21 handle one-way
+            Node nextNode = w.getNextNode(from);
+            if (nextNode != null) adjacentNodes.add(nextNode);
+
+            Node previousNode = w.getPreviousNode(from);
+            if (previousNode != null) adjacentNodes.add(previousNode);
+
+        }
+
+        if (adjacentNodes.size() > 0) {
+            for (Node to : adjacentNodes) {
+                double distanceBetweenFromTo = getDistanceBetweenTwoNodes(from, to);
+                long fromId = from.getId();
+                long toId = to.getId();
+
+                double distanceTo = distTo.get(toId) == null ? Double.POSITIVE_INFINITY : distTo.get(toId);
+
+                if (distanceTo > distTo.get(fromId) + distanceBetweenFromTo) {
+                    distTo.put(toId, distTo.get(fromId) + distanceBetweenFromTo);
+                    nodeBefore.put(toId, from);
+                    pq.put(to, distTo.get(toId)); // do not need if else because updates if it is not there and inserts if not there
+                }
+            }
+        }
     }
 
     private double getDistanceBetweenTwoNodes(Node from, Node to) { // TODO: 4/9/21 From mapcanvas w/small changes
