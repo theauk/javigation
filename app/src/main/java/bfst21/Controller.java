@@ -1,8 +1,6 @@
 package bfst21;
 
 import bfst21.Osm_Elements.Node;
-import bfst21.Osm_Elements.Way;
-import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
@@ -436,9 +434,26 @@ public class Controller {
         getPointNav(false);
     }
 
-    public void getPointNav(boolean from) {
-        EventHandler<MouseEvent> event = e -> getCoordinateNearestRoadString(from, e);
-        mapCanvas.setOnMouseClicked(event); // TODO: 4/12/21 remove the event listener after the user has clicked
+    public void getPointNav(boolean fromSelected) {
+        EventHandler<MouseEvent> event = new EventHandler<>() {
+            @Override
+            public void handle(MouseEvent e) {
+                Point2D cursorPoint = new Point2D(e.getX(), e.getY());
+                Point2D geoCoords = mapCanvas.getGeoCoords(cursorPoint.getX(), cursorPoint.getY());
+                Node nearestRoadNode = mapData.getNearestRoadNode((float) geoCoords.getX(), (float) -geoCoords.getY() / 0.56f);
+
+                String names = mapData.getNodeHighWayNames(nearestRoadNode);
+                if (fromSelected) {
+                    textFieldFromNav.setText(names);
+                    currentFromNode = nearestRoadNode;
+                } else {
+                    textFieldToNav.setText(names);
+                    currentToNode = nearestRoadNode;
+                }
+                mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+            }
+        };
+        mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
     }
 
     private void getCoordinateNearestRoadString(boolean from, MouseEvent e) { // TODO: 4/12/21 clean up
@@ -455,6 +470,7 @@ public class Controller {
             textFieldToNav.setText(names);
             currentToNode = nearestRoadNode;
         }
+        mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this::onMousePressed);
     }
 
     @FXML
@@ -479,7 +495,7 @@ public class Controller {
     }
 
     @FXML
-    public void getDijkstraPath() { // TODO: 4/15/21 alert if they have not selected vehicle type and route type
+    public void getDijkstraPath() {
         mapCanvas.repaint();
         ArrayList<Node> res = mapData.getDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
         mapCanvas.drawDijkstra(res);

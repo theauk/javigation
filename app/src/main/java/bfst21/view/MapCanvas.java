@@ -314,9 +314,6 @@ public class MapCanvas extends Canvas {
         gc.save();
         gc.setTransform(new Affine());
 
-        //gc.setFill(theme.get("background").getColor().getInner());
-        //gc.fillRect(0, 0, getWidth(), getHeight());
-
         gc.setTransform(trans);
         gc.setStroke(Color.RED);
 
@@ -328,7 +325,6 @@ public class MapCanvas extends Canvas {
             drawElement(gc, w);
         }
         gc.restore();
-
     }
 
     private static class StrokeFactory {
