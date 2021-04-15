@@ -18,7 +18,8 @@ public class DijkstraSP {
     // TODO: 4/10/21 Consider distTo and Edgefrom types => what makes sense? 
     // TODO: 4/10/21 Is distance between nodes correct? 
 
-    private ElementToElementsTreeMap nodeToWayMap;
+    private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
+    private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private Node from;
     private Node to;
     private String vehicleType;
@@ -26,10 +27,8 @@ public class DijkstraSP {
     private HashMap<Long, Double> distTo; // TODO: 4/9/21 node?
     private HashMap<Long, Node> nodeBefore;
     private HashMap<Node, Double> pq;
-    private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
 
-
-    public DijkstraSP(ElementToElementsTreeMap<Node, Way> nodeToWayMap,ElementToElementsTreeMap<Node, Relation> nodeToRestriction , Node from, Node to, String vehicleType, String fastestOrShortest) {// TODO: 4/9/21 right now you need to wipe to create new route
+    public DijkstraSP(ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, Node from, Node to, String vehicleType, String fastestOrShortest) {// TODO: 4/9/21 right now you need to wipe to create new route
         this.nodeToRestriction = nodeToRestriction;
         this.nodeToWayMap = nodeToWayMap;
         this.from = from;
@@ -96,12 +95,14 @@ public class DijkstraSP {
 
         ArrayList<Way> waysWithFromNode = nodeToWayMap.getWaysFromNode(from);
         ArrayList<Node> adjacentNodes = new ArrayList<>();
-        for(Way w : waysWithFromNode) { // TODO: 4/14/21 handle one-way
+        for (Way w : waysWithFromNode) { // TODO: 4/14/21 handle one-way
+
+            if (!w.isOnewayRoad()) {
+                Node previousNode = w.getPreviousNode(from);
+                if (previousNode != null) adjacentNodes.add(previousNode);
+            }
             Node nextNode = w.getNextNode(from);
             if (nextNode != null) adjacentNodes.add(nextNode);
-
-            Node previousNode = w.getPreviousNode(from);
-            if (previousNode != null) adjacentNodes.add(previousNode);
 
         }
 

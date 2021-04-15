@@ -89,6 +89,10 @@ public class MapCanvas extends Canvas {
     private void drawElement(GraphicsContext gc, Element element) {
         gc.setLineDashes(getStrokeStyle(element.getType())); //Apply stroke style
 
+        if (element.getId() == 33569) {
+            System.out.println("Tietgen");
+        }
+
         if(theme.get(element.getType()).isTwoColored()) {
             drawOuterElement(gc, element);
         }
