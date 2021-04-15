@@ -32,6 +32,11 @@ public abstract class Element implements Spatializable {
         this.type = type;
     }
 
+    public void setType(String type, int lay) {
+        this.type = type;
+        if(lay < 5) layer = lay;
+    }
+
     public boolean hasType() {
         return type != null;
 

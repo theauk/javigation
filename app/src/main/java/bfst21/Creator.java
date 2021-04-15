@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
@@ -30,6 +31,7 @@ public class Creator extends Task<Void> {
     private Integer postcode;
     private boolean isAddress;
     private int bottomLayer, layerTwo, layerThree, layerFour, topLayer;
+    private HashMap<String, Integer> typeToLayer;
 
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
@@ -42,9 +44,12 @@ public class Creator extends Task<Void> {
         layerThree = 2;
         layerFour = 3;
         topLayer = 4;
+        typeToLayer = new HashMap<>();
 
         setupNodesNotCreate();
+        setUpTypeToLayer();
     }
+
 
     @Override
     protected Void call() throws Exception {
@@ -244,33 +249,36 @@ public class Creator extends Task<Void> {
                 relation.setName(v);
                 break;
             case "bridge":
-                relation.setType("bridge");
-                relation.setLayer(layerThree);
+            case "building":
+                relation.setType((k),typeToLayer.get(k));
                 break;
             case "type":
                 if (v.equals("multipolygon")) relation.setIsMultiPolygon();
                 break;
-            case "building":
-                relation.setType(k);
-                relation.setLayer(layerThree);
-                break;
             case "natural":
                 if (v.equals("water")) {
-                    relation.setType(v);
-                    relation.setLayer(bottomLayer);
+                    relation.setType((v),typeToLayer.get(v));
+                    break;
+                }
+                if (v.equals("scrub")) {
+                    relation.setType(("dark_green"),typeToLayer.get("dark_green"));
+                    break;
                 }
                 break;
             case "leisure":
                 if (v.equals("park")) {
-                    relation.setType(v);
-                    relation.setLayer(layerTwo);
+                    relation.setType((v),typeToLayer.get(v));
                 }
                 break;
 
             case "landuse":
                 if (v.equals("recreation_ground")) {
-                    relation.setType("light_green");
-                    relation.setLayer(bottomLayer);
+                    relation.setType(("light_green"),typeToLayer.get("light_green"));
+                    break;
+                }
+                if (v.equals("grass")) {
+                    relation.setType(("park"),typeToLayer.get("park"));;
+                    break;
                 }
                 break;
         }
@@ -280,50 +288,52 @@ public class Creator extends Task<Void> {
     private void checkWay(String k, String v, Way way) {
         switch (k) {
             case "natural":
-                if (v.equals("coastline")) {
-                    way.setType(v);
-                    way.setLayer(layerFour);
-                }
-                if (v.equals("water")) {
-                    way.setType(v);
-                    way.setLayer(bottomLayer);
+                if (v.equals("coastline") ||v.equals("water") || v.equals("wetland")) {
+                    way.setType((v),typeToLayer.get(v));
+                    break;
                 }
                 if (v.equals("scrub") || v.equals("wood")) {
-                    way.setType("dark_green");
-                    way.setLayer(layerThree);
+                    way.setType(("dark_green"),typeToLayer.get("dark_green"));
+                    break;
                 }
                 break;
 
             case "building":
-
-                    way.setType(k);
-                    way.setLayer(layerThree);
-
+                way.setType(k, typeToLayer.get(k));
                 break;
 
             case "man_made":
                 if(v.equals("pier") || v.equals("bridge")) {
-                    way.setType(k);
-                    way.setLayer(layerTwo);
+                    way.setType(k, typeToLayer.get(k));
+                    break;
                 }
 
                 break;
 
             case "leisure":
                 if (v.equals("park") || v.equals("garden")) {
-                    way.setType("park");
-                    way.setLayer(layerTwo);
+                    way.setType("park", typeToLayer.get("park"));
+                    break;
                 }
                 break;
 
             case "landuse":
                 if (v.equals("forest")) {
-                    way.setType("dark_green");
-                    way.setLayer(layerThree);
+                    way.setType(("dark_green"),typeToLayer.get("dark_green"));
+                    break;
                 }
                 if (v.equals("grass")|| v.equals("meadow")) {
-                    way.setType("park");
-                    way.setLayer(layerThree);
+                    way.setType(("park"),typeToLayer.get("park"));;
+                    break;
+                }
+                if (v.equals("farmland")) {
+                    way.setType(v, typeToLayer.get(v));
+                    break;
+                }
+                break;
+            case "amenity":
+                if(v.equals("parking")){
+                    way.setType("asphalt", typeToLayer.get("asphalt"));
                 }
                 break;
             case "highway":
@@ -534,4 +544,23 @@ public class Creator extends Task<Void> {
     private boolean checkNodesNotCreate(String k, String v) {
         return nodesNotCreateKeys.contains(k) || nodesNotCreateValues.contains(v);
     }
+    private void setUpTypeToLayer() {
+        typeToLayer.put("water",bottomLayer);
+        typeToLayer.put("light_green",bottomLayer);
+
+        typeToLayer.put("park",layerTwo);
+        typeToLayer.put("wetland",layerTwo);
+        typeToLayer.put("man_made",layerTwo);
+        typeToLayer.put("farmland",layerTwo);
+        typeToLayer.put("asphalt",layerTwo);
+
+        typeToLayer.put("dark_green",layerThree);
+        typeToLayer.put("bridge",layerThree);
+        typeToLayer.put("building",layerThree);
+
+        typeToLayer.put("coastline",layerFour);
+
+
+    }
+
 }
