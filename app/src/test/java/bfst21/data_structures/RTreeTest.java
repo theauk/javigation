@@ -17,7 +17,7 @@ class RTreeTest {
     @BeforeEach
     void setUp() {
 
-        rTree = new RTree(1, 2, 4);
+        rTree = new RTree(1, 2, 4,1);
 
         w1 = new Way(1);
         Node n1 = new Node(1, -1, 2);

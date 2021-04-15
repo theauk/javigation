@@ -102,8 +102,12 @@ public class Relation extends NodeHolder {
                 }
             }
         } else {
-            for (Way w : ways) {
-                w.draw(gc);
+            if(ways != null) {
+                for (Way w : ways) {
+                    w.draw(gc);
+                }
+            } if(nodes != null){
+                super.draw(gc);
             }
         }
     }

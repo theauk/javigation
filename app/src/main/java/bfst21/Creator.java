@@ -63,7 +63,7 @@ public class Creator extends Task<Void> {
         Relation relation = null;
 
         KDTree<Node> highWayRoadNodes = new KDTree<>(2, 4);
-        RTree rTree = new RTree(1, 30, 4);
+        RTree rTree = new RTree(1, 30, 4, topLayer);
         AddressTriesTree addressTree = new AddressTriesTree();
         ElementToElementsTreeMap<Node,Way> nodeToWayMap = new ElementToElementsTreeMap<>();
         ElementToElementsTreeMap<Node, Relation> nodeToRestriction = new ElementToElementsTreeMap<>();
@@ -257,13 +257,20 @@ public class Creator extends Task<Void> {
             case "natural":
                 if (v.equals("water")) {
                     relation.setType(v);
-                    relation.setLayer(layerTwo);
+                    relation.setLayer(bottomLayer);
                 }
                 break;
             case "leisure":
                 if (v.equals("park")) {
                     relation.setType(v);
                     relation.setLayer(layerTwo);
+                }
+                break;
+
+            case "landuse":
+                if (v.equals("recreation_ground")) {
+                    relation.setType("light_green");
+                    relation.setLayer(bottomLayer);
                 }
                 break;
         }
@@ -275,11 +282,15 @@ public class Creator extends Task<Void> {
             case "natural":
                 if (v.equals("coastline")) {
                     way.setType(v);
-                    way.setLayer(topLayer);
+                    way.setLayer(layerFour);
                 }
                 if (v.equals("water")) {
                     way.setType(v);
-                    way.setLayer(layerTwo);
+                    way.setLayer(bottomLayer);
+                }
+                if (v.equals("scrub") || v.equals("wood")) {
+                    way.setType("dark_green");
+                    way.setLayer(layerThree);
                 }
                 break;
 
@@ -287,6 +298,14 @@ public class Creator extends Task<Void> {
 
                     way.setType(k);
                     way.setLayer(layerThree);
+
+                break;
+
+            case "man_made":
+                if(v.equals("pier") || v.equals("bridge")) {
+                    way.setType(k);
+                    way.setLayer(layerTwo);
+                }
 
                 break;
 
@@ -299,10 +318,10 @@ public class Creator extends Task<Void> {
 
             case "landuse":
                 if (v.equals("forest")) {
-                    way.setType(v);
+                    way.setType("dark_green");
                     way.setLayer(layerThree);
                 }
-                if (v.equals("grass")) {
+                if (v.equals("grass")|| v.equals("meadow")) {
                     way.setType("park");
                     way.setLayer(layerThree);
                 }
@@ -411,6 +430,12 @@ public class Creator extends Task<Void> {
             return;
         }
 
+        if (v.equals("service")) {
+            way.setType(v, true);
+            way.setMaxSpeed(50);
+            return;
+        }
+
         if (v.contains("trunk")) {
             //motortrafikvej
             way.setType(v, true);
@@ -430,7 +455,7 @@ public class Creator extends Task<Void> {
 
         if (v.contains("tertiary")) return true;
 
-        if (v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway"))
+        if (v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway") || v.equals("steps") || v.equals("path"))
             return true;
         else return false;
     }

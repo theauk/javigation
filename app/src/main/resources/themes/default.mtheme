@@ -5,6 +5,7 @@ name = "Default";
 
 #Background
 "background" = {iColor = [255, 255, 255]};
+"man_made" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
 
 #Coastline
 "coastline" = {iColor = [0, 0, 0]};
@@ -17,6 +18,7 @@ name = "Default";
 "tertiary" = {iColor = [254, 254, 254], oColor = [157, 157, 157]}, {iWidth = 2, oWidth = 3}, {showAt = 12};
 "unclassified" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
 "residential" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
+"service" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
 
 #Road links
 "motorway_link" = {iColor = [233, 144, 161], oColor = [224, 59, 115]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
@@ -29,12 +31,15 @@ name = "Default";
 "pedestrian" = {iColor = [213, 212, 227], oColor = [150, 148, 149]}, {iWidth = 1, oWidth = 2}, {showAt = 14};
 "road" = {iColor = [213, 213, 213], oColor = [181, 181, 180]}, {iWidth = 1, oWidth = 2}, {showAt = 14};
 
-"footway" = {iColor = [250, 128, 114]}, {style = "dotted"}, {showAt = 14};
-"cycleway" = {iColor = [0, 0, 255]}, {style = "dotted"}, {showAt = 14};
+"footway" = {iColor = [250, 128, 114]}, {style = "dotted"}, {showAt = 16};
+"steps" = {iColor = [250, 128, 114]}, {style = "dotted"}, {showAt = 16};
+"path" = {iColor = [250, 128, 114]}, {style = "dotted"}, {showAt = 16};
+"cycleway" = {iColor = [0, 0, 255]}, {style = "dotted"}, {showAt = 16};
 
 #Nature
 "park" = {iColor = [205, 247, 201], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
-"forest" = {iColor = [172, 210, 156], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
+"dark_green" = {iColor = [172, 210, 156], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
+"light_green" = {iColor = [223, 252, 226], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
 
 #Building
 "building" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};

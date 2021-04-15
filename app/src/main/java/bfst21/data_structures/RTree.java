@@ -11,14 +11,16 @@ public class RTree {
     ArrayList<ArrayList<Long>> splitInsertResults;
     private RTreeNode root;
     private long size;
+    private int returnListSize;
 
-    public RTree(int minimumChildren, int maximumChildren, int numberOfCoordinates) {
+    public RTree(int minimumChildren, int maximumChildren, int numberOfCoordinates, int returnListSize) {
         this.minimumChildren = minimumChildren;
         this.maximumChildren = maximumChildren;
         this.numberOfCoordinates = numberOfCoordinates;
         root = null;
         size = 0;
         splitInsertResults = new ArrayList<>();
+        this.returnListSize = returnListSize;
     }
 
     /**
@@ -48,7 +50,7 @@ public class RTree {
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
             ArrayList<ArrayList<Element>> results = new ArrayList<>();
-            while(results.size()<5){results.add(new ArrayList<>()); }
+            while(results.size()<=returnListSize){results.add(new ArrayList<>()); }
             if (debug) {
                 float change = xMin * 0.0005f;
                 searchCoordinates = new float[]{xMin + change, xMax + (-change), yMin + change, yMax + (-change)};
