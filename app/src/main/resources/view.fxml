@@ -164,7 +164,7 @@
                             </RadioButton>
                         </HBox>
                         <HBox>
-                            <RadioButton fx:id="radioButtonFastestNav" text="Shortest">
+                            <RadioButton fx:id="radioButtonShortestNav" text="Shortest">
                                 <HBox.margin>
                                     <Insets right="3.0"/>
                                 </HBox.margin>
@@ -172,7 +172,7 @@
                                     <ToggleGroup fx:id="radioButtonFastestShortestNavGroup"/>
                                 </toggleGroup>
                             </RadioButton>
-                            <RadioButton fx:id="radioButtonShortestNav" text="Fastest">
+                            <RadioButton fx:id="radioButtonFastestNav" text="Fastest">
                                 <HBox.margin>
                                     <Insets right="30.0"/>
                                     <Insets bottom="10.0"/>

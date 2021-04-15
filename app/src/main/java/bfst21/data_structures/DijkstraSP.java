@@ -59,9 +59,10 @@ public class DijkstraSP {
         if (n != to) {
             // TODO: 4/12/21 fix this / do something -> happens when a route cannot be found as the last node should be "to" node'en if it worked.
             System.err.println("Dijkstra: navigation is not possible with this from/to e.g. due to vehicle restrictions, island, etc.");
+            return new ArrayList<>();
+        } else {
+            return getTrack(new ArrayList<>(), n);
         }
-        return getTrack(new ArrayList<>(), n);
-
     }
 
     private Node temporaryRemoveAndGetMin() { // TODO: 4/15/21 make more efficient 
@@ -99,7 +100,7 @@ public class DijkstraSP {
                     }
                     getNextNode(adjacentNodes, w, currentFrom);
                 }
-            } else if (bike) { // TODO: 4/15/21 roundabouts and bikes...
+            } else if (bike) { // TODO: 4/15/21 roundabouts, one-way, and bikes... (currently, the bike can go the wrong way)
                 if (w.isCycleable()) {
                     getPreviousNode(adjacentNodes, w, currentFrom);
                     getNextNode(adjacentNodes, w, currentFrom);

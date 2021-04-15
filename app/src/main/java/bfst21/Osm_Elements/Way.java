@@ -36,14 +36,14 @@ public class Way extends NodeHolder {
         return merge(merge(before, coast), after);
     }
 
-    public void setType(String type, boolean isHighway) {
+    public void setType(String type, boolean isHighway, boolean foot) {
         super.setType(type);
         if (isHighway) {
-            setBooleans();
+            setBooleans(foot);
         }
     }
 
-    private void setBooleans() {
+    private void setBooleans(boolean foot) {
         isHighway = true;
         super.setLayer(3);
         if (type.contains("motorway") || type.contains("trunk")) {
@@ -55,7 +55,9 @@ public class Way extends NodeHolder {
         }
         if (type.equals("cycleway")) {
             setNotDriveable();
-            setNotWalkable();
+            if (!foot) {
+                setNotWalkable();
+            }
         }
     }
 

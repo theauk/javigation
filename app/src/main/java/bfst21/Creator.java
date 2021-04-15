@@ -30,6 +30,8 @@ public class Creator extends Task<Void> {
     private Integer postcode;
     private boolean isAddress;
 
+    private boolean isFoot = false; // TODO: 4/15/21 is there a better way?
+
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
         progressInputStream = new ProgressInputStream(inputStream);
@@ -344,6 +346,11 @@ public class Creator extends Task<Void> {
                 way.setNotWalkable();
                 break;
 
+            case "foot":
+                if (v.equals("yes")) {
+                    isFoot = true;
+                }
+
             case "turn":
                 //The key turn can be used to specify the direction in which a way or a lane will lead.
                 // TODO: 06-04-2021 could be usefull? unsure
@@ -381,41 +388,39 @@ public class Creator extends Task<Void> {
     private void checkHighWayType(Way way, String v) {
 
         if (v.equals("motorway")) {
-            way.setType(v, true);
+            way.setType(v, true, isFoot);
             way.setMaxSpeed(130);
             return;
         }
 
         if (v.equals("living_street")) {
-            way.setType(v, true);
+            way.setType(v, true, isFoot);
             way.setMaxSpeed(15);
             return;
         }
 
         if (v.equals("unclassified")) {
-            way.setType(v, true);
+            way.setType(v, true, isFoot);
             way.setMaxSpeed(50);
             return;
         }
 
         if (v.equals("residential")) {
-            way.setType(v, true);
+            way.setType(v, true, isFoot);
             way.setMaxSpeed(50);
             return;
         }
 
         if (v.contains("trunk")) {
             //motortrafikvej
-            way.setType(v, true);
+            way.setType(v, true, isFoot);
             way.setMaxSpeed(80);
             return;
         }
 
-        if (v.contains("roundabout")) {
-            System.out.println("GE");
-        }
+        if (restOfHighWays(v)) way.setType(v, true, isFoot);
 
-        if (restOfHighWays(v)) way.setType(v, true);
+        isFoot = false;
     }
 
     public boolean restOfHighWays(String v) {
@@ -427,10 +432,9 @@ public class Creator extends Task<Void> {
 
         if (v.contains("tertiary")) return true;
 
-        if (v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway"))
-            return true;
+        if (v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway")) return true;
 
-        else return false;
+        return false;
     }
 
     private void setupNodesNotCreate() { // TODO: 4/3/21 Make it delete the nodes + do not creating ways / relations with those tags either
