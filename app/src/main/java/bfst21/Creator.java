@@ -325,7 +325,7 @@ public class Creator extends Task<Void> {
                 if (v.equals("yes")) way.setOnewayRoad();
                 break;
             case "cycleway":
-                if (!v.equals("no")) way.setNotCycleable();
+                if (v.equals("no")) way.setNotCycleable();
                 break;
 
             case "maxspeed":
