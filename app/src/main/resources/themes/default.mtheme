@@ -34,6 +34,7 @@ name = "Default";
 
 #Nature
 "park" = {iColor = [205, 247, 201], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
+"forest" = {iColor = [172, 210, 156], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
 
 #Building
 "building" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};

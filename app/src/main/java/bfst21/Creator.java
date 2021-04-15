@@ -29,6 +29,7 @@ public class Creator extends Task<Void> {
     private String city, streetName, houseNumber;
     private Integer postcode;
     private boolean isAddress;
+    private int bottomLayer, layerTwo, layerThree, layerFour, topLayer;
 
     public Creator(MapData mapData, InputStream inputStream, long fileSize) {
         this.mapData = mapData;
@@ -36,6 +37,11 @@ public class Creator extends Task<Void> {
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
         nodesNotCreateKeys = new HashSet<>();
         nodesNotCreateValues = new HashSet<>();
+        bottomLayer = 0;
+        layerTwo = 1;
+        layerThree = 2;
+        layerFour = 3;
+        topLayer = 4;
 
         setupNodesNotCreate();
     }
@@ -180,7 +186,7 @@ public class Creator extends Task<Void> {
                                 if (node != null) {
                                     if (isAddress()) {
                                         addressTree.put(node, city, streetName, postcode, houseNumber);
-                                        node.setLayer(4);
+                                        node.setLayer(topLayer);
                                         nullifyAddress();
                                     } else {
                                         idToNode.put(node);
@@ -207,9 +213,9 @@ public class Creator extends Task<Void> {
                             case "relation":
                                 if (relation != null) {
                                     if (relation.hasType()) {
-                                        if (relation.getType().equals("restriction") && relation.getVia() != null) {
-                                            // TODO: 14-04-2021 needs be bettter plz 
-                                            nodeToRestriction.put(relation.getVia(), relation);
+                                        if (relation.getType().equals("restriction") ) {
+                                            // TODO: 14-04-2021 needs be bettter plz
+                                           if(relation.getVia() != null) nodeToRestriction.put(relation.getVia(), relation);
                                         } else {
                                             rTree.insert(relation);
                                         }
@@ -239,25 +245,25 @@ public class Creator extends Task<Void> {
                 break;
             case "bridge":
                 relation.setType("bridge");
-                relation.setLayer(2);
+                relation.setLayer(layerThree);
                 break;
             case "type":
                 if (v.equals("multipolygon")) relation.setIsMultiPolygon();
                 break;
             case "building":
                 relation.setType(k);
-                relation.setLayer(2);
+                relation.setLayer(layerThree);
                 break;
             case "natural":
                 if (v.equals("water")) {
                     relation.setType(v);
-                    relation.setLayer(1);
+                    relation.setLayer(layerTwo);
                 }
                 break;
             case "leisure":
                 if (v.equals("park")) {
                     relation.setType(v);
-                    relation.setLayer(1);
+                    relation.setLayer(layerTwo);
                 }
                 break;
             // TODO: 07-04-2021 park green areas; 
@@ -270,32 +276,36 @@ public class Creator extends Task<Void> {
             case "natural":
                 if (v.equals("coastline")) {
                     way.setType(v);
-                    way.setLayer(4);
+                    way.setLayer(topLayer);
                 }
                 if (v.equals("water")) {
                     way.setType(v);
-                    way.setLayer(1);
+                    way.setLayer(layerTwo);
                 }
                 break;
 
             case "building":
 
                     way.setType(k);
-                    way.setLayer(2);
+                    way.setLayer(layerThree);
 
                 break;
 
             case "leisure":
-                if (v.equals("park")) {
-                    way.setType(v);
-                    way.setLayer(1);
+                if (v.equals("park") || v.equals("garden")) {
+                    way.setType("park");
+                    way.setLayer(layerTwo);
                 }
                 break;
 
             case "landuse":
                 if (v.equals("forest")) {
                     way.setType(v);
-                    way.setLayer(1);
+                    way.setLayer(layerThree);
+                }
+                if (v.equals("grass")) {
+                    way.setType("park");
+                    way.setLayer(layerThree);
                 }
                 break;
             case "highway":
@@ -437,7 +447,6 @@ public class Creator extends Task<Void> {
         nodesNotCreateKeys.add("geological");
         nodesNotCreateKeys.add("healthcare");
         nodesNotCreateKeys.add("historic");
-        nodesNotCreateKeys.add("man_made");
         nodesNotCreateKeys.add("military");
         nodesNotCreateKeys.add("office");
         nodesNotCreateKeys.add("power");
@@ -465,7 +474,6 @@ public class Creator extends Task<Void> {
         nodesNotCreateValues.add("speed_camera");
         nodesNotCreateValues.add("street_lamp");
         nodesNotCreateValues.add("stop");
-        nodesNotCreateValues.add("traffic_signal");
         nodesNotCreateValues.add("depot");
 
         nodesNotCreateValues.add("adult_gaming_centre");

@@ -114,10 +114,6 @@ public class Relation extends NodeHolder {
         isMultiPolygon = true;
     }
 
-    public boolean isMultiPolygon() {
-        return isMultiPolygon;
-    }
-
     private ArrayList<Way> mergeWays(ArrayList<Way> ways) {
         /*
          * Inner and outer rings are created from closed ways whenever possible,
