@@ -87,7 +87,7 @@ public class MapData {
     }
 
     public ArrayList<Node> getDijkstraRoute(Node from, Node to) {
-        return dijkstra.getPath(from, to, true, false, false, false);
+        return dijkstra.getPath(from, to, false, true, false, false);
     }
 
     public ArrayList<ArrayList<Element>> getMapSegment() {

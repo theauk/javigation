@@ -10,13 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DijkstraSP {
-    // TODO: 4/10/21 Add vehicle type 
-    // TODO: 4/10/21 Fix road types travel (like no bike lanes for car) 
-    // TODO: 4/10/21 Add shortest + fastest 
     // TODO: 4/10/21 Add restrictions 
     // TODO: 4/10/21 Improve remove min 
     // TODO: 4/10/21 Consider distTo and Edgefrom types => what makes sense? 
-    // TODO: 4/10/21 Is distance between nodes correct? 
+    // TODO: 4/10/21 Is distance between nodes correct?
+    // TODO: 4/15/21 Walk and bike speed in Way
 
     private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
