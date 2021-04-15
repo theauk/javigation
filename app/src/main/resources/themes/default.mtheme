@@ -40,3 +40,6 @@ name = "Default";
 
 #Water
 "water" = {iColor = [170, 211, 223]}, {filled = true};
+
+#Navigation
+"navigation" = {iColor = [102, 157, 246], oColor = [25, 103, 210]}, {iWidth = 1, oWidth = 2};

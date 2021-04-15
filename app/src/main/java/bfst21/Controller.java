@@ -93,6 +93,7 @@ public class Controller {
     private RadioMenuItem rTreeDebug;
     @FXML
     private ToggleGroup themeGroup;
+
     @FXML
     private TextField textFieldFromNav;
     @FXML
@@ -101,6 +102,16 @@ public class Controller {
     private TextField textFieldToNav;
     @FXML
     private Button chooseCorButtonToNav;
+    @FXML
+    private RadioButton radioButtonCarNav;
+    @FXML
+    private RadioButton radioButtonBikeNav;
+    @FXML
+    private RadioButton radioButtonWalkNav;
+    @FXML
+    private RadioButton radioButtonFastestNav;
+    @FXML
+    private RadioButton radioButtonShortestNav;
     @FXML
     private Button searchNav;
 
@@ -449,19 +460,28 @@ public class Controller {
     @FXML
     public void searchNav() {
         if (currentToNode == null || currentFromNode == null) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Navigation Error");
-            alert.setHeaderText(null);
-            alert.setContentText("Please enter both from and to");
-            alert.showAndWait();
+            showDialogBox("Navigation Error", "Please enter both from and to");
+        } else if (!radioButtonCarNav.isSelected() && !radioButtonBikeNav.isSelected() && !radioButtonWalkNav.isSelected()) {
+            showDialogBox("Navigation Error", "Please select a vehicle type");
+        } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
+            showDialogBox("Navigation Error", "Please select either fastest or shortest");
         } else {
             getDijkstraPath();
         }
     }
 
+    private void showDialogBox(String title, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(contentText);
+        alert.showAndWait();
+    }
+
     @FXML
-    public void getDijkstraPath() { // TODO: 4/12/21 need to repaint if no pan/zoom before new route
-        ArrayList<Node> res = mapData.getDijkstraRoute(currentFromNode, currentToNode);
+    public void getDijkstraPath() { // TODO: 4/15/21 alert if they have not selected vehicle type and route type
+        mapCanvas.repaint();
+        ArrayList<Node> res = mapData.getDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
         mapCanvas.drawDijkstra(res);
     }
 

@@ -324,6 +324,7 @@ public class MapCanvas extends Canvas {
             Way w = new Way(0);
             w.addNode(res.get(i));
             w.addNode(res.get(i + 1));
+            w.setType("navigation");
             drawElement(gc, w);
         }
         gc.restore();

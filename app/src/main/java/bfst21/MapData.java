@@ -86,8 +86,8 @@ public class MapData {
         return nearestRoadNode;
     }
 
-    public ArrayList<Node> getDijkstraRoute(Node from, Node to) {
-        return dijkstra.getPath(from, to, false, true, false, false);
+    public ArrayList<Node> getDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
+        return dijkstra.getPath(from, to, car, bike, walk, fastest);
     }
 
     public ArrayList<ArrayList<Element>> getMapSegment() {
