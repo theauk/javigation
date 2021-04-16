@@ -11,10 +11,11 @@ import java.util.Map;
 
 public class DijkstraSP {
     // TODO: 4/10/21 Add restrictions 
-    // TODO: 4/10/21 Improve remove min 
-    // TODO: 4/10/21 Consider distTo and Edgefrom types => what makes sense? 
+    // TODO: 4/10/21 Improve remove min
     // TODO: 4/10/21 Is distance between nodes correct?
     // TODO: 4/15/21 Walk and bike speed in Way
+
+    // TODO: 4/15/21 fastest and shortest for bike/walk should always be the same due to the same speed right? In that case, fastest/shortest selection does not make sense for walk/bike 
 
     private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
@@ -27,6 +28,9 @@ public class DijkstraSP {
     private boolean bike;
     private boolean walk;
     private boolean fastest;
+    private double bikingSpeed;
+    private double walkingSpeed;
+    private double totalUnits;
 
     public DijkstraSP(ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction) {
         this.nodeToRestriction = nodeToRestriction;
@@ -43,6 +47,9 @@ public class DijkstraSP {
         unitsTo = new HashMap<>();
         nodeBefore = new HashMap<>();
         pq = new HashMap<>();
+        bikingSpeed = 16; // from Google Maps 16 km/h
+        walkingSpeed = 5; // from Google Maps 5 km/h
+        totalUnits = 0;
     }
 
     public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
@@ -65,6 +72,10 @@ public class DijkstraSP {
         }
     }
 
+    public double getTotalUnits() {
+        return totalUnits; // TODO: 4/15/21 think its wrong... should be able to just do distanceto with current node 
+    }
+
     private Node temporaryRemoveAndGetMin() { // TODO: 4/15/21 make more efficient 
         double minValue = Double.POSITIVE_INFINITY;
         Node minNode = null;
@@ -81,7 +92,9 @@ public class DijkstraSP {
 
     private ArrayList<Node> getTrack(ArrayList<Node> nodes, Node currentNode) {
         if (currentNode != null) {
+            //System.out.println(unitsTo.get(currentNode.getId()));
             nodes.add(currentNode);
+            totalUnits += unitsTo.get(currentNode.getId());
             getTrack(nodes, nodeBefore.get(currentNode.getId()));
         }
         return nodes;
@@ -100,7 +113,7 @@ public class DijkstraSP {
                     }
                     getNextNode(adjacentNodes, w, currentFrom);
                 }
-            } else if (bike) { // TODO: 4/15/21 roundabouts, one-way, and bikes... (currently, the bike can go the wrong way)
+            } else if (bike) { // TODO: 4/15/21 roundabouts, one-way, and bikes... (currently, the bike can go the wrong way) Also relevant for certain bike lanes [missing oneway:bicycle which is just oneway for cycleway...]
                 if (w.isCycleable()) {
                     getPreviousNode(adjacentNodes, w, currentFrom);
                     getNextNode(adjacentNodes, w, currentFrom);
@@ -151,24 +164,33 @@ public class DijkstraSP {
         //Calculations need y to be before x in a point.
         double earthRadius = 6371e3; //in meters
 
-        double lat1 = from.getyMax() * Math.PI / 180;
-        double lat2 = to.getyMax() * Math.PI / 180;
+        double lat1 = Math.toRadians(convertToGeo(from.getyMax()));
+        double lat2 = Math.toRadians(convertToGeo(to.getyMax()));
         double lon1 = from.getxMax();
         double lon2 = to.getxMax();
 
-        double deltaLat = (lat2 - lat1) * Math.PI / 180;
-        double deltaLon = (lon2 - lon1) * Math.PI / 180;
+        double deltaLat = Math.toRadians(lat2 - lat1);
+        double deltaLon = Math.toRadians(lon2 - lon1);
 
         double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = earthRadius * c;
 
-        double scale = Math.pow(10, 1);
-        return (distance * scale) / scale; // TODO: 4/9/21 scale cancels – why is it there?
+        return earthRadius * c;
+    }
+
+    private double convertToGeo(double value) {
+        return -value * 0.56f;
     }
 
     private double getTravelTime(double distance, Way w) {
-        int speed = w.getMaxSpeed();
+        double speed;
+        if (bike) {
+            speed = bikingSpeed;
+        } else if (walk) {
+            speed = walkingSpeed;
+        } else {
+            speed = w.getMaxSpeed();
+        }
         return distance / speed;
     }
 

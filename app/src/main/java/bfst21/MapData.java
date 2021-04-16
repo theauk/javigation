@@ -87,7 +87,9 @@ public class MapData {
     }
 
     public ArrayList<Node> getDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
-        return dijkstra.getPath(from, to, car, bike, walk, fastest);
+        ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
+        //System.out.println(dijkstra.getTotalUnits());
+        return path;
     }
 
     public ArrayList<ArrayList<Element>> getMapSegment() {
