@@ -1,11 +1,13 @@
 package bfst21;
 
 import bfst21.Exceptions.NoOSMInZipFileException;
+import bfst21.Osm_Elements.Node;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
 import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
@@ -21,6 +23,7 @@ import javafx.util.Duration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +39,9 @@ public class Controller {
 
     private boolean dragged;
 
+    private Node currentFromNode;
+    private Node currentToNode;
+
     private enum State {
         MENU,
         LOADING,
@@ -43,38 +49,79 @@ public class Controller {
     }
 
     private State state = State.MENU;
+    @FXML
+    private MapCanvas mapCanvas;
+    @FXML
+    private Scene scene;
+    @FXML
+    private StackPane centerPane;
+    @FXML
+    private VBox loaderPane;
+    @FXML
+    private Label coordsLabel;
+    @FXML
+    private Label geoCoordsLabel;
+    @FXML
+    private Label nearestRoadLabel;
+    @FXML
+    private Label statusLabel;
+    @FXML
+    private Label scaleLabel;
+    @FXML
+    private Label boundsTR;
+    @FXML
+    private Label boundsBR;
+    @FXML
+    private Label boundsTL;
+    @FXML
+    private Label boundsBL;
+    @FXML
+    private ProgressIndicator loadingBar;
+    @FXML
+    private Slider zoomSlider;
+    @FXML
+    private Menu themeMenu;
+    @FXML
+    private MenuItem openItem;
+    @FXML
+    private MenuItem resetItem;
+    @FXML
+    private MenuItem cancelItem;
+    @FXML
+    private MenuItem zoomInItem;
+    @FXML
+    private MenuItem zoomOutItem;
+    @FXML
+    private Button zoomInButton;
+    @FXML
+    private Button zoomOutButton;
+    @FXML
+    private RadioMenuItem defaultThemeItem;
+    @FXML
+    private RadioMenuItem rTreeDebug;
+    @FXML
+    private ToggleGroup themeGroup;
 
-    @FXML private MapCanvas mapCanvas;
-
-    @FXML private Scene scene;
-    @FXML private StackPane centerPane;
-    @FXML private VBox loaderPane;
-
-    @FXML private Label coordsLabel;
-    @FXML private Label geoCoordsLabel;
-    @FXML private Label nearestRoadLabel;
-    @FXML private Label statusLabel;
-    @FXML private Label scaleLabel;
-    @FXML private Label boundsTR;
-    @FXML private Label boundsBR;
-    @FXML private Label boundsTL;
-    @FXML private Label boundsBL;
-
-    @FXML private ProgressIndicator loadingBar;
-    @FXML private Slider zoomSlider;
-
-    @FXML private Menu themeMenu;
-    @FXML private MenuItem openItem;
-    @FXML private MenuItem cancelItem;
-    @FXML private MenuItem resetItem;
-    @FXML private MenuItem zoomInItem;
-    @FXML private MenuItem zoomOutItem;
-
-    @FXML private Button zoomInButton;
-    @FXML private Button zoomOutButton;
-    @FXML private RadioMenuItem rTreeDebug;
-
-    @FXML private ToggleGroup themeGroup;
+    @FXML
+    private TextField textFieldFromNav;
+    @FXML
+    private Button chooseCorButtonFromNav;
+    @FXML
+    private TextField textFieldToNav;
+    @FXML
+    private Button chooseCorButtonToNav;
+    @FXML
+    private RadioButton radioButtonCarNav;
+    @FXML
+    private RadioButton radioButtonBikeNav;
+    @FXML
+    private RadioButton radioButtonWalkNav;
+    @FXML
+    private RadioButton radioButtonFastestNav;
+    @FXML
+    private RadioButton radioButtonShortestNav;
+    @FXML
+    private Button searchNav;
 
     public void init() {
         mapData = new MapData();
@@ -96,18 +143,18 @@ public class Controller {
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
         zoomSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if(viaZoomSlider) zoom(newValue.intValue() - oldValue.intValue());
+            if (viaZoomSlider) zoom(newValue.intValue() - oldValue.intValue());
         });
 
         scaleLabel.textProperty().bind(mapCanvas.getRatio());
     }
 
     private void loadThemes() {
-        for(String file : loader.getFilesIn("/themes", ".mtheme")) {
+        for (String file : loader.getFilesIn("/themes", ".mtheme")) {
             String themeName = Theme.parseName(file);
             themes.put(themeName, file);
 
-            if(!file.equals("default.mtheme")) {
+            if (!file.equals("default.mtheme")) {
                 RadioMenuItem item = new RadioMenuItem(themeName);
                 item.setToggleGroup(themeGroup);
                 themeMenu.getItems().add(item);
@@ -132,8 +179,10 @@ public class Controller {
      */
     @FXML
     private void zoom(ActionEvent e) {
-        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton)) zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
-        else if (e.getSource().equals(zoomOutItem)  || e.getSource().equals(zoomOutButton)) zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton))
+            zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        else if (e.getSource().equals(zoomOutItem) || e.getSource().equals(zoomOutButton))
+            zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
     }
 
     /**
@@ -142,8 +191,8 @@ public class Controller {
      * @param levels the amount of zoom levels to be zoomed in or out.
      */
     private void zoom(int levels) {
-        if(levels > 0) mapCanvas.zoom(true, levels);
-        else if(levels < 0) mapCanvas.zoom(false, levels);
+        if (levels > 0) mapCanvas.zoom(true, levels);
+        else if (levels < 0) mapCanvas.zoom(false, levels);
         setBoundsLabels();
     }
 
@@ -214,7 +263,7 @@ public class Controller {
         long fileSize;
 
         try {
-            if(file != null) {
+            if (file != null) {
                 inputStream = loader.load(file.getPath());
                 fileSize = file.getName().endsWith(".zip") ? loader.getZipFileEntrySize(file.getPath()) : file.length();
             } else {
@@ -294,21 +343,19 @@ public class Controller {
     }
 
     private void disableMenus() {
-        if(state == State.MENU) {
+        if (state == State.MENU) {
             openItem.setDisable(false);
             zoomInItem.setDisable(true);
             zoomOutItem.setDisable(true);
             resetItem.setDisable(true);
             cancelItem.setDisable(true);
-        }
-        else if(state == State.LOADING) {
+        } else if (state == State.LOADING) {
             openItem.setDisable(true);
             zoomInItem.setDisable(true);
             zoomOutItem.setDisable(true);
             resetItem.setDisable(true);
             cancelItem.setDisable(false);
-        }
-        else if(state == State.MAP) {
+        } else if (state == State.MAP) {
             openItem.setDisable(false);
             zoomInItem.setDisable(false);
             zoomOutItem.setDisable(false);
@@ -319,8 +366,8 @@ public class Controller {
 
     private void showLoaderPane(boolean show) {
         FadeTransition ft = new FadeTransition(Duration.millis(500), loaderPane);
-        if(show) {
-            if(loaderPane.isVisible()) return;
+        if (show) {
+            if (loaderPane.isVisible()) return;
             statusLabel.setText("Waiting");
             loadingBar.setProgress(0);
             loaderPane.setVisible(true);
@@ -390,7 +437,73 @@ public class Controller {
 
     @FXML
     private void setRTreeDebug() {
-        mapData.setRTreeDebug(rTreeDebug.isSelected()); // TODO: 3/31/21 which class should it go via?
+        mapData.setRTreeDebug(rTreeDebug.isSelected());
         mapCanvas.rTreeDebugMode();
+    }
+
+    @FXML
+    public void getPointNavFrom(ActionEvent actionEvent) { // TODO: 4/12/21 better way to do this to avoid two methods?
+        getPointNav(true);
+    }
+
+    @FXML
+    public void getPointNavTo(ActionEvent actionEvent) {
+        getPointNav(false);
+    }
+
+    public void getPointNav(boolean fromSelected) {
+        EventHandler<MouseEvent> event = new EventHandler<>() {
+            @Override
+            public void handle(MouseEvent e) {
+                Point2D cursorPoint = new Point2D(e.getX(), e.getY());
+                Point2D geoCoords = mapCanvas.getGeoCoords(cursorPoint.getX(), cursorPoint.getY());
+                Node nearestRoadNode = mapData.getNearestRoadNode((float) geoCoords.getX(), (float) -geoCoords.getY() / 0.56f);
+
+                String names = mapData.getNodeHighWayNames(nearestRoadNode);
+                if (fromSelected) {
+                    textFieldFromNav.setText(names);
+                    currentFromNode = nearestRoadNode;
+                } else {
+                    textFieldToNav.setText(names);
+                    currentToNode = nearestRoadNode;
+                }
+                mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+            }
+        };
+        mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
+    }
+
+    @FXML
+    public void searchNav() {
+        if (currentToNode == null || currentFromNode == null) {
+            showDialogBox("Navigation Error", "Please enter both from and to");
+        } else if (!radioButtonCarNav.isSelected() && !radioButtonBikeNav.isSelected() && !radioButtonWalkNav.isSelected()) {
+            showDialogBox("Navigation Error", "Please select a vehicle type");
+        } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
+            showDialogBox("Navigation Error", "Please select either fastest or shortest");
+        } else {
+            getDijkstraPath();
+        }
+    }
+
+    private void showDialogBox(String title, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(contentText);
+        alert.showAndWait();
+    }
+
+    @FXML
+    public void getDijkstraPath() {
+        mapCanvas.repaint();
+        ArrayList<Node> res = mapData.getDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
+        mapCanvas.drawDijkstra(res);
+    }
+
+    private enum State {
+        MENU,
+        LOADING,
+        MAP
     }
 }

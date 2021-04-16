@@ -2,6 +2,8 @@ package bfst21.view;
 
 import bfst21.MapData;
 import bfst21.Osm_Elements.Element;
+import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.Way;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -12,9 +14,13 @@ import javafx.concurrent.Task;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.FillRule;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 import javafx.util.Duration;
+
+import java.util.ArrayList;
 
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -57,7 +63,6 @@ public class MapCanvas extends Canvas {
     }
 
     public void repaint() {
-        long time = System.currentTimeMillis();
         GraphicsContext gc = getGraphicsContext2D();
         gc.save();
         gc.setTransform(new Affine());
@@ -87,26 +92,42 @@ public class MapCanvas extends Canvas {
         //gc.strokeLine((bounds.getMinX() + bounds.getMaxX()) / 2, bounds.getMinY(), (bounds.getMinX() + bounds.getMaxX()) / 2, getHeight());
 
         gc.restore();
-        System.out.println(System.currentTimeMillis() - time + " ms");
     }
 
     private void drawElement(GraphicsContext gc, Element element) {
         gc.setLineDashes(getStrokeStyle(element.getType())); //Apply stroke style
 
         if(theme.get(element.getType()).isTwoColored()) {
-            gc.setLineWidth(getStrokeWidth(element.getType(), false));
-            gc.setStroke(theme.get(element.getType()).getColor().getOuter());
-            element.draw(gc);
+            drawOuterElement(gc, element);
         }
 
-        gc.setLineWidth(getStrokeWidth(element.getType(), true));
-        gc.setStroke(theme.get(element.getType()).getColor().getInner());   //Get and apply line color
-        element.draw(gc);
+        drawInnerElement(gc, element);
 
         if(theme.get(element.getType()).fill()) {
-            gc.setFill(theme.get(element.getType()).getColor().getInner());
-            gc.fill();
+            fillElement(gc, element);
         }
+    }
+
+    private void drawOuterElement(GraphicsContext gc, Element element) {
+        gc.setLineWidth(getStrokeWidth(element.getType(), false));
+        gc.setStroke(theme.get(element.getType()).getColor().getOuter());
+        gc.beginPath();
+        element.draw(gc);
+        gc.stroke();
+    }
+
+    private void drawInnerElement(GraphicsContext gc, Element element) {
+        gc.setLineWidth(getStrokeWidth(element.getType(), true));
+        gc.setStroke(theme.get(element.getType()).getColor().getInner());   //Get and apply line color
+        gc.beginPath();
+        element.draw(gc);
+        gc.stroke();
+    }
+
+    private void fillElement(GraphicsContext gc, Element element) {
+        gc.setFill(theme.get(element.getType()).getColor().getInner());
+        gc.setFillRule(FillRule.EVEN_ODD);
+        gc.fill();
     }
 
     private double[] getStrokeStyle(String type) {
@@ -293,6 +314,24 @@ public class MapCanvas extends Canvas {
         repaint();
     }
 
+    public void drawDijkstra(ArrayList<Node> res) {
+        GraphicsContext gc = getGraphicsContext2D();
+        gc.save();
+        gc.setTransform(new Affine());
+
+        gc.setTransform(trans);
+        gc.setStroke(Color.RED);
+
+        for (int i = 0; i < res.size() - 1; i++) {
+            Way w = new Way(0);
+            w.addNode(res.get(i));
+            w.addNode(res.get(i + 1));
+            w.setType("navigation");
+            drawElement(gc, w);
+        }
+        gc.restore();
+    }
+
     private static class StrokeFactory {
         private static final String NORMAL = "normal";
         private static final String DOTTED = "dotted";
@@ -300,8 +339,8 @@ public class MapCanvas extends Canvas {
         public static double getStrokeStyle(String stroke, Affine trans) {
             int pattern = 0;
 
-            if(stroke.equals(NORMAL)) return pattern;
-            else if(stroke.equals(DOTTED)) pattern = 3;
+            if (stroke.equals(NORMAL)) return pattern;
+            else if (stroke.equals(DOTTED)) pattern = 3;
             else {
                 System.err.println("Warning: Style '" + stroke + "' is not supported. Returning default.");
                 return pattern;

@@ -1,5 +1,7 @@
 package bfst21.Osm_Elements;
 
+import javafx.scene.canvas.GraphicsContext;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,10 @@ public abstract class NodeHolder extends Element {
 
     public NodeHolder(long id) {
         super(id);
+    }
+
+    public NodeHolder(){
+
     }
 
     // TODO: 28-03-2021 Due to relations being bigger than input, some nodes are null. 
@@ -37,7 +43,7 @@ public abstract class NodeHolder extends Element {
         }
     }
 
-    private void checkX(float xValue) {
+    protected void checkX(float xValue) {
         if (xValue > xMax) {
             xMax = xValue;
         } else if (xValue < xMin) {
@@ -45,7 +51,7 @@ public abstract class NodeHolder extends Element {
         }
     }
 
-    private void checkY(float yValue) {
+    protected void checkY(float yValue) {
         if (yValue > yMax) {
             yMax = yValue;
         } else if (yValue < yMin) {
@@ -56,5 +62,8 @@ public abstract class NodeHolder extends Element {
     public List<Node> getNodes() {
         return nodes;
     }
+
+    
+    public abstract void draw(GraphicsContext gc); // TODO: 4/14/21 necessary? 
 
 }

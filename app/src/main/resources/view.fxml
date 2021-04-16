@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import bfst21.view.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
@@ -32,6 +32,7 @@
                     <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
                     <SeparatorMenuItem/>
                     <RadioMenuItem fx:id="showUIItem" text="Show UI" selected="true" accelerator="CTRL + T"/>
+                    <RadioMenuItem fx:id="navigationPane" text="Show Navigation Pane" selected="true"/>
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
                         <RadioMenuItem text="Default" selected="true">
@@ -50,6 +51,8 @@
                     <RadioMenuItem fx:id="informationBoard" text="Information Board" selected="true"/>
                     <SeparatorMenuItem/>
                     <RadioMenuItem fx:id="rTreeDebug" text="R-tree" onAction="#setRTreeDebug"/>
+                    <SeparatorMenuItem/>
+                    <RadioMenuItem fx:id="dijkstraDebug" text="Dijkstra" onAction="#getDijkstraPath"/>
                 </Menu>
             </MenuBar>
         </top>
@@ -68,7 +71,8 @@
                 </Pane>
 
                 <AnchorPane id="uiControl" visible="${showUIItem.selected}" pickOnBounds="false">
-                    <VBox alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20" pickOnBounds="false">
+                    <VBox alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20"
+                          pickOnBounds="false">
                         <Button fx:id="zoomInButton" text="+" onAction="#zoom"/>
                         <Slider fx:id="zoomSlider" pickOnBounds="false" orientation="VERTICAL">
                             <min>
@@ -81,12 +85,15 @@
                         <Button fx:id="zoomOutButton" text="-" prefWidth="${zoomInButton.width}" onAction="#zoom"/>
                     </VBox>
 
-                    <Label id="copyRight" text="&#169;2021 Group 10" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" mouseTransparent="true">
+                    <Label id="copyRight" text="&#169;2021 Group 10" AnchorPane.bottomAnchor="0"
+                           AnchorPane.rightAnchor="0" mouseTransparent="true">
                         <padding>
                             <Insets right="5" left="5"/>
                         </padding>
                     </Label>
-                    <VBox id="informationPane" visible="${informationBoard.selected}" minWidth="270" minHeight="150" maxWidth="270" maxHeight="150" spacing="5" AnchorPane.topAnchor="5" AnchorPane.rightAnchor="5" mouseTransparent="true">
+                    <VBox id="informationPane" visible="${informationBoard.selected}" minWidth="270" minHeight="150"
+                          maxWidth="270" maxHeight="150" spacing="5" AnchorPane.topAnchor="5" AnchorPane.rightAnchor="5"
+                          mouseTransparent="true">
                         <padding>
                             <Insets top="5" bottom="5" left="5" right="5"/>
                         </padding>
@@ -97,22 +104,86 @@
                         <HBox id="boundsPane">
                             <AnchorPane>
                                 <Label fx:id="boundsTL" text="(0.0, 0.0)" AnchorPane.topAnchor="0"/>
-                                <Label fx:id="boundsBL" text="(0.0, 0.0)" textAlignment="RIGHT" alignment="CENTER_RIGHT" AnchorPane.bottomAnchor="0"/>
+                                <Label fx:id="boundsBL" text="(0.0, 0.0)" textAlignment="RIGHT" alignment="CENTER_RIGHT"
+                                       AnchorPane.bottomAnchor="0"/>
                             </AnchorPane>
-                            <HBox id="bounds" minWidth="100" minHeight="60" maxWidth="100" maxHeight="60" alignment="CENTER">
+                            <HBox id="bounds" minWidth="100" minHeight="60" maxWidth="100" maxHeight="60"
+                                  alignment="CENTER">
                                 <Label text="Bounds"/>
                             </HBox>
                             <AnchorPane>
-                                <Label fx:id="boundsTR" text="(0.0, 0.0)" AnchorPane.topAnchor="0" />
+                                <Label fx:id="boundsTR" text="(0.0, 0.0)" AnchorPane.topAnchor="0"/>
                                 <Label fx:id="boundsBR" text="(0.0, 0.0)" AnchorPane.bottomAnchor="0"/>
                             </AnchorPane>
                         </HBox>
                     </VBox>
 
-                    <HBox id="scalePane" prefWidth="50" prefHeight="5" alignment="CENTER" AnchorPane.leftAnchor="5" AnchorPane.bottomAnchor="5" mouseTransparent="true">
+                    <HBox id="scalePane" prefWidth="50" prefHeight="5" alignment="CENTER" AnchorPane.leftAnchor="5"
+                          AnchorPane.bottomAnchor="5" mouseTransparent="true">
                         <Label fx:id="scaleLabel" text="- - -">
                         </Label>
                     </HBox>
+                </AnchorPane>
+
+                <AnchorPane id="navigationControl" visible="${navigationPane.selected}" pickOnBounds="false">
+                    <VBox alignment="BASELINE_LEFT" AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5">
+                        <HBox>
+                            <TextField fx:id="textFieldFromNav" promptText="From"/>
+                            <Button fx:id="chooseCorButtonFromNav" text="Choose on map" onAction="#getPointNavFrom"/>
+                        </HBox>
+                        <HBox>
+                            <TextField fx:id="textFieldToNav" promptText="To"/>
+                            <Button fx:id="chooseCorButtonToNav" text="Choose on map" onAction="#getPointNavTo"/>
+                        </HBox>
+                        <HBox>
+                            <RadioButton fx:id="radioButtonCarNav" text="Car">
+                                <HBox.margin>
+                                    <Insets right="3.0"/>
+                                </HBox.margin>
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="radioButtonVehicleNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+                            <RadioButton fx:id="radioButtonBikeNav" text="Bike">
+                                <HBox.margin>
+                                    <Insets right="30.0"/>
+                                    <Insets bottom="10.0"/>
+                                </HBox.margin>
+                                <toggleGroup>
+                                    <fx:reference source="radioButtonVehicleNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+                            <RadioButton fx:id="radioButtonWalkNav" text="Walk">
+                                <HBox.margin>
+                                    <Insets right="30.0"/>
+                                    <Insets bottom="10.0"/>
+                                </HBox.margin>
+                                <toggleGroup>
+                                    <fx:reference source="radioButtonVehicleNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+                        </HBox>
+                        <HBox>
+                            <RadioButton fx:id="radioButtonShortestNav" text="Shortest">
+                                <HBox.margin>
+                                    <Insets right="3.0"/>
+                                </HBox.margin>
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="radioButtonFastestShortestNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+                            <RadioButton fx:id="radioButtonFastestNav" text="Fastest">
+                                <HBox.margin>
+                                    <Insets right="30.0"/>
+                                    <Insets bottom="10.0"/>
+                                </HBox.margin>
+                                <toggleGroup>
+                                    <fx:reference source="radioButtonFastestShortestNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+                        </HBox>
+                        <Button fx:id="searchNav" text="Search" onAction="#searchNav"/>
+                    </VBox>
                 </AnchorPane>
 
                 <VBox fx:id="loaderPane" alignment="CENTER" style="-fx-background-color: rgb(180, 180, 180);">

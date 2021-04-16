@@ -16,6 +16,10 @@ public abstract class Element implements Spatializable {
         layer = 4; //default value;
     }
 
+    public Element(){
+
+    }
+
     public long getId() {
         return id;
     }
@@ -61,6 +65,5 @@ public abstract class Element implements Spatializable {
     public int getLayer(){
         return layer;
     }
-
 
 }

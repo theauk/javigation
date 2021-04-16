@@ -4,10 +4,8 @@ import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
-import bfst21.data_structures.AddressTriesTree;
-import bfst21.data_structures.KDTree;
-import bfst21.data_structures.RTree;
-import bfst21.data_structures.RoadGraph;
+import bfst21.Osm_Elements.Relation;
+import bfst21.data_structures.*;
 import bfst21.view.CanvasBounds;
 
 import java.util.ArrayList;
@@ -19,24 +17,30 @@ public class MapData {
     private ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
     private AddressTriesTree addressTree;
-    private RoadGraph roadGraph;
     private boolean rTreeDebug;
+    private ElementToElementsTreeMap<Node,Way> nodeToHighWay;
+    private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
+    private DijkstraSP dijkstra;
 
     public MapData() {
         mapSegment = new ArrayList<>();
     }
 
-    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, RoadGraph roadGraph,AddressTriesTree addressTree ){
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction ,AddressTriesTree addressTree, ElementToElementsTreeMap<Node,Way> nodeToWayMap) {
         this.rTree = rTree;
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
-        this.roadGraph = roadGraph;
+        this.nodeToRestriction = nodeToRestriction;
+        nodeToHighWay = nodeToWayMap;
+        dijkstra = new DijkstraSP(nodeToHighWay, nodeToRestriction);
+
         buildTrees();
     }
 
     private void buildTrees() {
         closetRoadTree.buildTree();
     }
+
 
     public void searchInData(CanvasBounds bounds) {
         mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug);
@@ -48,15 +52,9 @@ public class MapData {
 
     public String getNearestRoad(float x, float y) {
         String names = "";
-        HashSet<String> list = new HashSet<>();
         try {
-            Node node =  closetRoadTree.getNearestNode(x,y);
-            if(node.getReferencedHighWays() != null){
-                for(Way way : node.getReferencedHighWays()){
-                    if(way.getName()!=null)list.add(way.getName());
-                }
-                names = String.join(", ", list);
-            }
+            Node node = closetRoadTree.getNearestNode(x, y);
+            names = getNodeHighWayNames(node);
 
         } catch (KDTreeEmptyException e) {
             names = e.getMessage();
@@ -64,16 +62,43 @@ public class MapData {
         return names;
     }
 
+    public String getNodeHighWayNames(Node node){
+        String names = "";
+        ArrayList<String> list = new ArrayList<>();
+        ArrayList<Way> ways = nodeToHighWay.getWaysFromNode(node);
+        if (ways != null) {
+            for (Way way : ways) {
+                if (way.getName() != null && !list.contains(way.getName())) list.add(way.getName());
+            }
+            names = String.join(", ", list);
+        }
+        return names;
+
+    }
+
+    public Node getNearestRoadNode(float x, float y) {
+        Node nearestRoadNode = null;
+        try {
+            nearestRoadNode = closetRoadTree.getNearestNode(x, y);
+        } catch (KDTreeEmptyException e) {
+            e.printStackTrace();
+        }
+        return nearestRoadNode;
+    }
+
+    public ArrayList<Node> getDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
+        ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
+        //System.out.println(dijkstra.getTotalUnits());
+        return path;
+    }
+
     public ArrayList<ArrayList<Element>> getMapSegment() {
         return mapSegment;
     }
 
-
-
     public Node getAddressNode(String address) {
         return addressTree.getAddressNode(address);
     }
-
 
     public float getMinX() {
         return minX;

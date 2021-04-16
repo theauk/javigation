@@ -10,13 +10,14 @@ name = "Default";
 "coastline" = {iColor = [0, 0, 0]};
 
 #Roads
-"motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3}, {showAt = 12};
-"trunk" = {iColor = [249, 178, 156], oColor = [191, 62, 35]}, {iWidth = 2, oWidth = 3}, {showAt = 12};
-"primary" = {iColor = [252, 206, 144], oColor = [154, 105, 8]}, {iWidth = 2, oWidth = 3}, {showAt = 12};
+"motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
+"trunk" = {iColor = [249, 178, 156], oColor = [191, 62, 35]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
+"primary" = {iColor = [252, 206, 144], oColor = [154, 105, 8]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
 "secondary" = {iColor = [244, 251, 173], oColor = [105, 121, 0]}, {iWidth = 2, oWidth = 3}, {showAt = 12};
 "tertiary" = {iColor = [254, 254, 254], oColor = [157, 157, 157]}, {iWidth = 2, oWidth = 3}, {showAt = 12};
 "unclassified" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
-"residential" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 10};
+"residential" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
+"roundabout" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
 
 #Road links
 "motorway_link" = {iColor = [233, 144, 161], oColor = [224, 59, 115]}, {iWidth = 1, oWidth = 2}, {showAt = 13};
@@ -37,7 +38,10 @@ name = "Default";
 "forest" = {iColor = [157, 202, 138]}, {filled = true}, {showAt = 10};
 
 #Building
-"yes" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};
+"building" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};
 
 #Water
 "water" = {iColor = [170, 211, 223]}, {filled = true};
+
+#Navigation
+"navigation" = {iColor = [102, 157, 246], oColor = [25, 103, 210]}, {iWidth = 1, oWidth = 2};

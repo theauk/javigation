@@ -15,6 +15,7 @@ name = "Dark Mode";
 "tertiary" = {iColor = [67, 68, 70], oColor = [157, 157, 157]}, {iWidth = 2, oWidth = 3};
 "unclassified" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
 "residential" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
+"roundabout" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
 
 #Road links
 "motorway_link" = {iColor = [233, 144, 161], oColor = [224, 59, 115]}, {iWidth = 1, oWidth = 2};
@@ -38,3 +39,6 @@ name = "Dark Mode";
 
 #Water
 "water" = {iColor = [170, 211, 223]}, {filled = true};
+
+#Navigation
+"navigation" = {iColor = [102, 157, 246], oColor = [25, 103, 210]}, {iWidth = 1, oWidth = 2};
