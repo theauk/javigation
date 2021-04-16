@@ -179,7 +179,7 @@ public class Creator extends Task<Void> {
                                     }
                                     if (role.equals("via")){
                                         relation.setVia(idToNode.get(refR));
-
+                                        // TODO: 15-04-2021 Restrictions via kan be ways
                                     }
                                 }
                                 break;
@@ -311,7 +311,7 @@ public class Creator extends Task<Void> {
                 break;
 
             case "leisure":
-                if (v.equals("park") || v.equals("garden")) {
+                if (v.equals("park") || v.equals("garden")|| v.equals("playground")) {
                     way.setType("park", typeToLayer.get("park"));
                     break;
                 }
