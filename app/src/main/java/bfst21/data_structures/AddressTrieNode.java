@@ -5,6 +5,8 @@ import bfst21.Osm_Elements.Node;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+// TODO: 16-04-2021 Works, but is anything but optimal in memory usage 
+// TODO: 16-04-2021 The 5 fields that has something to do with an address can be moved to a private class or something, so AddressTrieNode only holds one reference instead of 5 
 public class AddressTrieNode {
     private HashMap<Character, AddressTrieNode> children;
     private ArrayList<AddressTrieNode> addressNodes;
@@ -56,7 +58,7 @@ public class AddressTrieNode {
         return streetname;
     }
 
-    public Integer getPostcode() {
+    public int getPostcode() {
         return postcode;
     }
 
