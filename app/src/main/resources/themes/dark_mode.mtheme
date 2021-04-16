@@ -46,7 +46,7 @@ name = "Dark Mode";
 "forest" = {iColor = [157, 202, 138]}, {filled = true};
 "dark_green" = {iColor = [172, 210, 156], oColor = [0, 0, 0]}, {filled = true};
 "light_green" = {iColor = [223, 252, 226], oColor = [0, 0, 0]}, {filled = true};
-"wetland" = {iColor = [202, 252, 226], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};"yes" = {iColor = [79, 76, 74]};
+"wetland" = {iColor = [202, 252, 226], oColor = [0, 0, 0]}, {filled = true};
 "farmland" = {iColor = [238, 240, 213], oColor = [0, 0, 0]}, {filled = true};
 
 #Water
