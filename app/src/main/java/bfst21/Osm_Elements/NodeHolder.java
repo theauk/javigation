@@ -65,7 +65,6 @@ public abstract class NodeHolder extends Element {
         for (var node : nodes) {
             gc.lineTo(node.getxMin(), node.getyMin());
         }
-
     }
 
     public List<Node> getNodes() {

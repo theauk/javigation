@@ -11,6 +11,9 @@ name = "Default";
 #Coastline
 "coastline" = {iColor = [0, 0, 0]};
 
+#Navigation
+"navigation" = {iColor = [102, 157, 246], oColor = [29, 106, 212]}, {iWidth = 6, oWidth = 8}, {showAt = 0};
+
 #Roads
 "motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
 "trunk" = {iColor = [249, 178, 156], oColor = [191, 62, 35]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
@@ -50,7 +53,7 @@ name = "Default";
 "building" = {iColor = [216, 208, 201]}, {filled = true}, {showAt = 15};
 
 #Water
-"water" = {iColor = [170, 211, 223]}, {filled = true};
+"water" = {iColor = [170, 211, 223]}, {filled = true}, {showAt = 10};
 
 #Navigation
 "navigation" = {iColor = [102, 157, 246], oColor = [25, 103, 210]}, {iWidth = 1, oWidth = 2};

@@ -67,6 +67,9 @@ public class MapCanvas extends Canvas {
                 if (zoomLevel >= getZoomLevelForElement(element.getType())) drawElement(gc, element);
             }
         }
+        if(mapData.getCurrentDjikstraRoute()!= null){
+            drawElement(gc, mapData.getCurrentDjikstraRoute());
+        }
 
         gc.restore();
     }
@@ -289,22 +292,14 @@ public class MapCanvas extends Canvas {
         repaint();
     }
 
-    public void drawDijkstra(ArrayList<Node> res) {
+
+    public void drawDijkstra(Way way){
         GraphicsContext gc = getGraphicsContext2D();
         gc.save();
         gc.setTransform(new Affine());
-
+        drawElement(gc,way);
         gc.setTransform(trans);
         gc.setStroke(Color.RED);
-
-        for (int i = 0; i < res.size() - 1; i++) {
-            Way w = new Way(0);
-            w.addNode(res.get(i));
-            w.addNode(res.get(i + 1));
-            w.setType("navigation");
-            drawElement(gc, w);
-        }
-        gc.restore();
     }
 
     private static class StrokeFactory {

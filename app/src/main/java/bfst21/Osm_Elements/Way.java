@@ -123,5 +123,10 @@ public class Way extends NodeHolder {
         return onewayRoad;
     }
 
+    @Override
+    public void draw(GraphicsContext gc) {
+        //TODO Should check for one way.....
+       super.draw(gc);
+    }
 
 }

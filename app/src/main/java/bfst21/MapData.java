@@ -20,6 +20,7 @@ public class MapData {
     private ElementToElementsTreeMap<Node, Way> nodeToHighWay;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private DijkstraSP dijkstra;
+    private Way currentDijkstraRoute;
 
     public MapData() {
         mapSegment = new ArrayList<>();
@@ -85,10 +86,20 @@ public class MapData {
         return nearestRoadNode;
     }
 
-    public ArrayList<Node> getDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
+    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
         ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
-        //System.out.println(dijkstra.getTotalUnits());
-        return path;
+        currentDijkstraRoute = new Way(0);
+        currentDijkstraRoute.setType("navigation");
+        for (int i = 0; i < path.size() - 1; i++) {
+            currentDijkstraRoute.addNode(path.get(i));
+        }
+    }
+
+    public Way getCurrentDjikstraRoute(){
+        return currentDijkstraRoute;
+    }
+    public void setCurrentDijkstraRouteNull(){
+        currentDijkstraRoute = null;
     }
 
     public ArrayList<ArrayList<Element>> getMapSegment() {
