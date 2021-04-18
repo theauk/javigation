@@ -131,7 +131,11 @@ public class Way extends NodeHolder {
             return true;
         } else if (onewayRoad && type.equals("cycleway")) {
             return true;
-        } else return type.equals("roundabout");
+        } else if (type.equals("roundabout")) {
+            return true;
+        } else {
+            return onewayRoad;
+        }
     }
 
     @Override
