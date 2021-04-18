@@ -44,17 +44,3 @@
     -fx-border-color: rgba(255, 0, 0, 0.4);
     -fx-background-color: rgba(255, 255, 255, 0.4);
 }
-
-#informationPane:hover {
-    -fx-border-color: rgba(0, 0, 0, 0.7);
-    -fx-background-color: rgba(255, 255, 255, 0.7);
-}
-
-#informationPane:hover #bounds {
-    -fx-border-color: rgba(255, 0, 0, 0.7);
-    -fx-background-color: rgba(255, 255, 255, 0.7);
-}
-
-#informationPane:hover .label {
-    -fx-text-fill: rgba(0, 0, 0, 0.7);
-}

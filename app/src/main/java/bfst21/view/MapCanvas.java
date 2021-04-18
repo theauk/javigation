@@ -18,37 +18,43 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
-    public final static byte MIN_ZOOM_LEVEL = 1;
-    public final static byte MAX_ZOOM_LEVEL = 19;
-    private final int ZOOM_FACTOR = 2;
-    private final StringProperty ratio = new SimpleStringProperty("- - -");
     private MapData mapData;
     private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
+
+    public final static byte MIN_ZOOM_LEVEL = 1;
+    public final static byte MAX_ZOOM_LEVEL = 19;
+    private final int ZOOM_FACTOR = 2;
+    private final StringProperty ratio = new SimpleStringProperty("- - -");
+
     private boolean initialized;
     private byte zoomLevel = MIN_ZOOM_LEVEL;
     private Map<String, Byte> zoomMap;
 
-    public void init(MapData mapData, Theme theme) {
+    public void init(MapData mapData) {
         this.mapData = mapData;
-        this.theme = theme;
         trans = new Affine();
         bounds = new CanvasBounds();
 
         if (!initialized) {
-            zoomMap = theme.createZoomMap();
             widthProperty().addListener((observable, oldValue, newValue) -> pan((newValue.doubleValue() - oldValue.doubleValue()) / 2, 0));
             heightProperty().addListener((observable, oldValue, newValue) -> pan(0, (newValue.doubleValue() - oldValue.doubleValue()) / 2));
+            initialized = true;
         }
-        initialized = true;
 
         updateMap();
     }
 
-    private byte getZoomLevelForElement(String type) {
-        if (zoomMap.get(type) != null) return zoomMap.get(type);
-        return MIN_ZOOM_LEVEL;
+    /**
+     * Initializes the default theme and creates a zoom map for each theme element.
+     * This method may only be run once!
+     *
+     * @param theme the default theme to create a zoom map from.
+     */
+    public void initTheme(Theme theme) {
+        this.theme = theme;
+        zoomMap = theme.createZoomMap();
     }
 
     public void repaint() {
@@ -69,6 +75,11 @@ public class MapCanvas extends Canvas {
         }
 
         gc.restore();
+    }
+
+    private byte getZoomLevelForElement(String type) {
+        if (zoomMap.get(type) != null) return zoomMap.get(type);
+        return MIN_ZOOM_LEVEL;
     }
 
     private void drawElement(GraphicsContext gc, Element element) {
@@ -109,8 +120,9 @@ public class MapCanvas extends Canvas {
 
     private double[] getStrokeStyle(String type) {
         double[] strokeStyle = new double[2];
-        for (int i = 0; i < strokeStyle.length; i++)
+        for (int i = 0; i < strokeStyle.length; i++) {
             strokeStyle[i] = StrokeFactory.getStrokeStyle(theme.get(type).getStyle(), trans);
+        }
         return strokeStyle;
     }
 
@@ -121,7 +133,7 @@ public class MapCanvas extends Canvas {
 
     private double getDistance(Point2D start, Point2D end) {
         //Adapted from https://www.movable-type.co.uk/scripts/latlong.html
-        //Calculations need y to be before x in a point.
+        //Calculations need y to be before x in a point, it is therefore switched below.
         double earthRadius = 6371e3; //in meters
 
         double lat1 = Math.toRadians(start.getY());
@@ -145,29 +157,21 @@ public class MapCanvas extends Canvas {
         double distance = getDistance(start, end);
         double pixels = getWidth();
         double dPerPixel = distance / pixels;
-        //System.out.println(start + "\n" + end);
-        //System.out.println("Distance: " + distance + " m");
-        //System.out.println(dPerPixel + " px/m");
-        //System.out.println("50 px = " + (dPerPixel * 50));
         int scale = (int) (dPerPixel * 50);
-        String toDisplay = scale >= 1000 ? (scale / 1000) + " km" : scale + " m";
+        String toDisplay = (scale >= 1000) ? (scale / 1000) + " km" : scale + " m";
         ratio.set(toDisplay);
     }
 
     public void zoom(boolean zoomIn, Point2D center) {
-        if (!validZoom(zoomIn)) return;
+        if (!isValidZoom(zoomIn)) return;
 
         if (zoomIn && zoomLevel < MAX_ZOOM_LEVEL) zoomLevel++;
         else if (!zoomIn && zoomLevel > MIN_ZOOM_LEVEL) zoomLevel--;
         zoom(zoomIn ? ZOOM_FACTOR : (float) ZOOM_FACTOR / 4, center);
     }
 
-    private boolean validZoom(boolean zoomIn) {
-        return (!zoomIn || zoomLevel != MAX_ZOOM_LEVEL) && (zoomIn || zoomLevel != MIN_ZOOM_LEVEL);
-    }
-
     public void zoom(boolean zoomIn, int levels) {
-        if (!validZoom(zoomIn)) return;
+        if (!isValidZoom(zoomIn)) return;
         int levelsToZoom = levels;
 
         if ((zoomLevel + levelsToZoom) > MAX_ZOOM_LEVEL) {
@@ -189,6 +193,10 @@ public class MapCanvas extends Canvas {
         }
     }
 
+    private boolean isValidZoom(boolean zoomIn) {
+        return (!zoomIn || zoomLevel != MAX_ZOOM_LEVEL) && (zoomIn || zoomLevel != MIN_ZOOM_LEVEL);
+    }
+
     private void zoom(double factor, Point2D center) {
         trans.prependScale(factor, factor, center);
         updateMap();
@@ -198,7 +206,6 @@ public class MapCanvas extends Canvas {
     public void pan(double dx, double dy) {
         trans.prependTranslation(dx, dy);
         repaint();
-        //updateMap();
     }
 
     public void updateMap() {
@@ -256,9 +263,11 @@ public class MapCanvas extends Canvas {
         return theme;
     }
 
-    public void setTheme(Theme theme) {
-        this.theme = theme;
-        repaint();
+    public void changeTheme(Theme theme) {
+        if(initialized) {
+            this.theme = theme;
+            repaint();
+        } else this.theme = theme;
     }
 
     public StringProperty getRatio() {

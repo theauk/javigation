@@ -35,7 +35,7 @@
                     <RadioMenuItem fx:id="navigationPane" text="Show Navigation Pane" selected="true"/>
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
-                        <RadioMenuItem text="Default" selected="true">
+                        <RadioMenuItem text="Default" userData="default.mtheme" selected="true">
                             <toggleGroup>
                                 <ToggleGroup fx:id="themeGroup"/>
                             </toggleGroup>

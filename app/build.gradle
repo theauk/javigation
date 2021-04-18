@@ -58,3 +58,7 @@ jar {
         }
     }
 }
+
+tasks.withType(JavaExec) {
+    jvmArgs = ['-Xmx3g']
+}

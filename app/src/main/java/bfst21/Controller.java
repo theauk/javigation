@@ -24,129 +24,88 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Controller {
     private final String BINARY_FILE = "/small.osm";
     private MapData mapData;
     private Loader loader;
     private Creator creator;
-    private Map<String, String> themes;
     private Point2D lastMouse = new Point2D(0, 0);
-    private boolean viaZoomSlider = true;
 
+    private boolean viaZoomSlider = true;
     private boolean dragged;
+    private State state = State.MENU;
 
     private Node currentFromNode;
     private Node currentToNode;
-    private State state = State.MENU;
-    @FXML
-    private MapCanvas mapCanvas;
-    @FXML
-    private Scene scene;
-    @FXML
-    private StackPane centerPane;
-    @FXML
-    private VBox loaderPane;
-    @FXML
-    private Label coordsLabel;
-    @FXML
-    private Label geoCoordsLabel;
-    @FXML
-    private Label nearestRoadLabel;
-    @FXML
-    private Label statusLabel;
-    @FXML
-    private Label scaleLabel;
-    @FXML
-    private Label boundsTR;
-    @FXML
-    private Label boundsBR;
-    @FXML
-    private Label boundsTL;
-    @FXML
-    private Label boundsBL;
-    @FXML
-    private ProgressIndicator loadingBar;
-    @FXML
-    private Slider zoomSlider;
-    @FXML
-    private Menu themeMenu;
-    @FXML
-    private MenuItem openItem;
-    @FXML
-    private MenuItem resetItem;
-    @FXML
-    private MenuItem cancelItem;
-    @FXML
-    private MenuItem zoomInItem;
-    @FXML
-    private MenuItem zoomOutItem;
-    @FXML
-    private Button zoomInButton;
-    @FXML
-    private Button zoomOutButton;
-    @FXML
-    private RadioMenuItem defaultThemeItem;
-    @FXML
-    private RadioMenuItem rTreeDebug;
-    @FXML
-    private ToggleGroup themeGroup;
-    @FXML
-    private TextField textFieldFromNav;
-    @FXML
-    private Button chooseCorButtonFromNav;
-    @FXML
-    private TextField textFieldToNav;
-    @FXML
-    private Button chooseCorButtonToNav;
-    @FXML
-    private RadioButton radioButtonCarNav;
-    @FXML
-    private RadioButton radioButtonBikeNav;
-    @FXML
-    private RadioButton radioButtonWalkNav;
-    @FXML
-    private RadioButton radioButtonFastestNav;
-    @FXML
-    private RadioButton radioButtonShortestNav;
-    @FXML
-    private Button searchNav;
+
+    @FXML private MapCanvas mapCanvas;
+    @FXML private Scene scene;
+    @FXML private StackPane centerPane;
+    @FXML private VBox loaderPane;
+    @FXML private Label coordsLabel;
+    @FXML private Label geoCoordsLabel;
+    @FXML private Label nearestRoadLabel;
+    @FXML private Label statusLabel;
+    @FXML private Label scaleLabel;
+    @FXML private Label boundsTR;
+    @FXML private Label boundsBR;
+    @FXML private Label boundsTL;
+    @FXML private Label boundsBL;
+    @FXML private ProgressIndicator loadingBar;
+    @FXML private Slider zoomSlider;
+    @FXML private Menu themeMenu;
+    @FXML private MenuItem openItem;
+    @FXML private MenuItem resetItem;
+    @FXML private MenuItem cancelItem;
+    @FXML private MenuItem zoomInItem;
+    @FXML private MenuItem zoomOutItem;
+    @FXML private Button zoomInButton;
+    @FXML private Button zoomOutButton;
+    @FXML private RadioMenuItem rTreeDebug;
+    @FXML private ToggleGroup themeGroup;
+    @FXML private TextField textFieldFromNav;
+    @FXML private Button chooseCorButtonFromNav;
+    @FXML private TextField textFieldToNav;
+    @FXML private Button chooseCorButtonToNav;
+    @FXML private RadioButton radioButtonCarNav;
+    @FXML private RadioButton radioButtonBikeNav;
+    @FXML private RadioButton radioButtonWalkNav;
+    @FXML private RadioButton radioButtonFastestNav;
+    @FXML private RadioButton radioButtonShortestNav;
+    @FXML private Button searchNav;
 
     public void init() {
         mapData = new MapData();
         loader = new Loader();
-        themes = new HashMap<>();
         loadThemes();
         initView();
         openFile();
     }
 
     private void initView() {
-        themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getText()));
-        disableMenus();
-    }
-
-    private void initUI() {
-        mapCanvas.init(mapData, loader.loadTheme(themes.get("Default")));
-        mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
-        mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
-
+        themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getUserData().toString()));
+        mapCanvas.initTheme(loader.loadTheme(themeGroup.getSelectedToggle().getUserData().toString()));
+        scaleLabel.textProperty().bind(mapCanvas.getRatio());
         zoomSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             if (viaZoomSlider) zoom(newValue.intValue() - oldValue.intValue());
         });
+        disableMenus();
+    }
 
-        scaleLabel.textProperty().bind(mapCanvas.getRatio());
+    private void initMapCanvas() {
+        mapCanvas.init(mapData);
+        mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
+        mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
     }
 
     private void loadThemes() {
         for (String file : loader.getFilesIn("/themes", ".mtheme")) {
             String themeName = Theme.parseName(file);
-            themes.put(themeName, file);
 
             if (!file.equals("default.mtheme")) {
                 RadioMenuItem item = new RadioMenuItem(themeName);
+                item.setUserData(file);
                 item.setToggleGroup(themeGroup);
                 themeMenu.getItems().add(item);
             }
@@ -170,10 +129,8 @@ public class Controller {
      */
     @FXML
     private void zoom(ActionEvent e) {
-        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton))
-            zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
-        else if (e.getSource().equals(zoomOutItem) || e.getSource().equals(zoomOutButton))
-            zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton)) zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        else if (e.getSource().equals(zoomOutItem) || e.getSource().equals(zoomOutButton)) zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
     }
 
     /**
@@ -306,7 +263,7 @@ public class Controller {
         disableMenus();
         showLoaderPane(false);
         cleanupLoad();
-        initUI();
+        initMapCanvas();
         resetView();
     }
 
@@ -374,14 +331,13 @@ public class Controller {
         ft.play();
     }
 
-    private void setTheme(String themeName) {
-        String name = themes.get(themeName);
-        Theme theme = loader.loadTheme(name);
+    private void setTheme(String themeFile) {
+        Theme theme = loader.loadTheme(themeFile);
         scene.getStylesheets().remove(mapCanvas.getTheme().getStylesheet());
         if (theme.getStylesheet() != null) {
             scene.getStylesheets().add(theme.getStylesheet());
         }
-        mapCanvas.setTheme(theme);
+        mapCanvas.changeTheme(theme);
     }
 
     private void setLabels(Point2D point) {
