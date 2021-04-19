@@ -73,6 +73,7 @@ public class Creator extends Task<Void> {
         AddressTriesTree addressTree = new AddressTriesTree();
         ElementToElementsTreeMap<Node,Way> nodeToWayMap = new ElementToElementsTreeMap<>();
         ElementToElementsTreeMap<Node, Relation> nodeToRestriction = new ElementToElementsTreeMap<>();
+        ElementToElementsTreeMap<Way, Relation> wayToRestriction = new ElementToElementsTreeMap<>();
 
         while (reader.hasNext()) {
             if (isCancelled()) return;   //Abort task
@@ -179,8 +180,8 @@ public class Creator extends Task<Void> {
 
                                     }
                                     if (role.equals("via")){
-                                        relation.setVia(idToNode.get(refR));
-                                        // TODO: 15-04-2021 Restrictions via kan be ways
+                                        if (idToNode.get(refR) != null) relation.setViaNode(idToNode.get(refR));
+                                        else if (idToWay.get(refR) != null) relation.setViaWay(idToWay.get(refR));
                                     }
                                 }
                                 break;
@@ -223,7 +224,8 @@ public class Creator extends Task<Void> {
                                     if (relation.hasType()) {
                                         if (relation.getType().equals("restriction") ) {
                                             // TODO: 14-04-2021 needs be bettter plz
-                                           if(relation.getVia() != null) nodeToRestriction.put(relation.getVia(), relation);
+                                           if(relation.getViaNode() != null) nodeToRestriction.put(relation.getViaNode(), relation);
+                                           else if (relation.getViaWay() != null) wayToRestriction.put(relation.getViaWay(), relation);
                                         } else {
                                             rTree.insert(relation);
                                         }
@@ -237,7 +239,7 @@ public class Creator extends Task<Void> {
             }
         }
         updateMessage("Finalizing...");
-        mapData.addDataTrees(highWayRoadNodes, rTree, nodeToRestriction, addressTree, nodeToWayMap);
+        mapData.addDataTrees(highWayRoadNodes, rTree, nodeToRestriction, wayToRestriction, addressTree, nodeToWayMap);
         reader.close();
     }
 

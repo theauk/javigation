@@ -19,6 +19,7 @@ public class MapData {
     private boolean rTreeDebug;
     private ElementToElementsTreeMap<Node, Way> nodeToHighWay;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
+    private ElementToElementsTreeMap<Way, Relation> wayToRestriction;
     private DijkstraSP dijkstra;
     private Way currentDijkstraRoute;
 
@@ -26,13 +27,14 @@ public class MapData {
         mapSegment = new ArrayList<>();
     }
 
-    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
         this.rTree = rTree;
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
         this.nodeToRestriction = nodeToRestriction;
+        this.wayToRestriction = wayToRestriction;
         nodeToHighWay = nodeToWayMap;
-        dijkstra = new DijkstraSP(nodeToHighWay, nodeToRestriction);
+        dijkstra = new DijkstraSP(nodeToHighWay, nodeToRestriction, wayToRestriction);
 
         buildTrees();
     }
