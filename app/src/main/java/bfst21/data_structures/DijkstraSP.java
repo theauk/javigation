@@ -3,6 +3,7 @@ package bfst21.data_structures;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,17 +11,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DijkstraSP {
-    // TODO: 4/10/21 Add restrictions 
+    // TODO: 4/10/21 Add restrictions
     // TODO: 4/10/21 Improve remove min
     // TODO: 4/10/21 Is distance between nodes correct?
     // TODO: 4/15/21 Walk and bike speed in Way
 
-    // TODO: 4/16/21 Maybe wipe maps after use? 
+    // TODO: 4/16/21 Maybe wipe maps after use?
 
-    // TODO: 4/15/21 fastest and shortest for bike/walk should always be the same due to the same speed right? In that case, fastest/shortest selection does not make sense for walk/bike 
+    // TODO: 4/15/21 fastest and shortest for bike/walk should always be the same due to the same speed right? In that case, fastest/shortest selection does not make sense for walk/bike
+
+    // TODO: 4/19/21 ændrer tilbage til ikke object pq. Find ud af hvad der gælder med vej – er det fordi det er alle nodes der. På H er den lille via vej kun de to nodes det gælder. Så skal man se kigge mere tilbage i way to?
 
     private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
+    private ElementToElementsTreeMap<Way, Relation> wayToRestriction;
     private Node from;
     private Node to;
     private HashMap<Long, Double> unitsTo;
@@ -31,12 +35,14 @@ public class DijkstraSP {
     private boolean bike;
     private boolean walk;
     private boolean fastest;
+    private boolean tryAgain;
     private double bikingSpeed;
     private double walkingSpeed;
     private double totalUnits;
 
-    public DijkstraSP(ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction) {
+    public DijkstraSP(ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
         this.nodeToRestriction = nodeToRestriction;
+        this.wayToRestriction = wayToRestriction;
         this.nodeToWayMap = nodeToWayMap;
     }
 
@@ -47,6 +53,7 @@ public class DijkstraSP {
         this.bike = bike;
         this.walk = walk;
         this.fastest = fastest;
+        tryAgain = false;
         unitsTo = new HashMap<>();
         nodeBefore = new HashMap<>();
         wayBefore = new HashMap<>();
@@ -54,33 +61,47 @@ public class DijkstraSP {
         bikingSpeed = 16; // from Google Maps 16 km/h
         walkingSpeed = 5; // from Google Maps 5 km/h
         totalUnits = 0;
+        unitsTo.put(from.getId(), 0.0);
+        pq.put(from, 0.0);
     }
 
     public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
         setup(from, to, car, bike, walk, fastest);
-        unitsTo.put(from.getId(), 0.0);
-        pq.put(from, 0.0);
+        Node n = checkN();
 
+        if (n != to) {
+
+            setup(from, to, car, bike, walk, fastest);
+            tryAgain = true; // TODO: 4/19/21 really not the most beautiful thing... 
+            n = checkN();
+
+            if (n != to) {
+                // TODO: 4/12/21 fix this / do something -> happens when a route cannot be found as the last node should be "to" node'en if it worked.
+                System.err.println("Dijkstra: navigation is not possible with this from/to e.g. due to vehicle restrictions, island, etc.");
+                return new ArrayList<>();
+            } else {
+                return getTrack(new ArrayList<>(), n);
+            }
+        } else {
+            return getTrack(new ArrayList<>(), n);
+        }
+    }
+
+    private Node checkN() {
         Node n = null;
         while (!pq.isEmpty()) {
             n = temporaryRemoveAndGetMin();
             if (n != to) relax(n);
             else break;
         }
-        if (n != to) {
-            // TODO: 4/12/21 fix this / do something -> happens when a route cannot be found as the last node should be "to" node'en if it worked.
-            System.err.println("Dijkstra: navigation is not possible with this from/to e.g. due to vehicle restrictions, island, etc.");
-            return new ArrayList<>();
-        } else {
-            return getTrack(new ArrayList<>(), n);
-        }
+        return n;
     }
 
     public double getTotalUnits() {
-        return totalUnits; // TODO: 4/15/21 think its wrong... should be able to just do distanceto with current node 
+        return totalUnits; // TODO: 4/15/21 think its wrong... should be able to just do distanceto with current node
     }
 
-    private Node temporaryRemoveAndGetMin() { // TODO: 4/15/21 make more efficient 
+    private Node temporaryRemoveAndGetMin() { // TODO: 4/15/21 make more efficient – probably tree
         double minValue = Double.POSITIVE_INFINITY;
         Node minNode = null;
 
@@ -106,59 +127,76 @@ public class DijkstraSP {
 
     private void relax(Node currentFrom) {
         ArrayList<Way> waysWithFromNode = nodeToWayMap.getElementsFromNode(currentFrom);
-        ArrayList<Node> adjacentNodes = new ArrayList<>();
-
-        HashMap<Node, Way> adjacentNodesWithWays = new HashMap<>(); // TODO: 4/17/21 fix it to implement this
 
         for (Way w : waysWithFromNode) {
+            ArrayList<Node> adjacentNodes = new ArrayList<>();
 
             if (car) {
                 if (w.isDriveable()) {
                     if (!w.isOnewayRoad()) {
-                        getPreviousNode(adjacentNodesWithWays, w, currentFrom);
+                        getPreviousNode(adjacentNodes, w, currentFrom);
                     }
-                    getNextNode(adjacentNodesWithWays, w, currentFrom);
+                    getNextNode(adjacentNodes, w, currentFrom);
                 }
             } else if (bike) {
                 if (w.isCycleable()) {
                     if (!w.isOneWayForBikes()) {
-                        getPreviousNode(adjacentNodesWithWays, w, currentFrom);
+                        getPreviousNode(adjacentNodes, w, currentFrom);
                     }
-                    getNextNode(adjacentNodesWithWays, w, currentFrom);
+                    getNextNode(adjacentNodes, w, currentFrom);
                 }
             } else if (walk) {
                 if (w.isWalkable()) {
-                    getPreviousNode(adjacentNodesWithWays, w, currentFrom);
-                    getNextNode(adjacentNodesWithWays, w, currentFrom);
+                    getPreviousNode(adjacentNodes, w, currentFrom);
+                    getNextNode(adjacentNodes, w, currentFrom);
                 }
             }
-            if (adjacentNodesWithWays.size() > 0) {
-                for (Map.Entry<Node, Way> nodeWayEntry : adjacentNodesWithWays.entrySet()) {
-                    if (!isThereARestriction(wayBefore.get(currentFrom.getId()), currentFrom, nodeWayEntry.getValue())) { // TODO: 4/16/21 should be moved so that the distance to a node is updated to very large if restriction apply
-                        checkDistance(currentFrom, nodeWayEntry.getKey(), w);
-                    } // TODO: 4/17/21 use the HM instead and send the fromWay = currentFromsWay, viaNode = currentFrom, toWay = currentTo way in the HM
+            if (adjacentNodes.size() > 0) {
+                for (Node n : adjacentNodes) {
+                    if (!isThereARestriction(wayBefore.get(currentFrom.getId()), currentFrom, w)) {
+                        checkDistance(currentFrom, n, w);
+                    }
                 }
             }
         }
     }
 
-    private void getPreviousNode(HashMap<Node, Way> adjacentNodesWithWays, Way w, Node currentFrom) {
+    private void getPreviousNode(ArrayList<Node> adjacentNodes, Way w, Node currentFrom) {
         Node previousNode = w.getPreviousNode(currentFrom);
-        if (previousNode != null) adjacentNodesWithWays.put(previousNode, w);
+        if (previousNode != null) adjacentNodes.add(previousNode);
     }
 
-    private void getNextNode(HashMap<Node, Way> adjacentNodesWithWays, Way w, Node currentFrom) {
+    private void getNextNode(ArrayList<Node> adjacentNodes, Way w, Node currentFrom) {
         Node nextNode = w.getNextNode(currentFrom);
-        if (nextNode != null) adjacentNodesWithWays.put(nextNode, w);
+        if (nextNode != null) adjacentNodes.add(nextNode);
     }
 
     private boolean isThereARestriction(Way fromWay, Node viaNode, Way toWay) {
-        ArrayList<Relation> restrictions = nodeToRestriction.getElementsFromNode(viaNode);
+        ArrayList<Relation> restrictionsViaNode = nodeToRestriction.getElementsFromNode(viaNode);
 
-        if (restrictions != null) {
-            for (Relation restriction : restrictions) {
-                if (restriction.getFrom() == fromWay && restriction.getVia() == viaNode && restriction.getTo() == toWay) { // TODO: 4/16/21 er i tvivl om to way == via way...
+        if (restrictionsViaNode != null) {
+            for (Relation restriction : restrictionsViaNode) {
+                if (restriction.getFrom() == fromWay && restriction.getViaNode() == viaNode && restriction.getTo() == toWay) { // TODO: 4/19/21 er check med viaNode nædvendigt grundet nodeToorest lookup? same nedenunder for viaWay
                     return true;
+                }
+            }
+        }
+        if (fromWay != null) {
+            ArrayList<Relation> restrictionsViaWay = wayToRestriction.getElementsFromNode(fromWay);
+            if (restrictionsViaWay != null) {
+                for (Relation restriction : restrictionsViaWay) {
+                    if (restriction.getViaWay() == fromWay && restriction.getTo() == toWay) {
+                        Node beforeNode = nodeBefore.get(viaNode.getId());
+
+                        while (wayBefore.get(beforeNode.getId()) == fromWay) { // while we are "walking back" on the same Way
+                            beforeNode = nodeBefore.get(beforeNode.getId());
+                        }
+
+                        if (wayBefore.get(beforeNode.getId()) == restriction.getFrom()) { // walk back until you reach a different Way – then check if that is the from way
+                            if (tryAgain) unitsTo.put(viaNode.getId(), Double.POSITIVE_INFINITY);
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -179,7 +217,7 @@ public class DijkstraSP {
             unitsTo.put(toId, unitsTo.get(fromId) + unitsBetweenFromTo);
             nodeBefore.put(toId, currentFrom);
             wayBefore.put(toId, w);
-            pq.put(currentTo, unitsTo.get(toId)); // do not need if else because updates if it is not there and inserts if not there
+            pq.put(currentTo, unitsTo.get(toId));
         }
     }
 
