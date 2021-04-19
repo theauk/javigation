@@ -3,7 +3,6 @@ package bfst21.data_structures;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,7 +71,7 @@ public class DijkstraSP {
         if (n != to) {
 
             setup(from, to, car, bike, walk, fastest);
-            tryAgain = true; // TODO: 4/19/21 really not the most beautiful thing... 
+            tryAgain = true; // TODO: 4/19/21 really not the most beautiful thing...
             n = checkN();
 
             if (n != to) {
@@ -83,7 +82,9 @@ public class DijkstraSP {
                 return getTrack(new ArrayList<>(), n);
             }
         } else {
-            return getTrack(new ArrayList<>(), n);
+            ArrayList<Node> nodes = getTrack(new ArrayList<>(), n);
+            System.out.println("Units: " + getTotalUnits());
+            return nodes;
         }
     }
 
@@ -98,7 +99,7 @@ public class DijkstraSP {
     }
 
     public double getTotalUnits() {
-        return totalUnits; // TODO: 4/15/21 think its wrong... should be able to just do distanceto with current node
+        return unitsTo.get(to.getId()); // TODO: 4/15/21 think its wrong... should be able to just do distanceto with current node
     }
 
     private Node temporaryRemoveAndGetMin() { // TODO: 4/15/21 make more efficient – probably tree
@@ -226,8 +227,8 @@ public class DijkstraSP {
         //Calculations need y to be before x in a point.
         double earthRadius = 6371e3; //in meters
 
-        double lat1 = Math.toRadians(convertToGeo(from.getyMax()));
-        double lat2 = Math.toRadians(convertToGeo(to.getyMax()));
+        double lat1 = convertToGeo(from.getyMax());
+        double lat2 = convertToGeo(to.getyMax());
         double lon1 = from.getxMax();
         double lon2 = to.getxMax();
 
