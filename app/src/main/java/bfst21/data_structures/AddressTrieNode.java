@@ -10,7 +10,11 @@ import java.util.HashMap;
 public class AddressTrieNode {
     private HashMap<Character, AddressTrieNode> children;
     private ArrayList<AddressTrieNode> addressNodes;
-    private AddressNode addressNode;
+    private Node node;
+    private String city;
+    private String streetname;
+    private Integer postcode;
+    private String houseNumber;
 
     // for the root
     public AddressTrieNode(){
@@ -21,7 +25,11 @@ public class AddressTrieNode {
     public AddressTrieNode(Node node, String city, String streetname, int postcode, String houseNumber){
         this.children = new HashMap<>();
         this.addressNodes = new ArrayList<>();
-        addressNode = new AddressNode(node,city, streetname, postcode, houseNumber);
+        this.node = node;
+        this.city = city;
+        this.streetname = streetname;
+        this.postcode = postcode;
+        this.houseNumber = houseNumber;
 
     }
 
@@ -43,38 +51,22 @@ public class AddressTrieNode {
     }
 
     public String getCity() {
-        return addressNode.city;
+        return this.city;
     }
 
     public String getStreetname() {
-        return addressNode.streetname;
+        return this.streetname;
     }
 
     public int getPostcode() {
-        return addressNode.postcode;
+        return this.postcode;
     }
 
     public String getHouseNumber() {
-        return addressNode.houseNumber;
+        return this.houseNumber;
     }
     public String getAddress(){
-        return addressNode.streetname + " " + addressNode.houseNumber + ", " + addressNode.postcode + " " + addressNode.city;
+        return this.streetname + " " + this.houseNumber + ", " + this.postcode + " " + this.city;
     }
 
-    private class AddressNode{
-        private Node node;
-        private String city;
-        private String streetname;
-        private Integer postcode;
-        private String houseNumber;
-
-        public AddressNode(Node node, String city, String streetname, int postcode, String houseNumber){
-            this.node = node;
-            this.city = city;
-            this.streetname = streetname;
-            this.postcode = postcode;
-            this.houseNumber = houseNumber;
-        }
-
-    }
 }
