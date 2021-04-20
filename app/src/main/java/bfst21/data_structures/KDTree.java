@@ -4,19 +4,13 @@ import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
 import javafx.geometry.Point2D;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class KDTree<Value extends Element> {
     private final Comparator<KDTreeNode> comparatorX = new Comparator<KDTreeNode>() {
         @Override
         public int compare(KDTreeNode p1, KDTreeNode p2) {
             int c = Float.compare(p1.node.getxMax(), p2.node.getxMax());
-            if(c==0 && Float.compare(p1.node.getyMax(), p2.node.getyMax()) ==0 ){
-                p2.isDuplicate = true;
-            }
             return c;
         }
     };
@@ -24,9 +18,6 @@ public class KDTree<Value extends Element> {
         @Override
         public int compare(KDTreeNode p1, KDTreeNode p2) {
             int c = Float.compare(p1.node.getyMax(), p2.node.getyMax());
-            if(c==0 && Float.compare(p1.node.getxMax(), p2.node.getxMax()) ==0 ){
-                p2.isDuplicate = true;
-            }
             return c;
         }
     };
@@ -36,12 +27,14 @@ public class KDTree<Value extends Element> {
     private int numCor;
     private int numDim;
     private boolean noDuplicates;
+    private HashSet<Value> hashList;
 
     public KDTree(int startDim, int numCor) {
         this.startDim = startDim;
         this.numCor = numCor;
         numDim = numCor / 2;
         list = new ArrayList<>();
+        hashList = new HashSet<>();
     }
 
 
@@ -54,11 +47,10 @@ public class KDTree<Value extends Element> {
     }
 
     public void addAll(List<Value> nodes) {
-        for (Value node : nodes) {
-            list.add(new KDTreeNode(node));
-        }
+        hashList.addAll(nodes);
     }
     public void buildTree(){
+        for (Value value : hashList) list.add(new KDTreeNode(value));
         buildTree(list, startDim);
     }
     private KDTreeNode buildTree(List<KDTreeNode> nodes, int dim) {
@@ -69,7 +61,6 @@ public class KDTree<Value extends Element> {
         Comparator<KDTreeNode> comp = getComparatorFromDimension(dim % numCor);
         nodes.sort(comp);
         if(!noDuplicates){
-            removeDuplicates(nodes);
             noDuplicates = true;
         }
 
@@ -87,9 +78,6 @@ public class KDTree<Value extends Element> {
         return medNode;
     }
 
-    private void removeDuplicates(List<KDTreeNode> nodes) {
-        nodes.removeIf(n -> n.isDuplicate);
-    }
 
     public Value getNearestNode(float x, float y) throws KDTreeEmptyException {
 
@@ -194,7 +182,6 @@ public class KDTree<Value extends Element> {
         private KDTreeNode leftChild;
         private KDTreeNode rightChild;
         private boolean onXAxis;
-        private boolean isDuplicate;
 
         public KDTreeNode(Value node) {
             this.node = node;

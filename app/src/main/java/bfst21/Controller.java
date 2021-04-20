@@ -513,6 +513,7 @@ public class Controller {
             EventHandler<MouseEvent> event = new EventHandler<>() {
                 @Override
                 public void handle(MouseEvent e) {
+                    //// TODO: 20-04-2021 make this work 
 
                     Point2D cursorPoint = new Point2D(e.getX(), e.getY());
                     Point2D geoCoords = mapCanvas.getGeoCoords(cursorPoint.getX(), cursorPoint.getY());
