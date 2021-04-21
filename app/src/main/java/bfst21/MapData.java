@@ -14,7 +14,6 @@ import java.util.ArrayList;
 public class MapData {
     private float minX, minY, maxX, maxY;
     private boolean rTreeDebug;
-    private Controller controller;
     private ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
     private KDTree<Node> closetRoadTree;
     private RTree rTree;
@@ -23,8 +22,7 @@ public class MapData {
     private DijkstraSP dijkstra;
     private Way currentDijkstraRoute;
 
-    public MapData(Controller controller) {
-        this.controller = controller;
+    public MapData() {
         mapSegment = new ArrayList<>();
     }
 
@@ -87,25 +85,28 @@ public class MapData {
         return nearestRoadNode;
     }
 
-    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
-        try {
-            ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
-            currentDijkstraRoute = new Way(0);
-            currentDijkstraRoute.setType("navigation");
-            for (int i = 0; i < path.size() - 1; i++) {
-                currentDijkstraRoute.addNode(path.get(i));
-            }
-            controller.setDistanceAndTimeNav(dijkstra.getTotalDistance(), dijkstra.getTotalTime());
-        } catch (NoNavigationResultException e) {
-            e.printStackTrace(); // TODO: 4/19/21 do something
+    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) throws NoNavigationResultException {
+        ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
+        currentDijkstraRoute = new Way(0);
+        currentDijkstraRoute.setType("navigation");
+        for (int i = 0; i < path.size() - 1; i++) {
+            currentDijkstraRoute.addNode(path.get(i));
         }
+    }
+
+    public double getDistanceNav() throws NoNavigationResultException {
+        return dijkstra.getTotalDistance();
+    }
+
+    public double getTimeNav() throws NoNavigationResultException {
+        return dijkstra.getTotalTime();
     }
 
     public Way getCurrentDijkstraRoute() {
         return currentDijkstraRoute;
     }
 
-    public void setCurrentDijkstraRouteNull() {
+    public void setCurrentDijkstraRouteToNull() {
         currentDijkstraRoute = null;
     }
 

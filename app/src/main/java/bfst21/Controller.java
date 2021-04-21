@@ -1,5 +1,6 @@
 package bfst21;
 
+import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.Exceptions.NoOSMInZipFileException;
 import bfst21.Osm_Elements.Node;
 import bfst21.view.CanvasBounds;
@@ -116,7 +117,7 @@ public class Controller {
     private Label distanceAndTimeNav;
 
     public void init() {
-        mapData = new MapData(this);
+        mapData = new MapData();
         loader = new Loader();
         themes = new HashMap<>();
         loadThemes();
@@ -282,7 +283,7 @@ public class Controller {
     }
 
     private void loadFile(InputStream inputStream, long fileSize) {
-        mapData = new MapData(this);
+        mapData = new MapData();
         creator = new Creator(mapData, inputStream, fileSize);
         creator.setOnRunning(e -> loadRunning());
         creator.setOnSucceeded(e -> loadSuccess());
@@ -314,7 +315,7 @@ public class Controller {
     private void loadFailed() {
         state = State.MENU;
         disableMenus();
-        mapData = new MapData(this);
+        mapData = new MapData();
         cleanupLoad();
         statusLabel.setText("Failed.");
         creator.exceptionProperty().get().printStackTrace();
@@ -323,7 +324,7 @@ public class Controller {
     private void loadCancelled() {
         state = State.MENU;
         disableMenus();
-        mapData = new MapData(this);
+        mapData = new MapData();
         cleanupLoad();
         statusLabel.setText("Cancelled.");
     }
@@ -488,8 +489,13 @@ public class Controller {
 
     @FXML
     public void getDijkstraPath() {
-        mapData.setDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
-        mapCanvas.repaint();
+        try {
+            mapData.setDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
+            setDistanceAndTimeNav(mapData.getDistanceNav(), mapData.getTimeNav());
+            mapCanvas.repaint();
+        } catch (NoNavigationResultException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setDistanceAndTimeNav(double distance, double time) {

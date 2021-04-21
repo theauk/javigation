@@ -4,7 +4,6 @@ import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,22 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DijkstraSP {
-    // TODO: 4/10/21 Add restrictions
     // TODO: 4/10/21 Improve remove min
-    // TODO: 4/10/21 Is distance between nodes correct?
-    // TODO: 4/15/21 Walk and bike speed in Way
+    // TODO: 4/19/21 Hide fastest for bike/walk in the view.
 
-    // TODO: 4/16/21 Maybe wipe maps after use?
-
-    // TODO: 4/15/21 fastest and shortest for bike/walk should always be the same due to the same speed right? In that case, fastest/shortest selection does not make sense for walk/bike
-
-    // TODO: 4/19/21 ændrer tilbage til ikke object pq. Find ud af hvad der gælder med vej – er det fordi det er alle nodes der. På H er den lille via vej kun de to nodes det gælder. Så skal man se kigge mere tilbage i way to?
-
+    private Node to;
     private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private ElementToElementsTreeMap<Way, Relation> wayToRestriction;
-    private Node from;
-    private Node to;
+    private ArrayList<Node> path;
+    private ArrayList<String> routeDescription;
     private HashMap<Long, DistanceAndTimeEntry> unitsTo;
     private HashMap<Long, Node> nodeBefore;
     private HashMap<Long, Way> wayBefore;
@@ -47,13 +39,13 @@ public class DijkstraSP {
     }
 
     private void setup(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
-        this.from = from;
         this.to = to;
         this.car = car;
         this.bike = bike;
         this.walk = walk;
         this.fastest = fastest;
         tryAgain = false;
+        routeDescription = new ArrayList<>();
         unitsTo = new HashMap<>();
         nodeBefore = new HashMap<>();
         wayBefore = new HashMap<>();
@@ -66,34 +58,24 @@ public class DijkstraSP {
 
     public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) throws NoNavigationResultException {
         setup(from, to, car, bike, walk, fastest);
-        Node n = checkN();
+        Node n = checkNode();
 
         if (n != to) {
-
             setup(from, to, car, bike, walk, fastest);
             tryAgain = true; // TODO: 4/19/21 really not the most beautiful thing...
-            n = checkN();
+            n = checkNode();
 
-            if (n != to) {
-                // TODO: 4/12/21 fix this / do something -> happens when a route cannot be found as the last node should be "to" node'en if it worked.
-                System.err.println("Dijkstra: navigation is not possible with this from/to e.g. due to vehicle restrictions, island, etc.");
-                throw new NoNavigationResultException();
-            } else {
-                return getTrack(new ArrayList<>(), n);
+            if (n != to) throw new NoNavigationResultException();
+            else {
+                path = getTrack(new ArrayList<>(), n);
+                return path;
             }
-        } else {
-            return getTrack(new ArrayList<>(), n);
-        }
-    }
 
-    private Node checkN() {
-        Node n = null;
-        while (!pq.isEmpty()) {
-            n = temporaryRemoveAndGetMin();
-            if (n != to) relax(n);
-            else break;
+        } else {
+            path = getTrack(new ArrayList<>(), n);
+            getRouteDescription();
+            return path;
         }
-        return n;
     }
 
     public double getTotalDistance() {
@@ -102,6 +84,56 @@ public class DijkstraSP {
 
     public double getTotalTime() {
         return unitsTo.get(to.getId()).time;
+    }
+
+    public String getRouteDescription() {
+        for (int i = path.size() - 1; i >= 2; i--) {
+            Node from = path.get(i);
+            Node via = path.get(i - 1);
+            Node to = path.get(i - 2);
+
+            double distanceFromAndVia = getDistanceBetweenTwoNodes(from, via);
+            double distanceViaAndTo = getDistanceBetweenTwoNodes(via, to);
+            double distanceFromAndTo = getDistanceBetweenTwoNodes(from, to);
+
+            double cosTurnAngle = (Math.pow(distanceViaAndTo, 2) + Math.pow(distanceFromAndVia, 2) - Math.pow(distanceFromAndTo, 2)) / (2 * distanceViaAndTo * distanceFromAndVia);
+            double turnAngle = Math.acos(cosTurnAngle);
+
+            double result = Math.atan2(to.getyMax() - via.getyMax(), to.getxMax() - via.getxMax()) - Math.atan2(from.getyMax() - via.getyMax(), from.getxMax() - via.getxMax());
+
+
+            double v1x = from.getxMax() - via.getxMax();
+            double v1y = from.getyMax() - via.getyMax();
+            double v2x = to.getxMax() - via.getxMax();
+            double v2y = to.getyMax() - via.getyMax();
+
+            double angle = Math.atan2(v1x, v1y) - Math.atan2(v2x, v2y);
+            double degreeAngle = Math.toDegrees(angle);
+
+            //System.out.println(turnAngle * (180f / Math.PI));
+
+            if (degreeAngle > 0) {
+                if (degreeAngle < 175 || degreeAngle > 185) {
+                    System.out.println("You turned right, by: " + degreeAngle + " " + Math.toDegrees(result));
+                }
+            } else {
+                if (degreeAngle > -175 || degreeAngle < -185) {
+                    System.out.println("You turned left, by: " + degreeAngle + " " + Math.toDegrees(result));
+                }
+            }
+        }
+        System.out.println("");
+        return "";
+    }
+
+    private Node checkNode() {
+        Node n = null;
+        while (!pq.isEmpty()) {
+            n = temporaryRemoveAndGetMin();
+            if (n != to) relax(n);
+            else break;
+        }
+        return n;
     }
 
     private Node temporaryRemoveAndGetMin() { // TODO: 4/15/21 make more efficient – probably tree
@@ -120,7 +152,6 @@ public class DijkstraSP {
 
     private ArrayList<Node> getTrack(ArrayList<Node> nodes, Node currentNode) {
         if (currentNode != null) {
-            //System.out.println(unitsTo.get(currentNode.getId()));
             nodes.add(currentNode);
             getTrack(nodes, nodeBefore.get(currentNode.getId()));
         }
@@ -153,8 +184,9 @@ public class DijkstraSP {
                     getNextNode(adjacentNodes, w, currentFrom);
                 }
             }
-            if (adjacentNodes.size() > 0) {
+            if (!adjacentNodes.isEmpty()) {
                 for (Node n : adjacentNodes) {
+                    boolean[] doAdjacentNodesHaveRestrictions = new boolean[adjacentNodes.size()];
                     if (!isThereARestriction(wayBefore.get(currentFrom.getId()), currentFrom, w)) {
                         checkDistance(currentFrom, n, w);
                     }
@@ -178,16 +210,18 @@ public class DijkstraSP {
 
         if (restrictionsViaNode != null) {
             for (Relation restriction : restrictionsViaNode) {
-                if (restriction.getFrom() == fromWay && restriction.getViaNode() == viaNode && restriction.getTo() == toWay) { // TODO: 4/19/21 er check med viaNode nædvendigt grundet nodeToorest lookup? same nedenunder for viaWay
+                if (restriction.getRestriction().contains("no_") && restriction.getFrom() == fromWay && restriction.getViaNode() == viaNode && restriction.getTo() == toWay) { // TODO: 4/19/21 er check med viaNode nødvendigt grundet nodeToorest lookup? same nedenunder for viaWay
                     return true;
+                } else if (restriction.getRestriction().contains("only_")) { // TODO: 4/20/21 ja....
+                    System.out.println(fromWay.getName() + " " + viaNode.getId() + " " + toWay.getName());
                 }
             }
         }
-        if (fromWay != null) {
+        if (fromWay != null) { // TODO: 4/19/21 re-organize
             ArrayList<Relation> restrictionsViaWay = wayToRestriction.getElementsFromNode(fromWay);
             if (restrictionsViaWay != null) {
                 for (Relation restriction : restrictionsViaWay) {
-                    if (restriction.getViaWay() == fromWay && restriction.getTo() == toWay) {
+                    if (restriction.getRestriction().contains("no_") && restriction.getViaWay() == fromWay && restriction.getTo() == toWay) {
                         Node beforeNode = nodeBefore.get(viaNode.getId());
 
                         while (wayBefore.get(beforeNode.getId()) == fromWay) { // while we are "walking back" on the same Way
@@ -195,9 +229,12 @@ public class DijkstraSP {
                         }
 
                         if (wayBefore.get(beforeNode.getId()) == restriction.getFrom()) { // walk back until you reach a different Way – then check if that is the from way
-                            if (tryAgain) unitsTo.put(viaNode.getId(), new DistanceAndTimeEntry(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY));
+                            if (tryAgain)
+                                unitsTo.put(viaNode.getId(), new DistanceAndTimeEntry(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY));
                             return true;
                         }
+                    } else if (restriction.getRestriction().contains("only_")) { // TODO: 4/20/21 ja....
+
                     }
                 }
             }
@@ -229,12 +266,12 @@ public class DijkstraSP {
     }
 
     private void updateMaps(long toId, long fromId, Way w, Node currentFrom, double distanceBetweenFromTo, double timeBetweenFromTo) {
-        unitsTo.put(toId, new DistanceAndTimeEntry(unitsTo.get(fromId).distance + distanceBetweenFromTo , unitsTo.get(fromId).time + timeBetweenFromTo));
+        unitsTo.put(toId, new DistanceAndTimeEntry(unitsTo.get(fromId).distance + distanceBetweenFromTo, unitsTo.get(fromId).time + timeBetweenFromTo));
         nodeBefore.put(toId, currentFrom);
         wayBefore.put(toId, w);
     }
 
-    private double getDistanceBetweenTwoNodes(Node from, Node to) { // TODO: 4/9/21 From mapcanvas w/small changes
+    private double getDistanceBetweenTwoNodes(Node from, Node to) {
         //Adapted from https://www.movable-type.co.uk/scripts/latlong.html
         //Calculations need y to be before x in a point.
         double earthRadius = 6371e3; //in meters
@@ -259,13 +296,9 @@ public class DijkstraSP {
 
     private double getTravelTime(double distance, Way w) {
         double speed;
-        if (bike) {
-            speed = bikingSpeed;
-        } else if (walk) {
-            speed = walkingSpeed;
-        } else {
-            speed = w.getMaxSpeed();
-        }
+        if (bike) speed = bikingSpeed;
+        else if (walk) speed = walkingSpeed;
+        else speed = w.getMaxSpeed();
         return distance / (speed * (5f / 18f));
     }
 
@@ -280,6 +313,10 @@ public class DijkstraSP {
         }
     }
 
+    /**
+     * Class which holds the distance and a time to a certain node. Necessary to keep track of both variables
+     * as time various by the road type for cars.
+     */
     private class DistanceAndTimeEntry {
         private double distance;
         private double time;

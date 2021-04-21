@@ -249,6 +249,7 @@ public class Creator extends Task<Void> {
             case "restriction":
                 relation.setType(k);
                 relation.setRestriction(v);
+                //System.out.println("Restriction type: " + v); // TODO: 4/20/21 remove
                 break;
             case "name":
                 relation.setName(v);

@@ -9,7 +9,7 @@ import java.util.Map;
 public class Relation extends NodeHolder {
 
     private ArrayList<Way> ways;
-    private String name;
+    private String name; // TODO: 4/20/21 skal den bruges? 
     private boolean isMultiPolygon;
 
     private ArrayList<Way> innerWays;
@@ -94,6 +94,10 @@ public class Relation extends NodeHolder {
 
     public void setRestriction(String restriction) {
         this.restriction = restriction;
+    }
+
+    public String getRestriction() {
+        return restriction;
     }
 
     @Override
