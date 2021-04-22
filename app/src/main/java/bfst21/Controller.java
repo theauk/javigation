@@ -1,5 +1,6 @@
 package bfst21;
 
+import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.Exceptions.NoOSMInZipFileException;
 import bfst21.Exceptions.UnsupportedFileFormatException;
 import bfst21.Osm_Elements.Node;
@@ -95,6 +96,8 @@ public class Controller {
     @FXML private RadioButton radioButtonWalkNav;
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
+    @FXML private Button searchNav;
+    @FXML private Label distanceAndTimeNav;
 
     @FXML private ComboBox<String> dropDownPoints;
     @FXML private TextField textFieldPointName;
@@ -539,9 +542,35 @@ public class Controller {
 
     @FXML
     public void getDijkstraPath() {
+        try {
+            mapData.setDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
+            setDistanceAndTimeNav(mapData.getDistanceNav(), mapData.getTimeNav());
+            mapCanvas.repaint();
+        } catch (NoNavigationResultException e) {
+            e.printStackTrace();
+        }
+    }
 
-        mapData.setDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
-        mapCanvas.repaint();
+    public void setDistanceAndTimeNav(double distance, double time) {
+        distanceAndTimeNav.setVisible(true);
+        String s = "Total distance: ";
+
+        if (distance < 1000) {
+            s += round(distance, 0) + " m";
+        } else {
+            s += round(distance / 1000f, 2) + " km";
+        }
+
+        if (time < 60) {
+            s += " , Total time: " + round(time, 0) + " s";
+        } else {
+            s += " , Total time: " + round(time / 60f, 2) + " min";
+        }
+        distanceAndTimeNav.setText(s);
+    }
+
+    public void hideDistanceAndTimeNav() {
+        distanceAndTimeNav.setVisible(false);
     }
 
     @FXML

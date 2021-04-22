@@ -6,14 +6,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ElementToElementsTreeMapTest {
-    ElementToElementsTreeMap map;
+    ElementToElementsTreeMap<Node, Way> map;
 
     @BeforeEach
     void setUp() {
-        map = new ElementToElementsTreeMap();
+        map = new ElementToElementsTreeMap<>();
     }
 
     @Test
@@ -22,10 +22,10 @@ class ElementToElementsTreeMapTest {
         Node n2 = new Node(10, 0, 0);
         Way w1 = new Way(1);
         Way w2 = new Way(2);
-        map.put(n1,w1);
-        map.put(n1,w2);
-        map.put(n2,w1);
-        assertEquals(2,map.getWaysFromNode(n1).size());
+        map.put(n1, w1);
+        map.put(n1, w2);
+        map.put(n2, w1);
+        assertEquals(2, map.getElementsFromNode(n1).size());
     }
 
     @AfterEach

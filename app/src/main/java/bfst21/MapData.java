@@ -1,6 +1,7 @@
 package bfst21;
 
 import bfst21.Exceptions.KDTreeEmptyException;
+import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
@@ -23,7 +24,6 @@ public class MapData implements Serializable {
     private AddressTriesTree addressTree;
     private boolean rTreeDebug;
     private ElementToElementsTreeMap<Node, Way> nodeToHighWay;
-    private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private DijkstraSP dijkstra;
     private ArrayList<Element> currentDijkstraRoute;
     private ArrayList<Node> userAddedPoints;
@@ -34,13 +34,12 @@ public class MapData implements Serializable {
         mapSegment = new ArrayList<>();
     }
 
-    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
         this.rTree = rTree;
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
-        this.nodeToRestriction = nodeToRestriction;
         nodeToHighWay = nodeToWayMap;
-        dijkstra = new DijkstraSP(nodeToHighWay, nodeToRestriction);
+        dijkstra = new DijkstraSP(nodeToHighWay, nodeToRestriction, wayToRestriction);
         currentDijkstraRoute = new ArrayList<>();
         userAddedPoints = new ArrayList<>();
 
@@ -59,9 +58,8 @@ public class MapData implements Serializable {
         closetRoadTree.buildTree();
     }
 
-
-    public void searchInData(CanvasBounds bounds) {
-        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug);
+    public void searchInData(CanvasBounds bounds, int zoomLevel) {
+        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug, zoomLevel);
     }
 
     public void setRTreeDebug(boolean selected) {
@@ -104,7 +102,7 @@ public class MapData implements Serializable {
         return nearestRoadNode;
     }
 
-    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
+    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) throws NoNavigationResultException {
         ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
         currentDijkstraRoute = new ArrayList<>();
         if(path.size() > 0) {
@@ -121,6 +119,14 @@ public class MapData implements Serializable {
             currentDijkstraRoute.add(start);
             currentDijkstraRoute.add(end);
         }
+    }
+
+    public double getDistanceNav() throws NoNavigationResultException {
+        return dijkstra.getTotalDistance();
+    }
+
+    public double getTimeNav() throws NoNavigationResultException {
+        return dijkstra.getTotalTime();
     }
 
     public void addToUserPointList(Node toAdd){
@@ -151,6 +157,7 @@ public class MapData implements Serializable {
     public Node getAddressNode(String address) {
         return addressTree.getAddressNode(address);
     }
+
     public String getTextFromElement(Element element){
         String result = elementToText.get(element);
         return result;
@@ -190,6 +197,4 @@ public class MapData implements Serializable {
     public void setMaxY(float maxY) {
         this.maxY = maxY;
     }
-
-
 }

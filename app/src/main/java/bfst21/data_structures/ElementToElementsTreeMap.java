@@ -27,8 +27,6 @@ public class ElementToElementsTreeMap<Key extends Element,Value extends Element>
 
         if (result != null) {
             newWays.addAll(result);
-            //result.add(way);
-            //map.put(n.getId(), result);
         }
     }
 
@@ -38,7 +36,7 @@ public class ElementToElementsTreeMap<Key extends Element,Value extends Element>
         }
     }
 
-    public ArrayList<Value> getWaysFromNode(Key key){
+    public ArrayList<Value> getElementsFromNode(Key key){
         return map.get(key.getId());
     }
 
