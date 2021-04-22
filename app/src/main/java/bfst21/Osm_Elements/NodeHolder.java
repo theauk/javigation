@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class NodeHolder extends Element implements Serializable {
-    @Serial private static final long serialVersionUID = 4506251123911227447L;
+    @Serial
+    private static final long serialVersionUID = 4506251123911227447L;
 
     protected List<Node> nodes = new ArrayList<>();
 
@@ -16,7 +17,7 @@ public abstract class NodeHolder extends Element implements Serializable {
         super(id);
     }
 
-    public NodeHolder(){
+    public NodeHolder() {
 
     }
 

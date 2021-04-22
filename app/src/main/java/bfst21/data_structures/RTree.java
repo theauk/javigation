@@ -3,6 +3,8 @@ package bfst21.data_structures;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
+import bfst21.view.MapCanvas;
+import javafx.geometry.Point2D;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -30,38 +32,39 @@ public class RTree implements Serializable {
     /**
      * Used to create a new coordinate array with the maximum MMB values for a new node. Ensures that the new node's MMB coordinates
      * afterward can be updated correctly.
+     *
      * @return A float array with the min x, max x, min y, and min y coordinates.
      */
     private float[] createNewCoordinateArray() {
         return new float[]{Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY};
     }
 
-    /*public String getNearestRoad(float x, float y) {
-
-    }*/
-
     /**
      * Recursively searches the R-tree by going through the nodes whose minimum bounding box intersects with the search bounds.
      * If debug is selected, elements to visualize the elements' minimum bounding boxes are also created along with a rectangle to visualize the canvas bounds.
-     * @param xMin The minimum x-coordinate of the canvas.
-     * @param xMax The maximum x-coordinate of the canvas.
-     * @param yMin The minimum y-coordinate of the canvas.
-     * @param yMax The maximum y-coordinate of the canvas.
-     * @param debug True if debug mode is selected. Otherwise, false.
+     *
+     * @param xMin  The minimum x-coordinate of the canvas.
+     * @param xMax  The maximum x-coordinate of the canvas.
+     * @param yMin  The minimum y-coordinate of the canvas.
+     * @param yMax  The maximum y-coordinate of the canvas.
+     * @param debug True if debug mode is selected. Otherwise, false. // TODO: 4/21/21 fix
      * @return An ArrayList with the Element objects that intersect with the search bounds.
      */
-    public ArrayList<ArrayList<Element>> search(float xMin, float xMax, float yMin, float yMax, boolean debug) {
+    public ArrayList<ArrayList<Element>> search(float xMin, float xMax, float yMin, float yMax, boolean debug, int currentZoomLevel) {
+        Map<String, Byte> zoomMap = MapCanvas.zoomMap;
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
             ArrayList<ArrayList<Element>> results = new ArrayList<>();
-            while(results.size()<=returnListSize){results.add(new ArrayList<>()); }
+            while (results.size() <= returnListSize) {
+                results.add(new ArrayList<>());
+            }
             if (debug) {
                 float change = xMin * 0.0005f;
                 searchCoordinates = new float[]{xMin + change, xMax + (-change), yMin + change, yMax + (-change)};
                 results.get(0).addAll(createDebugCanvasBoundsRectangle(searchCoordinates));
-                searchDebug(searchCoordinates, root, results);
+                searchDebug(searchCoordinates, root, results, currentZoomLevel, zoomMap);
             } else {
-                search(searchCoordinates, root, results);
+                search(searchCoordinates, root, results, currentZoomLevel, zoomMap);
             }
             return results;
         } else {
@@ -69,11 +72,12 @@ public class RTree implements Serializable {
         }
     }
 
-    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
+    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results, int currentZoomLevel, Map<String, Byte> zoomMap) {
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
-                    if (intersects(searchCoordinates, e.getCoordinates())) {
+                    String type = e.getType();
+                    if (zoomMap.get(type) != null && zoomMap.get(type) <= currentZoomLevel && intersects(searchCoordinates, e.getCoordinates())) {
                         int layer = e.getLayer();
                         results.get(layer).add(e);
                     }
@@ -82,17 +86,18 @@ public class RTree implements Serializable {
         } else {
             for (RTreeNode r : node.getChildren()) {
                 if (intersects(searchCoordinates, r.getCoordinates())) {
-                    search(searchCoordinates, r, results);
+                    search(searchCoordinates, r, results, currentZoomLevel, zoomMap);
                 }
             }
         }
     }
 
-    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
+    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results, int currentZoomLevel, Map<String, Byte> zoomMap) { // TODO: 4/21/21 fix if keeping new zoomLevel functionality
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
-                    if (intersects(searchCoordinates, e.getCoordinates())) {
+                    String type = e.getType();
+                    if (zoomMap.get(type) != null && zoomMap.get(type) <= currentZoomLevel && intersects(searchCoordinates, e.getCoordinates())) {
                         int layer = e.getLayer();
                         results.get(layer).addAll(createDebugElementRectangle(e.getCoordinates()));
                         results.get(layer).add(e);
@@ -103,7 +108,7 @@ public class RTree implements Serializable {
             for (RTreeNode r : node.getChildren()) {
                 if (intersects(searchCoordinates, r.getCoordinates())) {
                     //results.add(createDebugRelation(r.getCoordinates())); // TODO: 4/5/21 Decide if the r-tree node' boxes also should be drawn (non-leaf nodes) 
-                    searchDebug(searchCoordinates, r, results);
+                    searchDebug(searchCoordinates, r, results, currentZoomLevel, zoomMap);
                 }
             }
         }
@@ -125,7 +130,7 @@ public class RTree implements Serializable {
     }
 
     private Way createDebugWay(float firstCoordinate, float secondCoordinate, float thirdCoordinate, float fourthCoordinate) {
-        Way w = new Way(0);
+        Way w = new Way();
         w.addNode(new Node(firstCoordinate, secondCoordinate));
         w.addNode(new Node(thirdCoordinate, fourthCoordinate));
         return w;
@@ -155,6 +160,7 @@ public class RTree implements Serializable {
     /**
      * Insert an Element into the R-tree by choosing a leaf, which requires the smallest MMB increase. Afterward, checks if it is necessary to
      * create a new root, split nodes, and adjust MMB coordinates.
+     *
      * @param element The Element object to insert.
      */
     public void insert(Element element) {
@@ -175,8 +181,9 @@ public class RTree implements Serializable {
     /**
      * Recursively chooses a leaf where a new element can be placed. The method finds the child whose MMB requires the least increase
      * if the new element is inserted.
+     *
      * @param element The Element object to insert.
-     * @param node The current node whose children should be checked.
+     * @param node    The current node whose children should be checked.
      * @return RTreeNode which is a leaf where the new element can be placed.
      */
     private RTreeNode chooseLeaf(Element element, RTreeNode node) {
@@ -196,6 +203,7 @@ public class RTree implements Serializable {
 
     /**
      * Checks if a node has more elements than the maximum allowed. If yes, the node is split and the tree is adjusted.
+     *
      * @param node The Node object to check for overflow.
      */
     private void checkOverflow(RTreeNode node) {
@@ -212,7 +220,8 @@ public class RTree implements Serializable {
 
     /**
      * Recursively adjusts RTreeNode(s) to ensure that MMBs have the right coordinates and a new root is created if necessary.
-     * @param firstNode The first node to adjust.
+     *
+     * @param firstNode  The first node to adjust.
      * @param secondNode The second node to adjust. Might be null if it is only the root or a single node that should be adjusted.
      */
     private void adjustTree(RTreeNode firstNode, RTreeNode secondNode) {
@@ -233,7 +242,8 @@ public class RTree implements Serializable {
 
     /**
      * Creates a new root for two nodes and thus grows the R-tree's height by one.
-     * @param firstNode The first RTreeNode.
+     *
+     * @param firstNode  The first RTreeNode.
      * @param secondNode The second RTreeNode.
      */
     private void createNewRoot(RTreeNode firstNode, RTreeNode secondNode) {
@@ -246,6 +256,7 @@ public class RTree implements Serializable {
 
     /**
      * Updates a node's MMB coordinates to ensure that all its children's coordinates are included.
+     *
      * @param node The RtreeNode whose coordinates should be updated.
      */
     private void updateNodeMMBCoordinates(RTreeNode node) {
@@ -266,6 +277,7 @@ public class RTree implements Serializable {
     /**
      * Splits a node's children by first shuffling the children ArrayList and then inserting them into two new nodes.
      * The method reuses the old node by removing its children and inserting the new ones. The other children are inserted into a new node.
+     *
      * @param node The RTreeNode that needs to be split.
      * @return An array with the two new RTree nodes.
      */
@@ -303,6 +315,7 @@ public class RTree implements Serializable {
     /**
      * Splits a node by finding the two children nodes who if put together would create the biggest MMB.
      * Then the rest of the elements are distributed based on which assignment would lead to the smallest MMB increase.
+     *
      * @param node The RTreeNode to split.
      * @return An array with the two new RTree nodes.
      */
@@ -323,6 +336,7 @@ public class RTree implements Serializable {
 
     /**
      * Determines the two nodes, which if put in the same node would lead to the biggest MMB.
+     *
      * @param elementsToSplit An ArrayList with RTreeNodes that should be split.
      * @return The indices of the nodes that would create the biggest MMB.
      */
@@ -345,9 +359,10 @@ public class RTree implements Serializable {
 
     /**
      * Remove elements based on their indices from the list of elements.
+     *
      * @param elementsToSplit An ArrayList with the RTreeNodes that need to be split.
-     * @param index1 The first index to remove an RTreeNode from.
-     * @param index2 The second index to remove an RTreeNode from.
+     * @param index1          The first index to remove an RTreeNode from.
+     * @param index2          The second index to remove an RTreeNode from.
      */
     private void removeElementsFromElementsToSplit(ArrayList<RTreeNode> elementsToSplit, int index1, int index2) {
         if (index1 < index2) {
@@ -362,9 +377,10 @@ public class RTree implements Serializable {
     /**
      * Update two nodes by removing children and updating with the new children.
      * The parent of the new node is also updated to match the other node.
-     * @param node The first node to assign children to. The node is reused and thus has its old children removed.
-     * @param newNode The new node to assign children to.
-     * @param elementForNode The children for the first node.
+     *
+     * @param node              The first node to assign children to. The node is reused and thus has its old children removed.
+     * @param newNode           The new node to assign children to.
+     * @param elementForNode    The children for the first node.
      * @param elementForNewNode The children for the second node.
      */
     private void updateNodes(RTreeNode node, RTreeNode newNode, RTreeNode elementForNode, RTreeNode elementForNewNode) {
@@ -378,9 +394,10 @@ public class RTree implements Serializable {
     /**
      * Distributes the remaining elements. If one of the nodes needs the rest of the elements to have the minimum number of elements,
      * the elements are assigned to it. Otherwise, the elements are assigned based on which assignment would create the smallest MMB.
+     *
      * @param elementsToSplit An ArrayList of RTreeNodes to split.
-     * @param node The first node to assign elements to.
-     * @param newNode The second node to assign elements to.
+     * @param node            The first node to assign elements to.
+     * @param newNode         The second node to assign elements to.
      */
     private void distributeNodesQuadraticCost(ArrayList<RTreeNode> elementsToSplit, RTreeNode node, RTreeNode newNode) {
         if (tooFewEntries(node.getChildren().size(), elementsToSplit.size())) {
@@ -398,8 +415,9 @@ public class RTree implements Serializable {
     /**
      * Checks if an element has less than the minimum children amount and if there are not more elements left than the number
      * required to reach the minimum number of elements.
+     *
      * @param numberOfChildren The number of children in a node.
-     * @param elementsLeft The number of elements left to split.
+     * @param elementsLeft     The number of elements left to split.
      * @return True, if the rest of the elements should be inserted into the node. Otherwise, false.
      */
     private boolean tooFewEntries(int numberOfChildren, int elementsLeft) {
@@ -410,9 +428,10 @@ public class RTree implements Serializable {
      * Picks the next node to assign an element to. Finds the requires MMB increase if an element is inserted into the two nodes.
      * This is repeated for all the nodes and the element with the greatest difference between the two MMb increases are chosen
      * and assigned to the node requiring the smallest MMB increase.
+     *
      * @param elementsToSplit An ArrayList with RTreeNodes to split.
-     * @param node1 The first RTreeNode, which the elements can be placed in.
-     * @param node2 The second RTreeNode, which the elements can be placed in.
+     * @param node1           The first RTreeNode, which the elements can be placed in.
+     * @param node2           The second RTreeNode, which the elements can be placed in.
      * @return An array with the two input nodes with updated children.
      */
     private RTreeNode[] pickNext(ArrayList<RTreeNode> elementsToSplit, RTreeNode node1, RTreeNode node2) {
@@ -445,6 +464,7 @@ public class RTree implements Serializable {
      * Resolves a tie where inserting an element would require the same MMB increase.
      * Choose the node with the smallest MMB area. If they have the same, choose the one with the smallest number of entries.
      * Otherwise, assign to the first node.
+     *
      * @param node1 The first RTreeNode.
      * @param node2 The second RTreeNode.
      * @return The RTreeNode where the element should be inserted.
@@ -477,6 +497,7 @@ public class RTree implements Serializable {
      * and the leftmost right side is the greatest. The method checks all dimensions and the normalized distance is
      * found by dividing by the length of the entire set on that dimension. Afterward, the rest of the nodes are
      * distributed.
+     *
      * @param node The RTreeNode to split.
      * @return An array with two RTreeNodes with updated children.
      */
@@ -526,8 +547,9 @@ public class RTree implements Serializable {
 
     /**
      * Distributes the rest of the nodes to split by going through the list and either assigning them to the first or the second node-
-     * @param node The node that can be reused.
-     * @param furthestPair The indices of the pair of elements that are furthest from each other.
+     *
+     * @param node            The node that can be reused.
+     * @param furthestPair    The indices of the pair of elements that are furthest from each other.
      * @param elementsToSplit An ArrayList with the RTreeNodes to split.
      * @return An array with two RTreeNodes and their updated children-
      */
@@ -548,6 +570,7 @@ public class RTree implements Serializable {
 
     /**
      * Get the area of a MMB.
+     *
      * @param coordinates The MMB's coordinates.
      * @return The area as a float.
      */
@@ -561,6 +584,7 @@ public class RTree implements Serializable {
 
     /**
      * Determines the updated MMB area if an element is inserted into a different element.
+     *
      * @param coordinatesFirstNode The coordinates of the first element.
      * @param coordinateSecondNode The coordinates of the second element.
      * @return The new area as a float.
@@ -577,7 +601,8 @@ public class RTree implements Serializable {
 
     /**
      * Finds the area difference between two MMB.
-     * @param firstCoordinates The first coordinates.
+     *
+     * @param firstCoordinates  The first coordinates.
      * @param secondCoordinates The second coordinates.
      * @return The area difference as a float.
      */
@@ -641,5 +666,156 @@ public class RTree implements Serializable {
         currentResult.add(timeElapsed);
 
         splitInsertResults.add(currentResult);
+    }
+
+    // TODO: 4/21/21 move name to nodeholder to avoid cast
+    // TODO: 4/22/21  get rid of [] part and use element coor immediately
+    /*public Way getNearestRoad(float x, float y) {
+        // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
+
+        PriorityQueue<PriorityQueueEntry> pq = new PriorityQueue<>();
+        pq.add(new PriorityQueueEntry(true, false, root, null, 0));
+
+        while (!pq.isEmpty()) {
+            PriorityQueueEntry entry = pq.poll();
+
+            if (!entry.isRTreeNode || entry.isBoundingRectangle) {
+                if (entry.isBoundingRectangle && !pq.isEmpty() && distanceToElement(x, y, (Way) entry.element) > pq.peek().distance) {
+                    pq.add(new PriorityQueueEntry(false, false, null, entry.element, minDistMBB(x, y, entry.element.getCoordinates())));
+                } else {
+                    return (Way) entry.element;
+                }
+            } else if (entry.rTreeNode.isLeaf()) {
+                for (RTreeNode n : entry.rTreeNode.getChildren()) {
+                    for (Element e : n.getElementEntries()) {
+                        if (e instanceof Way) {
+                            Way w = (Way) e;
+                            if (w.isHighWay() && w.hasName()) { // TODO: 4/22/21 highway?
+                                ArrayList<Way> segments = createWaySegments(w);
+                                for (Way segment : segments) {
+                                    pq.add(new PriorityQueueEntry(false, true, null, e, distanceToElement(x, y, segment)));
+                                    if (segment.getName().equals("Svendborgmotorvejen")) {
+                                        System.out.println("");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (RTreeNode node : entry.rTreeNode.getChildren()) {
+                    pq.add(new PriorityQueueEntry(true, false, node, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
+                }
+            }
+        }
+        return null;
+    }*/
+
+    // TODO: 4/21/21 move name to nodeholder to avoid cast
+    // TODO: 4/22/21  get rid of [] part and use element coor immediately
+    public Way getNearestRoad(float x, float y) {
+        // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
+        //System.out.println(x + " " + y);
+        //x = 10.526522f;
+        //y = -98.54738f;
+        PriorityQueue<PriorityQueueEntry> pq = new PriorityQueue<>();
+        pq.add(new PriorityQueueEntry(true, root, null, 0));
+
+        while (!pq.isEmpty()) {
+            PriorityQueueEntry entry = pq.poll();
+
+            if (!entry.isRTreeNode) {
+                //System.out.println("");
+                while (entry.element == pq.peek().element) {
+                    pq.poll();
+                }
+                /*PriorityQueueEntry another = pq.poll();
+                double diAnother = another.distance;
+                double entryDi = entry.distance;
+                //System.out.println(entryDi < diAnother);
+
+                return (Way) entry.element;*/
+                Way way = (Way) entry.element;
+                if (!pq.isEmpty() && distanceToElement(x, y, way) > pq.peek().distance) {
+                    pq.add(new PriorityQueueEntry(false, null, entry.element, distanceToElement(x, y, way)));
+                } else {
+                    return way;
+                }
+            } else if (entry.rTreeNode.isLeaf()) {
+                for (RTreeNode n : entry.rTreeNode.getChildren()) {
+                    for (Element e : n.getElementEntries()) {
+                        if (e instanceof Way) {
+                            Way w = (Way) e;
+                            if (w.isHighWay() && w.hasName()) {
+                                ArrayList<Way> segments = createWaySegments(w);
+                                for (Way segment : segments) {
+                                    //if (distanceToElement(x, y, segment) >= minDistMBB(x, y, n.getCoordinates())) { // TODO: 4/22/21 ???
+                                        pq.add(new PriorityQueueEntry(false, null, segment, distanceToElement(x, y, segment)));
+                                    //}
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (RTreeNode node : entry.rTreeNode.getChildren()) {
+                    pq.add(new PriorityQueueEntry(true, node, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
+                }
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Way> createWaySegments(Way w) {
+        ArrayList<Way> segments = new ArrayList<>();
+        for (int i = 0; i < w.getNodes().size() - 1; i++) {
+            Way segment = new Way();
+            segment.setAsHighWay();
+            segment.setName(w.getName());
+            segment.addNode(w.getNodes().get(i));
+            segment.addNode(w.getNodes().get(i + 1));
+            segments.add(segment);
+        }
+        return segments;
+    }
+
+    public double distanceToElement(float queryX, float queryY, Way way) {
+        List<Node> nodes = way.getNodes();
+
+        Point2D firstNode = new Point2D(nodes.get(0).getxMin(), nodes.get(0).getyMin());
+        Point2D lastNode = new Point2D(nodes.get(nodes.size() - 1).getxMin(), nodes.get(nodes.size() - 1).getyMin());
+
+        double numerator = Math.abs(((lastNode.getX() - firstNode.getX()) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
+        double denominator = Math.sqrt(Math.pow(lastNode.getX() - firstNode.getX(), 2) + Math.pow(lastNode.getY() - firstNode.getY(), 2));
+
+        return numerator / denominator;
+    }
+
+    public double minDistMBB(float queryX, float queryY, float[] coor) {
+        double dx = Math.max(coor[0] - queryX, Math.max(0f, queryX - coor[1]));
+        double dy = Math.max(coor[2] - queryY, Math.max(0, queryY - coor[3]));
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    private class PriorityQueueEntry implements Comparable<PriorityQueueEntry> {
+        private boolean isRTreeNode;
+        private boolean isBoundingRectangle;
+        private RTreeNode rTreeNode;
+        private Element element;
+        private double distance;
+
+        //public PriorityQueueEntry(boolean isRTreeNode, boolean isBoundingRectangle, RTreeNode rTreeNode, Element element, double distance) {
+        public PriorityQueueEntry(boolean isRTreeNode, RTreeNode rTreeNode, Element element, double distance) {
+            this.isRTreeNode = isRTreeNode;
+            //this.isBoundingRectangle = isBoundingRectangle;
+            this.rTreeNode = rTreeNode;
+            this.element = element;
+            this.distance = distance;
+        }
+
+        @Override
+        public int compareTo(PriorityQueueEntry e) {
+            return Double.compare(distance, e.distance);
+        }
     }
 }

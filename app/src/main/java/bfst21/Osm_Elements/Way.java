@@ -6,11 +6,13 @@ import java.io.Serial;
 import java.io.Serializable;
 
 public class Way extends NodeHolder implements Serializable {
-    @Serial private static final long serialVersionUID = 8806015478559051293L;
+    @Serial
+    private static final long serialVersionUID = 8806015478559051293L;
 
     private String name;
     private int maxSpeed;
     private boolean onewayRoad = false;
+    private boolean onewayBikeRoad = false;
     private boolean isDriveable = true;
     private boolean isCycleable = true;
     private boolean isWalkable = true;
@@ -55,6 +57,10 @@ public class Way extends NodeHolder implements Serializable {
         return name != null;
     }
 
+    public void setAsHighWay() {
+        isHighway = true;
+    }
+
     public void setNotCycleable() {
         this.isCycleable = false;
     }
@@ -69,6 +75,10 @@ public class Way extends NodeHolder implements Serializable {
 
     public void setOnewayRoad() {
         onewayRoad = true;
+    }
+
+    public void setOnewayBikeRoad() {
+        onewayBikeRoad = true;
     }
 
     public int getMaxSpeed() {
@@ -111,10 +121,22 @@ public class Way extends NodeHolder implements Serializable {
         return onewayRoad;
     }
 
+    public boolean isOneWayForBikes() {
+        if (onewayBikeRoad) {
+            return true;
+        } else if (onewayRoad && type.equals("cycleway")) {
+            return true;
+        } else if (type.equals("roundabout")) {
+            return true;
+        } else {
+            return onewayRoad;
+        }
+    }
+
     @Override
     public void draw(GraphicsContext gc) {
         //TODO Should check for one way.....
-       super.draw(gc);
+        super.draw(gc);
     }
 
 }

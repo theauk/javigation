@@ -20,21 +20,27 @@ class RTreeTest {
         rTree = new RTree(1, 2, 4,1);
 
         w1 = new Way(1);
-        Node n1 = new Node(1, -1, 2);
-        //Node n2 = new Node(2, 3, 4);
+        Node n1 = new Node(1, 2, 3.5f);
+        Node n2 = new Node(2, 4, 3.5f);
+        Node n3 = new Node(3, 4, 2);
         w1.addNode(n1);
-        //w1.addNode(n2);
+        w1.addNode(n2);
+        w1.addNode(n3);
+        w1.setAsHighWay();
+        w1.setName("w1");
 
         w2 = new Way(2);
-        Node n3 = new Node(3, 6, 4);
-        //Node n4 = new Node(4, 12, 1);
-        w2.addNode(n3);
-        //w2.addNode(n4);
+        Node n4 = new Node(4, 1.5f, 3);
+        Node n5 = new Node(5, 4, 1);
+        w2.addNode(n4);
+        w2.addNode(n5);
+        w2.setAsHighWay();
+        w2.setName("w2");
 
         w3 = new Way(3);
-        Node n5 = new Node(5, 3, 1);
+        Node n55 = new Node(5, 3, 1);
         //Node n6 = new Node(6, 9, 4);
-        w3.addNode(n5);
+        w3.addNode(n55);
         //w3.addNode(n6);
 
         w4 = new Way(4);
@@ -61,6 +67,14 @@ class RTreeTest {
         w7.addNode(n13);
         //w7.addNode(n12);
 
+    }
+
+    @Test
+    void name() {
+        rTree.insert(w1);
+        rTree.insert(w2);
+        Way w = rTree.getNearestRoad(3, 2.5f);
+        System.out.println(w.getName());
     }
 
     @Test

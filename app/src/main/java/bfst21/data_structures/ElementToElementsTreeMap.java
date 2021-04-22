@@ -2,8 +2,6 @@ package bfst21.data_structures;
 
 
 import bfst21.Osm_Elements.Element;
-import bfst21.Osm_Elements.Node;
-import bfst21.Osm_Elements.Way;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -11,8 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-public class ElementToElementsTreeMap<Key extends Element,Value extends Element> implements Serializable {
-    @Serial private static final long serialVersionUID = 7599232655577398280L;
+public class ElementToElementsTreeMap<Key extends Element, Value extends Element> implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 7599232655577398280L;
 
     private TreeMap<Long, ArrayList<Value>> map;
 
@@ -27,20 +26,16 @@ public class ElementToElementsTreeMap<Key extends Element,Value extends Element>
 
         if (result != null) {
             newWays.addAll(result);
-            //result.add(way);
-            //map.put(n.getId(), result);
         }
     }
 
     public void putAll(List<Key> keys, Value val) {
-        for(Key key: keys){
-            put(key,val);
+        for (Key key : keys) {
+            put(key, val);
         }
     }
 
-    public ArrayList<Value> getWaysFromNode(Key key){
+    public ArrayList<Value> getElementsFromNode(Key key) {
         return map.get(key.getId());
     }
-
-
 }

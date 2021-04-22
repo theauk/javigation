@@ -19,10 +19,9 @@ public class Relation extends NodeHolder implements Serializable {
     private ArrayList<Way> innerWays;
     private ArrayList<Way> outerWays;
 
-
     private String restriction;
-    private Way to, from;
-    private Node via;
+    private Way to, from, viaWay;
+    private Node viaNode;
 
     public Way getTo() {
         return to;
@@ -40,12 +39,20 @@ public class Relation extends NodeHolder implements Serializable {
         this.from = from;
     }
 
-    public Node getVia() {
-        return via;
+    public Node getViaNode() {
+        return viaNode;
     }
 
-    public void setVia(Node via) {
-        this.via = via;
+    public Way getViaWay() {
+        return viaWay;
+    }
+
+    public void setViaNode(Node viaNode) {
+        this.viaNode = viaNode;
+    }
+
+    public void setViaWay(Way viaWay) {
+        this.viaWay = viaWay;
     }
 
     public Relation(long id) {
@@ -90,6 +97,10 @@ public class Relation extends NodeHolder implements Serializable {
 
     public void setRestriction(String restriction) {
         this.restriction = restriction;
+    }
+
+    public String getRestriction() {
+        return restriction;
     }
 
     @Override
@@ -170,7 +181,4 @@ public class Relation extends NodeHolder implements Serializable {
         merged.nodes.addAll(second.nodes.subList(1, second.nodes.size()));
         return merged;
     }
-
-
-
 }

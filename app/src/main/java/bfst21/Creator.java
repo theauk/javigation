@@ -25,9 +25,10 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
  * Creates a complete MapData object containing Nodes, Ways and Relations from an InputStream containing either a .osm file or a binary {@link MapData}.
  */
 public class Creator extends Task<MapData> {
-    private MapData mapData;
     private final ProgressInputStream progressInputStream;
-
+    private final boolean[] touched = new boolean[3];
+    private final boolean binary;
+    private MapData mapData;
     private HashSet<String> nodesNotCreateKeys;
     private HashSet<String> nodesNotCreateValues;
     private String city, streetName, houseNumber, name;
@@ -37,10 +38,7 @@ public class Creator extends Task<MapData> {
     private HashMap<String, Integer> typeToLayer;
     private Relation coastLines;
     private HashMap<Element, String> elementToText;
-
     private boolean isFoot = false; // TODO: 4/15/21 is there a better way?
-    private final boolean[] touched = new boolean[3];
-    private final boolean binary;
 
     public Creator(InputStream inputStream, long fileSize, boolean binary) {
         mapData = new MapData();
@@ -65,7 +63,7 @@ public class Creator extends Task<MapData> {
 
     @Override
     protected MapData call() throws Exception {
-        if(!binary) createMapData();
+        if (!binary) createMapData();
         else createBinaryMapData();
 
         return mapData;
@@ -74,7 +72,7 @@ public class Creator extends Task<MapData> {
     /**
      * Creates a MapData object from a binary MapData file.
      *
-     * @throws IOException if the file is not found or the process is interrupted.
+     * @throws IOException            if the file is not found or the process is interrupted.
      * @throws ClassNotFoundException if the serialized object recreation process can't find the corresponding class.
      */
     private void createBinaryMapData() throws IOException, ClassNotFoundException {
@@ -98,8 +96,9 @@ public class Creator extends Task<MapData> {
         KDTree<Node> highWayRoadNodes = new KDTree<>(2, 4);
         RTree rTree = new RTree(1, 30, 4, topLayer);
         AddressTriesTree addressTree = new AddressTriesTree();
-        ElementToElementsTreeMap<Node,Way> nodeToWayMap = new ElementToElementsTreeMap<>();
+        ElementToElementsTreeMap<Node, Way> nodeToWayMap = new ElementToElementsTreeMap<>();
         ElementToElementsTreeMap<Node, Relation> nodeToRestriction = new ElementToElementsTreeMap<>();
+        ElementToElementsTreeMap<Way, Relation> wayToRestriction = new ElementToElementsTreeMap<>();
 
         while (reader.hasNext()) {
             if (isCancelled()) return;   //Abort task
@@ -197,17 +196,17 @@ public class Creator extends Task<MapData> {
                                         if (role.equals("inner")) {
                                             relation.addInnerOuterWay(idToWay.get(refR), true);
                                         }
-                                        if (role.equals("to")){
+                                        if (role.equals("to")) {
                                             relation.setTo(idToWay.get(refR));
                                         }
-                                        if (role.equals("from")){
+                                        if (role.equals("from")) {
                                             relation.setFrom(idToWay.get(refR));
                                         }
 
                                     }
-                                    if (role.equals("via")){
-                                        relation.setVia(idToNode.get(refR));
-                                        // TODO: 15-04-2021 Restrictions via kan be ways
+                                    if (role.equals("via")) {
+                                        if (idToNode.get(refR) != null) relation.setViaNode(idToNode.get(refR));
+                                        else if (idToWay.get(refR) != null) relation.setViaWay(idToWay.get(refR));
                                     }
                                 }
                                 break;
@@ -222,7 +221,7 @@ public class Creator extends Task<MapData> {
                                         node.setLayer(topLayer);
                                         nullifyAddress();
                                     } else {
-                                        if(node.hasType()) rTree.insert(node);
+                                        if (node.hasType()) rTree.insert(node);
                                         idToNode.put(node);
                                     }
                                     node = null;
@@ -236,7 +235,7 @@ public class Creator extends Task<MapData> {
                                         rTree.insert(way);
 
                                     }
-                                    if(way.isHighWay()) {
+                                    if (way.isHighWay()) {
                                         nodeToWayMap.putAll(way.getNodes(), way);
                                         if (way.hasName()) {
                                             highWayRoadNodes.addAll(way.getNodes());
@@ -249,9 +248,12 @@ public class Creator extends Task<MapData> {
                             case "relation":
                                 if (relation != null) {
                                     if (relation.hasType()) {
-                                        if (relation.getType().equals("restriction") ) {
+                                        if (relation.getType().equals("restriction")) {
                                             // TODO: 14-04-2021 needs be bettter plz plzx plz
-                                           if(relation.getVia() != null) nodeToRestriction.put(relation.getVia(), relation);
+                                            if (relation.getViaNode() != null)
+                                                nodeToRestriction.put(relation.getViaNode(), relation);
+                                            else if (relation.getViaWay() != null)
+                                                wayToRestriction.put(relation.getViaWay(), relation);
                                         } else {
                                             rTree.insert(relation);
                                         }
@@ -268,7 +270,7 @@ public class Creator extends Task<MapData> {
         mapData.setCoastlines(coastLines);
         mapData.setElementToText(elementToText);
         updateMessage("Finalizing...");
-        mapData.addDataTrees(highWayRoadNodes, rTree, nodeToRestriction, addressTree, nodeToWayMap);
+        mapData.addDataTrees(highWayRoadNodes, rTree, nodeToRestriction, wayToRestriction, addressTree, nodeToWayMap);
         reader.close();
     }
 
@@ -284,34 +286,34 @@ public class Creator extends Task<MapData> {
                 break;
             case "bridge":
             case "building":
-                relation.setType((k),typeToLayer.get(k));
+                relation.setType((k), typeToLayer.get(k));
                 break;
             case "type":
                 if (v.equals("multipolygon")) relation.setIsMultiPolygon();
                 break;
             case "natural":
                 if (v.equals("water")) {
-                    relation.setType((v),typeToLayer.get(v));
+                    relation.setType((v), typeToLayer.get(v));
                     break;
                 }
                 if (v.equals("scrub")) {
-                    relation.setType(("dark_green"),typeToLayer.get("dark_green"));
+                    relation.setType(("dark_green"), typeToLayer.get("dark_green"));
                     break;
                 }
                 break;
             case "leisure":
                 if (v.equals("park")) {
-                    relation.setType((v),typeToLayer.get(v));
+                    relation.setType((v), typeToLayer.get(v));
                 }
                 break;
 
             case "landuse":
                 if (v.equals("recreation_ground")) {
-                    relation.setType(("light_green"),typeToLayer.get("light_green"));
+                    relation.setType(("light_green"), typeToLayer.get("light_green"));
                     break;
                 }
                 if (v.equals("grass")) {
-                    relation.setType(("park"),typeToLayer.get("park"));
+                    relation.setType(("park"), typeToLayer.get("park"));
                     break;
                 }
                 break;
@@ -322,7 +324,7 @@ public class Creator extends Task<MapData> {
         switch (k) {
             case "natural":
                 if (v.equals("water") || v.equals("wetland")) {
-                    way.setType((v),typeToLayer.get(v));
+                    way.setType((v), typeToLayer.get(v));
                     break;
                 }
                 if (v.equals("coastline")) {
@@ -331,7 +333,7 @@ public class Creator extends Task<MapData> {
                     break;
                 }
                 if (v.equals("scrub") || v.equals("wood")) {
-                    way.setType(("dark_green"),typeToLayer.get("dark_green"));
+                    way.setType(("dark_green"), typeToLayer.get("dark_green"));
                     break;
                 }
                 break;
@@ -341,7 +343,7 @@ public class Creator extends Task<MapData> {
                 break;
 
             case "man_made":
-                if(v.equals("pier") || v.equals("bridge")) {
+                if (v.equals("pier") || v.equals("bridge")) {
                     way.setType(k, typeToLayer.get(k));
                     break;
                 }
@@ -349,7 +351,7 @@ public class Creator extends Task<MapData> {
                 break;
 
             case "leisure":
-                if (v.equals("park") || v.equals("garden")|| v.equals("playground")) {
+                if (v.equals("park") || v.equals("garden") || v.equals("playground")) {
                     way.setType("park", typeToLayer.get("park"));
                     break;
                 }
@@ -357,11 +359,11 @@ public class Creator extends Task<MapData> {
 
             case "landuse":
                 if (v.equals("forest")) {
-                    way.setType(("dark_green"),typeToLayer.get("dark_green"));
+                    way.setType(("dark_green"), typeToLayer.get("dark_green"));
                     break;
                 }
-                if (v.equals("grass")|| v.equals("meadow")) {
-                    way.setType(("park"),typeToLayer.get("park"));
+                if (v.equals("grass") || v.equals("meadow")) {
+                    way.setType(("park"), typeToLayer.get("park"));
                     break;
                 }
                 if (v.equals("farmland")) {
@@ -370,7 +372,7 @@ public class Creator extends Task<MapData> {
                 }
                 break;
             case "amenity":
-                if(v.equals("parking")){
+                if (v.equals("parking")) {
                     way.setType("asphalt", typeToLayer.get("asphalt"));
                 }
                 break;
@@ -391,6 +393,11 @@ public class Creator extends Task<MapData> {
             case "oneway":
                 if (v.equals("yes")) way.setOnewayRoad();
                 break;
+
+            case "oneway:bicycle":
+                if (v.equals("yes")) way.setOnewayBikeRoad();
+                break;
+
             case "cycleway":
                 if (v.equals("no")) way.setNotCycleable();
                 break;
@@ -433,7 +440,7 @@ public class Creator extends Task<MapData> {
 
     private void checkAddressNode(String k, String v, Node node) {
         switch (k) {
-            case "addr:city" :
+            case "addr:city":
                 city = v;
                 break;
             case "addr:housenumber":
@@ -609,21 +616,21 @@ public class Creator extends Task<MapData> {
     }
 
     private void setUpTypeToLayer() {
-        typeToLayer.put("water",bottomLayer);
-        typeToLayer.put("light_green",bottomLayer);
+        typeToLayer.put("water", bottomLayer);
+        typeToLayer.put("light_green", bottomLayer);
 
-        typeToLayer.put("park",layerTwo);
-        typeToLayer.put("wetland",layerTwo);
-        typeToLayer.put("man_made",layerTwo);
-        typeToLayer.put("farmland",layerTwo);
-        typeToLayer.put("asphalt",layerTwo);
+        typeToLayer.put("park", layerTwo);
+        typeToLayer.put("wetland", layerTwo);
+        typeToLayer.put("man_made", layerTwo);
+        typeToLayer.put("farmland", layerTwo);
+        typeToLayer.put("asphalt", layerTwo);
 
-        typeToLayer.put("dark_green",layerThree);
-        typeToLayer.put("bridge",layerThree);
-        typeToLayer.put("building",layerThree);
+        typeToLayer.put("dark_green", layerThree);
+        typeToLayer.put("bridge", layerThree);
+        typeToLayer.put("building", layerThree);
 
-        typeToLayer.put("coastline",layerFour);
+        typeToLayer.put("coastline", layerFour);
 
-        typeToLayer.put("text",topLayer);
+        typeToLayer.put("text", topLayer);
     }
 }

@@ -6,14 +6,11 @@ import javafx.geometry.Point2D;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
 import java.util.*;
 
 public class KDTree<Value extends Element> implements Serializable {
-    @Serial private static final long serialVersionUID = 2546489468741939125L;
+    @Serial
+    private static final long serialVersionUID = 2546489468741939125L;
 
     private final transient Comparator<KDTreeNode> comparatorX = new Comparator<KDTreeNode>() {
         @Override
@@ -55,10 +52,12 @@ public class KDTree<Value extends Element> implements Serializable {
     public void addAll(List<Value> nodes) {
         hashList.addAll(nodes);
     }
-    public void buildTree(){
+
+    public void buildTree() {
         for (Value value : hashList) list.add(new KDTreeNode(value));
         buildTree(list, startDim);
     }
+
     private KDTreeNode buildTree(List<KDTreeNode> nodes, int dim) {
         if (nodes.isEmpty()) {
             return null;
@@ -66,7 +65,7 @@ public class KDTree<Value extends Element> implements Serializable {
 
         Comparator<KDTreeNode> comp = getComparatorFromDimension(dim % numCor);
         nodes.sort(comp);
-        if(!noDuplicates){
+        if (!noDuplicates) {
             noDuplicates = true;
         }
 
@@ -184,7 +183,8 @@ public class KDTree<Value extends Element> implements Serializable {
     }
 
     private class KDTreeNode implements Serializable {
-        @Serial private static final long serialVersionUID = -6786678243546431229L;
+        @Serial
+        private static final long serialVersionUID = -6786678243546431229L;
 
         private Value node;
         private KDTreeNode leftChild;

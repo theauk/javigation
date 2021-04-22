@@ -29,7 +29,7 @@ public class BinarySearchTree<Value extends Element> {
         while (lo + 1 < hi) {
             int mid = (lo + hi) / 2;
 
-            int compare = Long.compare(key,(values.get(mid).getId()));
+            int compare = Long.compare(key, (values.get(mid).getId()));
             if (compare < 0) {
                 hi = mid;
             } else {
