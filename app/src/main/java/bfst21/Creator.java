@@ -4,14 +4,16 @@ import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.*;
-import bfst21.file_reading.ProgressInputStream;
+import bfst21.file_io.ProgressInputStream;
 import javafx.concurrent.Task;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -19,13 +21,12 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /**
- * Creates Objects such as Nodes, Ways and Relations from the .osm file given from the Loader.
+ * Creates a complete MapData object containing Nodes, Ways and Relations from an InputStream containing either a .osm file or a binary {@link MapData}.
  */
 public class Creator extends Task<MapData> {
-    private final boolean[] touched = new boolean[3];
-    private final boolean binary;
     private MapData mapData;
-    private ProgressInputStream progressInputStream;
+    private final ProgressInputStream progressInputStream;
+
     private HashSet<String> nodesNotCreateKeys;
     private HashSet<String> nodesNotCreateValues;
     private String city, streetName, houseNumber;
@@ -35,6 +36,8 @@ public class Creator extends Task<MapData> {
     private HashMap<String, Integer> typeToLayer;
 
     private boolean isFoot = false; // TODO: 4/15/21 is there a better way?
+    private final boolean[] touched = new boolean[3];
+    private final boolean binary;
 
     public Creator(InputStream inputStream, long fileSize, boolean binary) {
         mapData = new MapData();
@@ -56,20 +59,27 @@ public class Creator extends Task<MapData> {
 
     @Override
     protected MapData call() throws Exception {
-        if(!binary) create();
-        else {
-            create();
-            //createBinary();
-        }
+        if(!binary) createMapData();
+        else createBinaryMapData();
 
         return mapData;
     }
 
-    private void createBinary() {
-
+    /**
+     * Creates a MapData object from a binary MapData file.
+     *
+     * @throws IOException if the file is not found or the process is interrupted.
+     * @throws ClassNotFoundException if the serialized object recreation process can't find the corresponding class.
+     */
+    private void createBinaryMapData() throws IOException, ClassNotFoundException {
+        updateMessage("Loading...");
+        ObjectInputStream objectInputStream = new ObjectInputStream(new BufferedInputStream(progressInputStream));
+        mapData = (MapData) objectInputStream.readObject();
+        updateMessage("Finalizing...");
+        objectInputStream.close();
     }
 
-    private void create() throws XMLStreamException {
+    private void createMapData() throws XMLStreamException {
         XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new BufferedInputStream(progressInputStream));
 
         BinarySearchTree<Node> idToNode = new BinarySearchTree<>();
@@ -234,7 +244,7 @@ public class Creator extends Task<MapData> {
                                     if (relation.hasType()) {
                                         if (relation.getType().equals("restriction") ) {
                                             // TODO: 14-04-2021 needs be bettter plz
-                                           if(relation.getVia() != null) nodeToRestriction.put(relation.getVia(), relation);
+                                            if(relation.getVia() != null) nodeToRestriction.put(relation.getVia(), relation);
                                         } else {
                                             rTree.insert(relation);
                                         }
@@ -291,13 +301,12 @@ public class Creator extends Task<MapData> {
                     break;
                 }
                 if (v.equals("grass")) {
-                    relation.setType(("park"),typeToLayer.get("park"));;
+                    relation.setType(("park"),typeToLayer.get("park"));
                     break;
                 }
                 break;
         }
     }
-
 
     private void checkWay(String k, String v, Way way) {
         switch (k) {
@@ -337,7 +346,7 @@ public class Creator extends Task<MapData> {
                     break;
                 }
                 if (v.equals("grass")|| v.equals("meadow")) {
-                    way.setType(("park"),typeToLayer.get("park"));;
+                    way.setType(("park"),typeToLayer.get("park"));
                     break;
                 }
                 if (v.equals("farmland")) {
@@ -567,6 +576,7 @@ public class Creator extends Task<MapData> {
     private boolean checkNodesNotCreate(String k, String v) {
         return nodesNotCreateKeys.contains(k) || nodesNotCreateValues.contains(v);
     }
+
     private void setUpTypeToLayer() {
         typeToLayer.put("water",bottomLayer);
         typeToLayer.put("light_green",bottomLayer);
@@ -582,8 +592,5 @@ public class Creator extends Task<MapData> {
         typeToLayer.put("building",layerThree);
 
         typeToLayer.put("coastline",layerFour);
-
-
     }
-
 }
