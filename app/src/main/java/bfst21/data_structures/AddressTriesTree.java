@@ -20,7 +20,6 @@ public class AddressTriesTree {
     public AddressTriesTree() {
         root = new AddressTrieNode();
         postcodes = new HashMap<>();
-
     }
 
 // TODO: 19-04-2021 A subtrie inside the trie?? or a radix tree for the streetnames???
