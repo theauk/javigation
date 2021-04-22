@@ -8,6 +8,7 @@ name = "Dark Mode";
 
 #Coastline
 "coastline" = {iColor = [48, 60, 73]};
+"coastlines" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 0};
 
 #Navigation
 "navigation" = {iColor = [102, 157, 246], oColor = [29, 106, 212]}, {iWidth = 6, oWidth = 8};
@@ -15,10 +16,10 @@ name = "Dark Mode";
 "end_route_note" = {iColor = [0, 0, 200], oColor = [0, 0, 255]}, {iWidth = 7, oWidth = 9}, {node = true};
 
 #Text
-"city" = {iColor = [255, 255, 255]}, {text = true};
-"town" = {iColor = [255, 255, 255]}, {text = true};
-"village" = {iColor = [255, 255, 255]}, {text = true};
-"hamlet" = {iColor = [255, 255, 255]}, {text = true};
+"city" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 15}, {text = true};
+"town" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 13}, {text = true};
+"village" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 10}, {text = true};
+"hamlet" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 10}, {text = true};
 
 #Roads
 "motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3};

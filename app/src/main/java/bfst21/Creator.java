@@ -431,10 +431,7 @@ public class Creator extends Task<MapData> {
                 if (v.equals("yes")) {
                     isFoot = true;
                 }
-
-            case "turn":
-                //The key turn can be used to specify the direction in which a way or a lane will lead.
-                // TODO: 06-04-2021 could be usefull? unsure
+                break;
         }
     }
 

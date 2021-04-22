@@ -118,12 +118,14 @@ public class MapCanvas extends Canvas {
 
     private void drawText(GraphicsContext gc, Element element, Theme.ThemeElement themeElement){
         String text = mapData.getTextFromElement(element);
-        gc.setTextAlign(TextAlignment.CENTER);
-        Font font = new Font(10/Math.sqrt(trans.determinant()));
-        gc.setFill(themeElement.getColor().getInner());
+        gc.setTextAlign(TextAlignment.LEFT);
+        Font font = new Font(themeElement.getOuterWidth()/Math.sqrt(trans.determinant()));
         gc.setFont(font);
+
+        gc.setFill(themeElement.getColor().getInner());
         gc.fillText(text,element.getxMax(),element.getyMax());
     }
+
 
     private void drawRectangleNode(GraphicsContext gc, Node point) {
         Theme.ThemeElement themeElement = theme.get(point.getType());
