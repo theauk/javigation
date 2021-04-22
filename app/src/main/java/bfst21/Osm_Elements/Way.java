@@ -66,6 +66,10 @@ public class Way extends NodeHolder {
         return name != null;
     }
 
+    public void setAsHighWay() {
+        isHighway = true;
+    }
+
     public void setNotCycleable() {
         this.isCycleable = false;
     }

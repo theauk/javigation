@@ -41,8 +41,8 @@ public class MapData {
     }
 
 
-    public void searchInData(CanvasBounds bounds) {
-        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug);
+    public void searchInData(CanvasBounds bounds, int zoomLevel) {
+        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug, zoomLevel);
     }
 
     public void setRTreeDebug(boolean selected) {
@@ -60,6 +60,14 @@ public class MapData {
         }
         return names;
     }
+
+    /*public String getNearestRoad(float x, float y) { // TODO: 4/22/21 in progress
+        Way way = rTree.getNearestRoad(x, y);
+        if (way.getName() == null) {
+            System.out.println("");
+        }
+        return way.getName();
+    }*/
 
     public String getNodeHighWayNames(Node node) {
         String names = "";

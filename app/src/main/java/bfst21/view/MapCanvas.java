@@ -24,7 +24,7 @@ public class MapCanvas extends Canvas {
     private Theme theme;
     private boolean initialized;
     private byte zoomLevel = MIN_ZOOM_LEVEL;
-    private Map<String, Byte> zoomMap;
+    public static Map<String, Byte> zoomMap;
 
     public void init(MapData mapData, Theme theme) {
         this.mapData = mapData;
@@ -60,7 +60,7 @@ public class MapCanvas extends Canvas {
         int layers = mapData.getMapSegment().size();
         for (int layer = 0; layer < layers; layer++) {
             for (Element element : mapData.getMapSegment().get(layer)) {
-                if (zoomLevel >= getZoomLevelForElement(element.getType())) drawElement(gc, element);
+                drawElement(gc, element);
             }
         }
         if(mapData.getCurrentDijkstraRoute() != null && mapData.getCurrentDijkstraRoute().getNodes().size() > 0){ // TODO: 4/16/21 better place for last part (if no route found)?
@@ -202,7 +202,7 @@ public class MapCanvas extends Canvas {
 
     public void updateMap() {
         setBounds();
-        mapData.searchInData(bounds);
+        mapData.searchInData(bounds, zoomLevel);
         repaint();
     }
 
@@ -284,7 +284,7 @@ public class MapCanvas extends Canvas {
     }
 
     public void rTreeDebugMode() {
-        mapData.searchInData(bounds);
+        mapData.searchInData(bounds, zoomLevel);
         repaint();
     }
 
