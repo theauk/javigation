@@ -31,7 +31,6 @@ import javafx.util.Duration;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 public class Controller {
     private MapData mapData;
@@ -96,6 +95,10 @@ public class Controller {
     @FXML private RadioButton radioButtonWalkNav;
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
+
+    @FXML private ComboBox<String> dropDownPoints;
+    @FXML private TextField textFieldPointName;
+    @FXML private Button addPointButton;
 
     public void init() {
         mapData = new MapData();

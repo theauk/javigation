@@ -1,5 +1,7 @@
 package bfst21.Osm_Elements;
 
+import javafx.scene.canvas.GraphicsContext;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -14,7 +16,6 @@ public class Way extends NodeHolder implements Serializable {
     private boolean isWalkable = true;
     private boolean isHighway = false;
 
-
     public Way(long id) {
         super(id);
         isHighway = false;
@@ -24,8 +25,6 @@ public class Way extends NodeHolder implements Serializable {
         super();
         isHighway = false;
     }
-
-
 
     public void setType(String type, boolean isHighway, boolean foot) {
         super.setType(type);
@@ -92,8 +91,6 @@ public class Way extends NodeHolder implements Serializable {
         this.name = name;
     }
 
-
-
     public boolean isHighWay() {
         return isHighway;
     }
@@ -113,8 +110,6 @@ public class Way extends NodeHolder implements Serializable {
     public boolean isOnewayRoad() {
         return onewayRoad;
     }
-
-
 
     @Override
     public void draw(GraphicsContext gc) {
