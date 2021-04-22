@@ -112,13 +112,7 @@ public class Way extends NodeHolder {
         return onewayRoad;
     }
 
-    public Node first(){
-        return nodes.get(0);
-    }
 
-    public Node last(){
-        return nodes.get(nodes.size()-1);
-    }
 
     @Override
     public void draw(GraphicsContext gc) {

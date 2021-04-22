@@ -21,7 +21,7 @@ name = "Default";
 
 
 #Roads
-"motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
+"motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3}, {showAt = 5};
 "trunk" = {iColor = [249, 178, 156], oColor = [191, 62, 35]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
 "primary" = {iColor = [252, 206, 144], oColor = [154, 105, 8]}, {iWidth = 2, oWidth = 3}, {showAt = 10};
 "secondary" = {iColor = [244, 251, 173], oColor = [105, 121, 0]}, {iWidth = 2, oWidth = 3}, {showAt = 12};

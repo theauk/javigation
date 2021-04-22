@@ -58,8 +58,9 @@ public class MapCanvas extends Canvas {
 
         gc.setFill(theme.get("background").getColor().getInner());
         gc.fillRect(0, 0, getWidth(), getHeight());
-        fillCoastLines(gc);
+
         gc.setTransform(trans);
+        fillCoastLines(gc);
 
         int layers = mapData.getMapSegment().size();
         for (int layer = 0; layer < layers; layer++) {

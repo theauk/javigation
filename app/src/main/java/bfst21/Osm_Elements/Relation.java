@@ -120,9 +120,7 @@ public class Relation extends NodeHolder {
     }
 
     public void mergeWays() {
-        System.out.println("ways before :" + ways.size());
         ways = mergeWays(ways);
-        System.out.println("ways after :" + ways.size());
     }
 
     private ArrayList<Way> mergeWays(ArrayList<Way> toMerge) {
@@ -156,30 +154,6 @@ public class Relation extends NodeHolder {
         return mergedList;
     }
 
-    private ArrayList<Way> mergeWaysTemp(ArrayList<Way> toMerge) {
-        ArrayList<Way> mergedList = new ArrayList<>();
-        for (Way way : toMerge) {
-            if (way.first() == way.last()) {
-                mergedList.add(way);
-            } else {
-
-            }
-
-        }
-        return mergedList;
-    }
-
-
-
-
-
-     private Way mergeTwoWays(Way w1, Way w2){
-        List<Node> list = w2.getNodes();
-        list.remove(1);
-        w1.getNodes().addAll(list);
-        return w1;
-
-     }
 
     private Way merge(Way before, Way coast, Way after) {
         return merge(merge(before, coast), after);
