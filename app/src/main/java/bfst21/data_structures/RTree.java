@@ -154,6 +154,9 @@ public class RTree implements Serializable {
         ways.add(createDebugWay(coordinates[0], coordinates[2], coordinates[0], coordinates[3]));
         ways.add(createDebugWay(coordinates[1], coordinates[2], coordinates[1], coordinates[3]));
         ways.add(createDebugWay(coordinates[0], coordinates[3], coordinates[1], coordinates[3]));
+        for (Way w : ways) {
+            w.setType("residential");
+        }
         return ways;
     }
 
@@ -672,49 +675,6 @@ public class RTree implements Serializable {
     // TODO: 4/22/21  get rid of [] part and use element coor immediately
     /*public Way getNearestRoad(float x, float y) {
         // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
-
-        PriorityQueue<PriorityQueueEntry> pq = new PriorityQueue<>();
-        pq.add(new PriorityQueueEntry(true, false, root, null, 0));
-
-        while (!pq.isEmpty()) {
-            PriorityQueueEntry entry = pq.poll();
-
-            if (!entry.isRTreeNode || entry.isBoundingRectangle) {
-                if (entry.isBoundingRectangle && !pq.isEmpty() && distanceToElement(x, y, (Way) entry.element) > pq.peek().distance) {
-                    pq.add(new PriorityQueueEntry(false, false, null, entry.element, minDistMBB(x, y, entry.element.getCoordinates())));
-                } else {
-                    return (Way) entry.element;
-                }
-            } else if (entry.rTreeNode.isLeaf()) {
-                for (RTreeNode n : entry.rTreeNode.getChildren()) {
-                    for (Element e : n.getElementEntries()) {
-                        if (e instanceof Way) {
-                            Way w = (Way) e;
-                            if (w.isHighWay() && w.hasName()) { // TODO: 4/22/21 highway?
-                                ArrayList<Way> segments = createWaySegments(w);
-                                for (Way segment : segments) {
-                                    pq.add(new PriorityQueueEntry(false, true, null, e, distanceToElement(x, y, segment)));
-                                    if (segment.getName().equals("Svendborgmotorvejen")) {
-                                        System.out.println("");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                for (RTreeNode node : entry.rTreeNode.getChildren()) {
-                    pq.add(new PriorityQueueEntry(true, false, node, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
-                }
-            }
-        }
-        return null;
-    }*/
-
-    // TODO: 4/21/21 move name to nodeholder to avoid cast
-    // TODO: 4/22/21  get rid of [] part and use element coor immediately
-    public Way getNearestRoad(float x, float y) {
-        // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
         //System.out.println(x + " " + y);
         //x = 10.526522f;
         //y = -98.54738f;
@@ -734,7 +694,7 @@ public class RTree implements Serializable {
                 double entryDi = entry.distance;
                 //System.out.println(entryDi < diAnother);
 
-                return (Way) entry.element;*/
+                return (Way) entry.element;/*
                 Way way = (Way) entry.element;
                 if (!pq.isEmpty() && distanceToElement(x, y, way) > pq.peek().distance) {
                     pq.add(new PriorityQueueEntry(false, null, entry.element, distanceToElement(x, y, way)));
@@ -764,6 +724,52 @@ public class RTree implements Serializable {
             }
         }
         return null;
+    }*/
+
+    // TODO: 4/21/21 move name to nodeholder to avoid cast
+    // TODO: 4/22/21  get rid of [] part and use element coor immediately
+    public Way getNearestRoad(float x, float y) {
+        // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
+        //x = 10.530582f;
+        //y = -98.55807f;
+        //test(x, y);
+        //System.out.println(x + " " + y);
+        PriorityQueue<PriorityQueueEntry> pq = new PriorityQueue<>();
+        pq.add(new PriorityQueueEntry(true, false, root, null, 0));
+
+        while (!pq.isEmpty()) {
+            PriorityQueueEntry entry = pq.poll();
+
+            if (!entry.isRTreeNode || entry.isBoundingRectangle) {
+                if (entry.isBoundingRectangle && !pq.isEmpty() && distanceToElement(x, y, (Way) entry.element) > pq.peek().distance) {
+                    pq.add(new PriorityQueueEntry(false, false, null, entry.element, distanceToElement(x, y, (Way) entry.element)));
+                } else {
+                    /*double dis1 = distanceToElement(x, y, (Way) entry.element);
+                    double disbb1 = minDistMBB(x, y, entry.element.getCoordinates());
+                    PriorityQueueEntry entry2 = pq.poll();
+                    double dis2 = distanceToElement(x, y, (Way) entry2.element);
+                    double disbb2 = minDistMBB(x, y, entry2.element.getCoordinates());*/
+
+                    return (Way) entry.element;
+                }
+            } else if (entry.rTreeNode.isLeaf()) {
+                for (RTreeNode n : entry.rTreeNode.getChildren()) {
+                    for (Element e : n.getElementEntries()) {
+                        if (e instanceof Way) {
+                            Way w = (Way) e;
+                            if (w.isHighWay() && w.hasName()) { // TODO: 4/22/21 highway?
+                                pq.add(new PriorityQueueEntry(false, true, null, e, minDistMBB(x, y, e.getCoordinates())));
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (RTreeNode node : entry.rTreeNode.getChildren()) {
+                    pq.add(new PriorityQueueEntry(true, false, node, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
+                }
+            }
+        }
+        return null;
     }
 
     public ArrayList<Way> createWaySegments(Way w) {
@@ -779,20 +785,60 @@ public class RTree implements Serializable {
         return segments;
     }
 
-    public double distanceToElement(float queryX, float queryY, Way way) {
-        List<Node> nodes = way.getNodes();
-
-        Point2D firstNode = new Point2D(nodes.get(0).getxMin(), nodes.get(0).getyMin());
-        Point2D lastNode = new Point2D(nodes.get(nodes.size() - 1).getxMin(), nodes.get(nodes.size() - 1).getyMin());
-
-        double numerator = Math.abs(((lastNode.getX() - firstNode.getX()) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
-        double denominator = Math.sqrt(Math.pow(lastNode.getX() - firstNode.getX(), 2) + Math.pow(lastNode.getY() - firstNode.getY(), 2));
-
-        return numerator / denominator;
+    public void test(float x, float y) {
+        Way min = test(x, y, root, Double.POSITIVE_INFINITY, null);
+        System.out.println(min);
     }
 
-    public double minDistMBB(float queryX, float queryY, float[] coor) {
-        double dx = Math.max(coor[0] - queryX, Math.max(0f, queryX - coor[1]));
+    private Way test(float x, float y, RTreeNode node, double minDistance, Way way) {
+        if (node == null) {
+            return way;
+        }
+        if (node.isLeaf()) {
+            for (RTreeNode n : node.getChildren()) {
+                for (Element e : n.getElementEntries()) {
+                    if (e instanceof Way) {
+                        Way w = (Way) e;
+                        if (w.isHighWay() && w.hasName()) {
+                            double distance = distanceToElement(x, y, w);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                way = w;
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (RTreeNode n : node.getChildren()) {
+                return test(x, y, n, minDistance, null);
+            }
+        }
+        return way;
+    }
+
+    private double distanceToElement(float queryX, float queryY, Way way) {
+
+        double minDistance = Double.POSITIVE_INFINITY;
+
+        List<Node> nodes = way.getNodes();
+
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            Point2D firstNode = new Point2D(nodes.get(i).getxMin(), nodes.get(i).getyMin());
+            Point2D lastNode = new Point2D(nodes.get(i + 1).getxMin(), nodes.get(i + 1).getyMin());
+
+            double numerator = Math.abs(((lastNode.getX() - firstNode.getX() ) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
+            double denominator = Math.sqrt(Math.pow(lastNode.getX() - firstNode.getX(), 2) + Math.pow(lastNode.getY() - firstNode.getY(), 2));
+            double distance = numerator / denominator;
+            if (distance < minDistance) minDistance = distance;
+        }
+
+        return minDistance;
+    }
+
+
+    private double minDistMBB(float queryX, float queryY, float[] coor) {
+        double dx = Math.max(coor[0] - queryX, Math.max(0, queryX - coor[1]));
         double dy = Math.max(coor[2] - queryY, Math.max(0, queryY - coor[3]));
         return Math.sqrt(dx * dx + dy * dy);
     }
@@ -804,10 +850,10 @@ public class RTree implements Serializable {
         private Element element;
         private double distance;
 
-        //public PriorityQueueEntry(boolean isRTreeNode, boolean isBoundingRectangle, RTreeNode rTreeNode, Element element, double distance) {
-        public PriorityQueueEntry(boolean isRTreeNode, RTreeNode rTreeNode, Element element, double distance) {
+        public PriorityQueueEntry(boolean isRTreeNode, boolean isBoundingRectangle, RTreeNode rTreeNode, Element element, double distance) {
+        //public PriorityQueueEntry(boolean isRTreeNode, RTreeNode rTreeNode, Element element, double distance) {
             this.isRTreeNode = isRTreeNode;
-            //this.isBoundingRectangle = isBoundingRectangle;
+            this.isBoundingRectangle = isBoundingRectangle;
             this.rTreeNode = rTreeNode;
             this.element = element;
             this.distance = distance;

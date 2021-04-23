@@ -1,7 +1,8 @@
 package bfst21.view;
 
 import bfst21.MapData;
-import bfst21.Osm_Elements.*;
+import bfst21.Osm_Elements.Element;
+import bfst21.Osm_Elements.Node;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
@@ -13,24 +14,20 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
-import javax.swing.tree.VariableHeightLayoutCache;
-import java.awt.*;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
+    public final static byte MIN_ZOOM_LEVEL = 1;
+    public final static byte MAX_ZOOM_LEVEL = 19;
+    public static Map<String, Byte> zoomMap;
+    private final int ZOOM_FACTOR = 2;
+    private final StringProperty ratio = new SimpleStringProperty("- - -");
     private MapData mapData;
     private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
-
-    public final static byte MIN_ZOOM_LEVEL = 1;
-    public final static byte MAX_ZOOM_LEVEL = 19;
-    private final int ZOOM_FACTOR = 2;
-    private final StringProperty ratio = new SimpleStringProperty("- - -");
-
     private boolean initialized;
     private byte zoomLevel = MIN_ZOOM_LEVEL;
-    public static Map<String, Byte> zoomMap;
 
     public void init(MapData mapData) {
         this.mapData = mapData;
@@ -75,11 +72,11 @@ public class MapCanvas extends Canvas {
             }
         }
 
-            for (Element route : mapData.getCurrentDjikstraRoute()) {
-                drawElement(gc, route);
-            }
+        for (Element route : mapData.getCurrentDjikstraRoute()) {
+            drawElement(gc, route);
+        }
 
-        for(Node point : mapData.getUserAddedPoints()){
+        for (Node point : mapData.getUserAddedPoints()) {
             drawRectangleNode(gc, point);
         }
         gc.restore();
@@ -96,12 +93,11 @@ public class MapCanvas extends Canvas {
 
     private void drawElement(GraphicsContext gc, Element element) {
         Theme.ThemeElement themeElement = theme.get(element.getType());
-        if(themeElement.isNode()){
+        if (themeElement.isNode()) {
             drawRoundNode(gc, element, themeElement);
-        }else if(element.getType().equals("text")){
+        } else if (element.getType().equals("text")) {
             drawText(gc, element, themeElement);
-        }
-        else {
+        } else {
             gc.setLineDashes(getStrokeStyle(themeElement)); //Apply stroke style
 
             if (themeElement.isTwoColored()) {
@@ -116,32 +112,32 @@ public class MapCanvas extends Canvas {
         }
     }
 
-    private void drawText(GraphicsContext gc, Element element, Theme.ThemeElement themeElement){
+    private void drawText(GraphicsContext gc, Element element, Theme.ThemeElement themeElement) {
         String text = mapData.getTextFromElement(element);
         gc.setTextAlign(TextAlignment.CENTER);
-        Font font = new Font(10/Math.sqrt(trans.determinant()));
+        Font font = new Font(10 / Math.sqrt(trans.determinant()));
         gc.setFill(themeElement.getColor().getInner());
         gc.setFont(font);
-        gc.fillText(text,element.getxMax(),element.getyMax());
+        gc.fillText(text, element.getxMax(), element.getyMax());
     }
 
     private void drawRectangleNode(GraphicsContext gc, Node point) {
         Theme.ThemeElement themeElement = theme.get(point.getType());
-        double length = (themeElement.getInnerWidth()/Math.sqrt(trans.determinant()));
+        double length = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
         gc.setFill(themeElement.getColor().getInner());
-        gc.fillRect(point.getxMax(),point.getyMax(),length, length);
+        gc.fillRect(point.getxMax(), point.getyMax(), length, length);
         gc.setStroke(themeElement.getColor().getOuter());
-        gc.strokeRect(point.getxMax(),point.getyMax(),length, length);
+        gc.strokeRect(point.getxMax(), point.getyMax(), length, length);
 
     }
 
-    private void drawRoundNode(GraphicsContext gc, Element element, Theme.ThemeElement themeElement){
-        double innerRadius = (themeElement.getInnerWidth()/Math.sqrt(trans.determinant()));
-        double outerRadius = (themeElement.getOuterWidth()/Math.sqrt(trans.determinant()));
+    private void drawRoundNode(GraphicsContext gc, Element element, Theme.ThemeElement themeElement) {
+        double innerRadius = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
+        double outerRadius = (themeElement.getOuterWidth() / Math.sqrt(trans.determinant()));
         gc.setFill(themeElement.getColor().getInner());
-        gc.fillOval(element.getxMax(),element.getyMax(),innerRadius, innerRadius);
+        gc.fillOval(element.getxMax(), element.getyMax(), innerRadius, innerRadius);
         gc.setStroke(themeElement.getColor().getOuter());
-        gc.strokeOval(element.getxMax(),element.getyMax(),outerRadius, outerRadius);
+        gc.strokeOval(element.getxMax(), element.getyMax(), outerRadius, outerRadius);
     }
 
     private void drawOuterElement(GraphicsContext gc, Element element, Theme.ThemeElement themeElement) {
@@ -173,7 +169,7 @@ public class MapCanvas extends Canvas {
         return strokeStyle;
     }
 
-    private double getStrokeWidth( boolean inner, Theme.ThemeElement themeElement) {
+    private double getStrokeWidth(boolean inner, Theme.ThemeElement themeElement) {
         if (inner) return StrokeFactory.getStrokeWidth(themeElement.getInnerWidth(), trans);
         return StrokeFactory.getStrokeWidth(themeElement.getOuterWidth(), trans);
     }
@@ -311,7 +307,7 @@ public class MapCanvas extends Canvas {
     }
 
     public void changeTheme(Theme theme) {
-        if(initialized) {
+        if (initialized) {
             this.theme = theme;
             repaint();
         } else this.theme = theme;
@@ -340,17 +336,17 @@ public class MapCanvas extends Canvas {
         zoom(true, levels);
     }
 
-    public void centerOnPoint(double x, double y){
+    public void centerOnPoint(double x, double y) {
         double boundsWidth = (bounds.getMaxX() - bounds.getMinX());
         double boundsHeight = (bounds.getMaxY() - bounds.getMinY());
-        Point2D center = new Point2D(bounds.getMaxX() -boundsWidth/2 ,bounds.getMaxY() - boundsHeight/2); // center koordinates
+        Point2D center = new Point2D(bounds.getMaxX() - boundsWidth / 2, bounds.getMaxY() - boundsHeight / 2); // center koordinates
 
         double dx = center.getX() - x;
-        double dy = center.getY()- y;
+        double dy = center.getY() - y;
         dx = dx * Math.sqrt(trans.determinant());
         dy = dy * Math.sqrt(trans.determinant());
 
-        pan(dx,dy);
+        pan(dx, dy);
 
     }
 

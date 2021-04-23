@@ -13,6 +13,7 @@ class RTreeTest {
 
     private RTree rTree;
     private Way w1, w2, w3, w4, w5, w6, w7;
+    private Node n;
 
     @BeforeEach
     void setUp() {
@@ -38,9 +39,9 @@ class RTreeTest {
         w2.setName("w2");
 
         w3 = new Way(3);
-        Node n55 = new Node(5, 3, 1);
+        n = new Node(5, 3, 2.5f);
         //Node n6 = new Node(6, 9, 4);
-        w3.addNode(n55);
+        w3.addNode(n);
         //w3.addNode(n6);
 
         w4 = new Way(4);
@@ -73,7 +74,7 @@ class RTreeTest {
     void name() {
         rTree.insert(w1);
         rTree.insert(w2);
-        Way w = rTree.getNearestRoad(3, 2.5f);
+        Way w = rTree.getNearestRoad(n.getxMax(), n.getyMax());
         System.out.println(w.getName());
     }
 
