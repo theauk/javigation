@@ -2,10 +2,14 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Node;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class AddressTrieNode {
+public class AddressTrieNode implements Serializable {
+    @Serial
+    private static final long serialVersionUID = -9059402923966729263L;
     private HashMap<Character, AddressTrieNode> children;
     private ArrayList<AddressTrieNode> addressNodes;
     private Node node;
@@ -15,6 +19,7 @@ public class AddressTrieNode {
     private String houseNumber;
     private char character;
     private boolean isAddress;
+
 
     // for the root
     public AddressTrieNode() {
