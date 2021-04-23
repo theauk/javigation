@@ -78,7 +78,7 @@ public class DijkstraSP implements Serializable {
 
         } else {
             path = getTrack(new ArrayList<>(), n);
-            getRouteDescription();
+            //getRouteDescription();
             return path;
         }
     }
@@ -119,15 +119,15 @@ public class DijkstraSP implements Serializable {
 
             if (degreeAngle > 0) {
                 if (degreeAngle < 175 || degreeAngle > 185) {
-                    System.out.println("You turned right, by: " + degreeAngle + " " + Math.toDegrees(result));
+                    //System.out.println("You turned right, by: " + degreeAngle + " " + Math.toDegrees(result));
                 }
             } else {
                 if (degreeAngle > -175 || degreeAngle < -185) {
-                    System.out.println("You turned left, by: " + degreeAngle + " " + Math.toDegrees(result));
+                    //System.out.println("You turned left, by: " + degreeAngle + " " + Math.toDegrees(result));
                 }
             }
         }
-        System.out.println("");
+        //System.out.println("");
         return "";
     }
 
@@ -218,7 +218,7 @@ public class DijkstraSP implements Serializable {
                 if (restriction.getRestriction().contains("no_") && restriction.getFrom() == fromWay && restriction.getViaNode() == viaNode && restriction.getTo() == toWay) { // TODO: 4/19/21 er check med viaNode nødvendigt grundet nodeToorest lookup? same nedenunder for viaWay
                     return true;
                 } else if (restriction.getRestriction().contains("only_")) { // TODO: 4/20/21 ja....
-                    System.out.println(fromWay.getName() + " " + viaNode.getId() + " " + toWay.getName());
+                    //System.out.println(fromWay.getName() + " " + viaNode.getId() + " " + toWay.getName());
                 }
             }
         }
