@@ -110,8 +110,8 @@ public class MapData implements Serializable {
         return nearestRoadNode;
     }
 
-    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) throws NoNavigationResultException {
-        ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
+    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) throws NoNavigationResultException {
+        ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest, aStar);
         currentDijkstraRoute = new ArrayList<>();
         if (path.size() > 0) {
             Way route = new Way();

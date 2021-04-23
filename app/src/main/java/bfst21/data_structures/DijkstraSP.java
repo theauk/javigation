@@ -7,7 +7,10 @@ import bfst21.Osm_Elements.Way;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.PriorityQueue;
 
 public class DijkstraSP implements Serializable {
     @Serial
@@ -31,6 +34,7 @@ public class DijkstraSP implements Serializable {
     private boolean walk;
     private boolean fastest;
     private boolean tryAgain;
+    private boolean aStar;
     private double bikingSpeed;
     private double walkingSpeed;
     private int maxSpeed;
@@ -42,12 +46,13 @@ public class DijkstraSP implements Serializable {
         this.maxSpeed = 130;
     }
 
-    private void setup(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) {
+    private void setup(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean dijkstra) {
         this.to = to;
         this.car = car;
         this.bike = bike;
         this.walk = walk;
         this.fastest = fastest;
+        this.aStar = dijkstra;
         tryAgain = false;
         routeDescription = new ArrayList<>();
         unitsTo = new HashMap<>();
@@ -60,12 +65,12 @@ public class DijkstraSP implements Serializable {
         unitsTo.put(from, new DistanceAndTimeEntry(0, 0, 0));
     }
 
-    public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) throws NoNavigationResultException {
-        setup(from, to, car, bike, walk, fastest);
+    public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean dijkstra) throws NoNavigationResultException {
+        setup(from, to, car, bike, walk, fastest, dijkstra);
         Node n = checkNode();
 
         if (n != to) {
-            setup(from, to, car, bike, walk, fastest);
+            setup(from, to, car, bike, walk, fastest, dijkstra);
             tryAgain = true; // TODO: 4/19/21 really not the most beautiful thing...
             n = checkNode();
 
@@ -178,7 +183,11 @@ public class DijkstraSP implements Serializable {
                 for (Node n : adjacentNodes) {
                     boolean[] doAdjacentNodesHaveRestrictions = new boolean[adjacentNodes.size()]; // TODO: 4/23/21 delete?
                     if (!isThereARestriction(wayBefore.get(currentFrom), currentFrom, w)) {
-                        checkDistanceAStar(currentFrom, n, w);
+                        if (aStar) {
+                            checkDistanceAStar(currentFrom, n, w);
+                        } else {
+                            checkDistanceDijkstra(currentFrom, n, w);
+                        }
                     }
                 }
             }
@@ -262,7 +271,6 @@ public class DijkstraSP implements Serializable {
         double distanceBetweenFromTo = getDistanceBetweenTwoNodes(currentFrom, currentTo);
         double timeBetweenFromTo = getTravelTime(distanceBetweenFromTo, w);
 
-
         if (fastest) {
             if (unitsTo.get(currentFrom).time + timeBetweenFromTo < currentTimeTo) {
                 updateMapsAndPQ(currentTo, currentFrom, w, distanceBetweenFromTo, timeBetweenFromTo, 0);
@@ -278,7 +286,8 @@ public class DijkstraSP implements Serializable {
         unitsTo.put(currentTo, new DistanceAndTimeEntry(unitsTo.get(currentFrom).distance + distanceBetweenFromTo, unitsTo.get(currentFrom).time + timeBetweenFromTo, newCost));
         nodeBefore.put(currentTo, currentFrom);
         wayBefore.put(currentTo, w);
-        if (unitsTo.containsKey(currentTo)) pq.remove(currentTo); //TODO: 4/23/21 før var check + tilføj til pq O(1) fordi det var HM. NU: check er O(1) mens remove og add er log
+        if (unitsTo.containsKey(currentTo))
+            pq.remove(currentTo); //TODO: 4/23/21 før var check + tilføj til pq O(1) fordi det var HM. NU: check er O(1) mens remove og add er log
         pq.add(currentTo);
     }
 
