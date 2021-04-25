@@ -5,11 +5,12 @@ import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.time.LocalTime;
+import java.util.*;
 
 public class RouteNavigation implements Serializable {
     @Serial
@@ -38,20 +39,25 @@ public class RouteNavigation implements Serializable {
     private double walkingSpeed;
     private int maxSpeed;
 
-    public RouteNavigation(ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
+    private Node testTo;
+    private KDTree<Node> kdTree;
+
+    public RouteNavigation(KDTree<Node> kdTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
         this.nodeToRestriction = nodeToRestriction;
         this.wayToRestriction = wayToRestriction;
         this.nodeToWayMap = nodeToWayMap;
         this.maxSpeed = 130;
+
+        this.kdTree = kdTree;
     }
 
-    private void setup(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean dijkstra) {
+    private void setup(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) {
         this.to = to;
         this.car = car;
         this.bike = bike;
         this.walk = walk;
         this.fastest = fastest;
-        this.aStar = dijkstra;
+        this.aStar = aStar;
         tryAgain = false;
         routeDescription = new ArrayList<>();
         unitsTo = new HashMap<>();
@@ -62,14 +68,246 @@ public class RouteNavigation implements Serializable {
         walkingSpeed = 5; // from Google Maps 5 km/h
         pq.add(from);
         unitsTo.put(from, new DistanceAndTimeEntry(0, 0, 0));
+
+        testTo = null;
     }
 
-    public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean dijkstra) throws NoNavigationResultException {
-        setup(from, to, car, bike, walk, fastest, dijkstra);
+
+    /////////////////////TEST START
+
+    public void createCvsFromData(ArrayList<ArrayList<String>> rows, String fileName, String firstLabel, String secondLabel) {
+
+        try {
+            FileWriter csvWriter = new FileWriter(fileName);
+            csvWriter.append("FugleFlugtDistanceM");
+            csvWriter.append(",");
+            if (secondLabel != null) {
+                csvWriter.append(secondLabel);
+                csvWriter.append(",");
+                csvWriter.append(firstLabel);
+                csvWriter.append(",");
+            }
+            csvWriter.append("DijkstraTimeNanoS");
+            csvWriter.append(",");
+            csvWriter.append("AStarTimeNanoS");
+            csvWriter.append("\n");
+
+            for (ArrayList<String> rowData : rows) {
+                csvWriter.append(String.join(",", rowData));
+                csvWriter.append("\n");
+            }
+
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testOld() throws NoNavigationResultException {
+
+        ArrayList<ArrayList<String>> rowsValid = new ArrayList<>();
+        ArrayList<ArrayList<String>> rowsNotValid = new ArrayList<>();
+        ArrayList<Node> nodes = kdTree.getNodes();
+
+        for (int i = 0; i < 10; i++) {
+            Node from = pickNode(nodes);
+            Node to = pickNode(nodes);
+            ArrayList<String> result = new ArrayList<>();
+            result.add(String.valueOf(getDistanceBetweenTwoNodes(from, to)));
+
+            ArrayList<Long> dijkstraTimes = runTest(from, to, false);
+            if (testTo == to) result.add(String.valueOf(unitsTo.get(to).distance));
+            ArrayList<Long> aStarTimes = runTest(from, to, true);
+
+            if (testTo == to) {
+                result.add(String.valueOf(unitsTo.get(to).distance));
+                result.add(String.valueOf(getAverageUnits(dijkstraTimes)));
+                result.add(String.valueOf(getAverageUnits(aStarTimes)));
+                rowsValid.add(result);
+                System.out.println("Valid " + i);
+            } else {
+
+                result.add(String.valueOf(getAverageUnits(dijkstraTimes)));
+                result.add(String.valueOf(getAverageUnits(aStarTimes)));
+                rowsNotValid.add(result);
+                System.out.println("Not valid " + i);
+                i -= 1;
+            }
+        }
+        createCvsFromData(rowsValid, "valid.csv", "DistanceMDijkstra", "DistanceMAStar");
+        createCvsFromData(rowsNotValid, "not_valid.csv", null, null);
+    }
+
+
+    public void test() throws NoNavigationResultException {
+        LocalTime start = LocalTime.now();
+        System.out.println(start);
+
+        ArrayList<ArrayList<String>> rowsValid = new ArrayList<>();
+        ArrayList<ArrayList<String>> rowsNotValid = new ArrayList<>();
+        ArrayList<Node> nodes = kdTree.getNodes();
+
+        int lowerRange = 0;
+        int upperRange = 10000;
+        int count = 0;
+        boolean notDone = true;
+
+        while (notDone) {
+
+            if (upperRange == 100000 && count == 50) {
+                notDone = false;
+                System.out.println("done");
+                continue;
+            } else if (count == 50) {
+                lowerRange = upperRange;
+                upperRange += 10000;
+                count = 0;
+                continue;
+            }
+
+            Node from = pickNode(nodes);
+            Node to = pickNode(nodes);
+            ArrayList<String> result = new ArrayList<>();
+            double distanceFlight = getDistanceBetweenTwoNodes(from, to);
+            result.add(String.valueOf(distanceFlight));
+            if (distanceFlight > upperRange || distanceFlight < upperRange / 2f) continue;
+
+            ArrayList<Long> aStarTimes = runTest(from, to, true);
+            if (testTo == to) {
+                double distance = unitsTo.get(to).distance;
+                if (distance < lowerRange || distance > upperRange) {
+                    continue;
+                }
+                result.add(String.valueOf(unitsTo.get(to).distance));
+            }
+            ArrayList<Long> dijkstraTimes = runTest(from, to, false);
+
+            if (testTo == to) {
+                result.add(String.valueOf(unitsTo.get(to).distance));
+                result.add(String.valueOf(getAverageUnits(dijkstraTimes)));
+                result.add(String.valueOf(getAverageUnits(aStarTimes)));
+                rowsValid.add(result);
+                count++;
+                System.out.println("Valid " + upperRange + " " + count);
+            } else {
+                result.add(String.valueOf(getAverageUnits(dijkstraTimes)));
+                result.add(String.valueOf(getAverageUnits(aStarTimes)));
+                rowsNotValid.add(result);
+                System.out.println("Not valid " + upperRange + " " + count);
+            }
+        }
+        createCvsFromData(rowsValid, "valid_bigger.csv", "DistanceMDijkstra", "DistanceMAStar");
+        createCvsFromData(rowsNotValid, "not_valid_bigger.csv", null, null);
+        System.out.println("DONE " + start + " " + LocalTime.now());
+    }
+
+    private ArrayList<Long> runTest(Node from, Node to, boolean aStarOn) {
+        testTo = null;
+        ArrayList<Long> times = new ArrayList<>();
+        for (int j = 0; j < 3; j++) {
+            setup(from, to, true, false, false, false, aStarOn);
+            long start = System.nanoTime();
+            Node n = checkNode();
+            long finish = System.nanoTime();
+            long timeElapsed = finish - start;
+            times.add(timeElapsed);
+            testTo = n;
+        }
+        return times;
+    }
+
+    public void testOther() throws NoNavigationResultException {
+        LocalTime start = LocalTime.now();
+        System.out.println(start);
+        ArrayList<ArrayList<String>> rowsValid = new ArrayList<>();
+        ArrayList<ArrayList<String>> rowsNotValid = new ArrayList<>();
+        ArrayList<Node> nodes = kdTree.getNodes();
+
+        boolean notDone = true;
+        int[] counters = new int[10];
+
+        while (notDone) {
+
+            int countDone = 0;
+            for (int i : counters) {
+                if (i >= 25) {
+                    countDone++;
+                }
+            }
+            if (countDone == 10) {
+                notDone = false;
+                continue;
+            }
+
+            Node from = pickNode(nodes);
+            Node to = pickNode(nodes);
+            ArrayList<String> result = new ArrayList<>();
+            double dis = getDistanceBetweenTwoNodes(from, to);
+            if (dis > 100000) continue;
+            result.add(String.valueOf(dis));
+
+            ArrayList<Long> aStarTimes = runTest(from, to, true);
+            if (testTo == to) {
+                double distance = unitsTo.get(to).distance;
+                if (distance > 100000) continue;
+                int remainder = (int) (distance / 1000 % 10);
+                int left = (int) ((distance / 1000) - remainder);
+                int index = left / 10;
+                counters[index]++;
+                result.add(String.valueOf(unitsTo.get(to).distance));
+            }
+            ArrayList<Long> dijkstraTimes = runTest(from, to, false);
+
+            if (testTo == to) {
+                result.add(String.valueOf(unitsTo.get(to).distance));
+                result.add(String.valueOf(getAverageUnits(dijkstraTimes)));
+                result.add(String.valueOf(getAverageUnits(aStarTimes)));
+                rowsValid.add(result);
+                System.out.println("Valid " + Arrays.toString(counters));
+            } else {
+                result.add(String.valueOf(getAverageUnits(dijkstraTimes)));
+                result.add(String.valueOf(getAverageUnits(aStarTimes)));
+                rowsNotValid.add(result);
+                System.out.println("N-val " + Arrays.toString(counters));
+            }
+        }
+        createCvsFromData(rowsValid, "valid_bigger.csv", "DistanceMDijkstra", "DistanceMAStar");
+        createCvsFromData(rowsNotValid, "not_valid_bigger.csv", null, null);
+        System.out.println("DONE " + start + " " + LocalTime.now());
+    }
+
+    private long getAverageUnits(ArrayList<Long> times) {
+        long total = 0;
+
+        for (Long time : times) {
+            total += time;
+        }
+        return total / times.size();
+    }
+
+    private Node pickNode(ArrayList<Node> nodes) {
+        int size = kdTree.getSize();
+        Random generator = new Random();
+        int number = generator.nextInt(size);
+        return nodes.get(number);
+    }
+
+
+    /////////////////////TEST END
+
+
+    public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) throws NoNavigationResultException {
+        setup(from, to, car, bike, walk, fastest, aStar);
+
+        long start = System.nanoTime(); // TODO: 4/23/21 remove
         Node n = checkNode();
+        long finish = System.nanoTime();
+        long timeElapsed = finish - start;
+        System.out.println(timeElapsed);
 
         if (n != to) {
-            setup(from, to, car, bike, walk, fastest, dijkstra);
+            setup(from, to, car, bike, walk, fastest, aStar);
             tryAgain = true; // TODO: 4/19/21 really not the most beautiful thing...
             n = checkNode();
 
@@ -87,11 +325,13 @@ public class RouteNavigation implements Serializable {
     }
 
     public double getTotalDistance() {
-        return unitsTo.get(to).distance;
+        if (unitsTo.get(to) != null) return unitsTo.get(to).distance; // TODO: 4/23/21 change these two back?
+        else return 0;
     }
 
     public double getTotalTime() {
-        return unitsTo.get(to).time;
+        if (unitsTo.get(to) != null) return unitsTo.get(to).time;
+        else return 0;
     }
 
     /*public String getRouteDescription() {

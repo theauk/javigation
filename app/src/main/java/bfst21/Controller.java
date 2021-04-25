@@ -544,7 +544,7 @@ public class Controller {
     @FXML
     public void getDijkstraPath() {
         try {
-            mapData.setDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
+            mapData.setRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
             setDistanceAndTimeNav(mapData.getDistanceNav(), mapData.getTimeNav());
             mapCanvas.repaint();
         } catch (NoNavigationResultException e) {

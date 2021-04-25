@@ -72,7 +72,7 @@ public class MapCanvas extends Canvas {
             }
         }
 
-        for (Element route : mapData.getCurrentDjikstraRoute()) {
+        for (Element route : mapData.getCurrentRoute()) {
             drawElement(gc, route);
         }
 

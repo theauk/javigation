@@ -2,7 +2,9 @@ package bfst21.data_structures;
 
 import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
+import bfst21.Osm_Elements.Node;
 import javafx.geometry.Point2D;
+import org.checkerframework.checker.units.qual.A;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -32,13 +34,33 @@ public class KDTree<Value extends Element> implements Serializable {
     private boolean noDuplicates;
     private HashSet<Value> hashList;
 
+    private HashSet<Node> testList; // TODO: 4/23/21 delete 
+
     public KDTree(int startDim, int numCor) {
         this.startDim = startDim;
         this.numCor = numCor;
         numDim = numCor / 2;
         list = new ArrayList<>();
         hashList = new HashSet<>();
+        
+        testList = new HashSet<>(); // TODO: 4/23/21 delete
     }
+
+
+
+    public int getSize() {
+        return list.size();
+    }
+
+    public ArrayList<Node> getNodes() {
+        return new ArrayList<>(testList);
+    }
+
+    public void addAllAsNodes(List<Node> nodes) {
+        testList.addAll(nodes);
+    }
+
+
 
 
     private Comparator<KDTreeNode> getComparatorFromDimension(int dim) {

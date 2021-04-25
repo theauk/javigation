@@ -7,6 +7,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 public class ElementToElementsTreeMap<Key extends Element, Value extends Element> implements Serializable {
@@ -37,5 +38,17 @@ public class ElementToElementsTreeMap<Key extends Element, Value extends Element
 
     public ArrayList<Value> getElementsFromNode(Key key) {
         return map.get(key.getId());
+    }
+
+    public ArrayList<Value> getElementsFromId(long id) {
+        return map.get(id);
+    }
+    
+    public int getSize() {
+        return map.size();
+    }
+
+    public Set<Long> getSet() {
+        return map.keySet();
     }
 }
