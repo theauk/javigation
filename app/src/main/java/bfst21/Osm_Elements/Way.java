@@ -18,13 +18,13 @@ public class Way extends NodeHolder implements Serializable {
     private boolean isWalkable = true;
     private boolean isHighway = false;
 
-    public Way(long id) {
-        super(id);
+    public Way() {
+        super();
         isHighway = false;
     }
 
-    public Way() {
-        super();
+    public Way(long id) {
+        super(id);
         isHighway = false;
     }
 
