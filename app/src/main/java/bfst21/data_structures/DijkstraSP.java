@@ -110,7 +110,7 @@ public class DijkstraSP implements Serializable {
     private String currentDirection;
     private double turnAngleThreshold = 5.0;
 
-    private String getDirection(Node from, Node via, Node to) {
+    private String getDirection(Point2D from, Point2D via, Point2D to) {
         double angle = getAngle(from, via, to);
 
         System.out.println("Angle: " + angle);
