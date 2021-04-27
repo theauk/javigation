@@ -1,7 +1,7 @@
 package bfst21.view;
 
 import bfst21.MapData;
-import bfst21.MapMath;
+import bfst21.utils.MapMath;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import javafx.beans.property.SimpleStringProperty;
@@ -18,17 +18,19 @@ import javafx.scene.transform.NonInvertibleTransformException;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
+    public static Map<String, Byte> zoomMap;
     public final static byte MIN_ZOOM_LEVEL = 1;
     public final static byte MAX_ZOOM_LEVEL = 19;
-    public static Map<String, Byte> zoomMap;
     private final int ZOOM_FACTOR = 2;
+    private byte zoomLevel = MIN_ZOOM_LEVEL;
+
     private final StringProperty ratio = new SimpleStringProperty("- - -");
     private MapData mapData;
-    private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
+    private Affine trans;
+
     private boolean initialized;
-    private byte zoomLevel = MIN_ZOOM_LEVEL;
 
     public void init(MapData mapData) {
         this.mapData = mapData;
@@ -46,7 +48,7 @@ public class MapCanvas extends Canvas {
 
     /**
      * Initializes the default theme and creates a zoom map for each theme element.
-     * This method may only be run once!
+     * This method may only be called once!
      *
      * @param theme the default theme to create a zoom map from.
      */
@@ -104,7 +106,6 @@ public class MapCanvas extends Canvas {
         if (themeElement.fill()) {
             fillElement(gc, themeElement);
         }
-
     }
 
     private void drawText(GraphicsContext gc, Element element) {
