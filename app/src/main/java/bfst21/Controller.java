@@ -4,13 +4,13 @@ import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.Exceptions.NoOSMInZipFileException;
 import bfst21.Exceptions.UnsupportedFileFormatException;
 import bfst21.Osm_Elements.Node;
+import bfst21.data_structures.AddressTrieNode;
 import bfst21.file_io.Loader;
 import bfst21.file_io.Serializer;
-import bfst21.view.CanvasBounds;
-import bfst21.view.CustomKeyCombination;
-import bfst21.view.MapCanvas;
-import bfst21.view.Theme;
+import bfst21.view.*;
 import javafx.animation.FadeTransition;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -19,19 +19,15 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class Controller {
     private MapData mapData;
@@ -52,6 +48,8 @@ public class Controller {
 
     private Node currentFromNode;
     private Node currentToNode;
+
+    private ArrayList<AddressTrieNode> currentAutoCompleteList;
 
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
@@ -90,6 +88,10 @@ public class Controller {
 
     @FXML private TextField textFieldFromNav;
     @FXML private TextField textFieldToNav;
+    @FXML private VBox autoCompleteFromNav;
+    @FXML private ScrollPane ScrollpaneAutoCompleteToNav;
+    @FXML private VBox autoCompleteToNav;
+    @FXML private ScrollPane ScrollpaneAutoCompleteFromNav;
 
     @FXML private RadioButton radioButtonCarNav;
     @FXML private RadioButton radioButtonBikeNav;
@@ -101,6 +103,7 @@ public class Controller {
     @FXML private ComboBox<String> dropDownPoints;
     @FXML private TextField textFieldPointName;
     @FXML private Button addPointButton;
+
 
     public void init() {
         mapData = new MapData();
@@ -119,7 +122,10 @@ public class Controller {
         });
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
+        addListenerToSearchFields();
     }
+
+
 
     private void initMapCanvas() {
         mapCanvas.init(mapData);
@@ -139,6 +145,23 @@ public class Controller {
                 themeMenu.getItems().add(item);
             }
         }
+    }
+
+    private void addListenerToSearchFields() {
+        textFieldFromNav.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable,
+                                String oldValue, String newValue) {
+                if(newValue.length()>2) fillAutoCompleteText(autoCompleteFromNav, true);
+            }
+        });
+        textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable,
+                                String oldValue, String newValue) {
+                if(newValue.length()>2) fillAutoCompleteText(autoCompleteToNav, false);
+            }
+        });
     }
 
     /**
@@ -476,13 +499,43 @@ public class Controller {
         return fileChooser;
     }
 
-    @FXML
-    private void autoCompleteTextField(ActionEvent actionEvent){
-        if(textFieldFromNav.getText().length() >2){
-
-        }
-
+    private void fillAutoCompleteText(VBox autoComplete, boolean fromNav){
+        autoComplete.getChildren().removeAll(autoComplete.getChildren());
+        currentAutoCompleteList = new ArrayList<>();
+        fillAutoCompleteText(fromNav);
     }
+    
+    
+    private void fillAutoCompleteText(boolean fromNav){
+        if(mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null){
+            // TODO: 27-04-2021 test with trie tree 
+        for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
+            currentAutoCompleteList.add(addressNode);
+            if (fromNav) {
+                labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, true);
+                ScrollpaneAutoCompleteFromNav.setVisible(true);
+            } else {
+                labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, false);
+                ScrollpaneAutoCompleteToNav.setVisible(true);
+            }
+            }
+        }
+    }
+
+    private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav){
+        Label label = new Label(addressNode.getAddress());
+            autoComplete.getChildren().add(label);
+            label.prefWidth(autoComplete.getWidth());
+            label.setOnMouseClicked((ActionEvent) -> {
+                    textField.setText(addressNode.getAddress());
+                    autoComplete.getChildren().removeAll(autoComplete.getChildren());
+                    if(fromNav) currentFromNode = addressNode.getNode();
+                    else currentToNode = addressNode.getNode();
+                    scrollPane.setVisible(false);
+
+            });
+    }
+    
 
     @FXML
     private void setRTreeDebug() {

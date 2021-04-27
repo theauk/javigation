@@ -13,6 +13,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MapData implements Serializable {
     @Serial
@@ -171,12 +172,8 @@ public class MapData implements Serializable {
         return null;
     }
 
-    public ArrayList<String> getAutoCompleteAdresses(String prefix){
-        // TODO: 24-04-2021 needs list of possible adresses for gui
-        ArrayList<String> list = new ArrayList<>();
-        list.add("hello");
-        list.add("also");
-        //ArrayList<String> list = addressTree.getPossibleAddresses(prefix);
+    public List<AddressTrieNode> getAutoCompleteAdresses(String prefix){
+        List<AddressTrieNode> list = addressTree.search(prefix);
         return list;
     }
 

@@ -132,13 +132,21 @@
                 <AnchorPane id="navigationControl" visible="${navigationPane.selected}" pickOnBounds="false">
                     <VBox alignment="BASELINE_LEFT" AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5">
                         <HBox>
-                            <TextField fx:id="textFieldFromNav" promptText="From" onAction="#autoCompleteTextField"/>
+                            <TextField fx:id="textFieldFromNav" promptText="From" />
                             <Button fx:id="chooseCorButtonFromNav" text="Choose on map" onAction="#getPointNavFrom"/>
                         </HBox>
+                            <ScrollPane fx:id="ScrollpaneAutoCompleteFromNav" visible="false" >
+                                <VBox fx:id="autoCompleteFromNav" >
+                                </VBox>
+                            </ScrollPane>
                         <HBox>
-                            <TextField fx:id="textFieldToNav" promptText="To"/>
+                            <TextField fx:id="textFieldToNav" promptText="To" />
                             <Button fx:id="chooseCorButtonToNav" text="Choose on map" onAction="#getPointNavTo"/>
                         </HBox>
+                        <ScrollPane fx:id="ScrollpaneAutoCompleteToNav" visible="false" >
+                            <VBox fx:id="autoCompleteToNav" >
+                            </VBox>
+                        </ScrollPane>
                         <HBox>
                             <RadioButton fx:id="radioButtonCarNav" text="Car">
                                 <HBox.margin>

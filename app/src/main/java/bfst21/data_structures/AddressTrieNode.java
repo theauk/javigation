@@ -14,7 +14,7 @@ public class AddressTrieNode implements Serializable {
     private ArrayList<AddressTrieNode> addressNodes;
     private Node node;
     private String city;
-    private String streetname;
+    private String streetName;
     private Integer postcode;
     private String houseNumber;
     private char character;
@@ -41,7 +41,7 @@ public class AddressTrieNode implements Serializable {
         this.addressNodes = new ArrayList<>();
         this.node = node;
         this.city = city;
-        this.streetname = streetname;
+        this.streetName = streetname;
         this.postcode = postcode;
         this.houseNumber = houseNumber;
         isAddress = true;
@@ -73,12 +73,16 @@ public class AddressTrieNode implements Serializable {
         isAddress = true;
     }
 
+    public Node getNode(){
+        return node;
+    }
+
     public String getCity() {
         return this.city;
     }
 
     public String getStreetname() {
-        return this.streetname;
+        return this.streetName;
     }
 
     public int getPostcode() {
@@ -89,7 +93,7 @@ public class AddressTrieNode implements Serializable {
         return this.houseNumber;
     }
     public String getAddress(){
-        return this.streetname + " " + this.houseNumber + ", " + this.postcode + " " + this.city;
+        return this.streetName + " " + this.houseNumber + ", " + this.postcode + " " + this.city;
     }
 
     public AddressTrieNode getAddressTrieNode(){

@@ -2,6 +2,7 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Node;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.Serial;
 import java.io.Serializable;
@@ -121,7 +122,7 @@ public class AddressTriesTree implements Serializable {
      * @param address -> postcode or name of the street which the address has been inserted with.
      * @return returns the list from the private search method to the given user class.
      */
-    public List<AddressTrieNode> search(String address){
+    public ArrayList<AddressTrieNode> search(String address){
         return search(root, address,0);
     }
 
@@ -133,7 +134,7 @@ public class AddressTriesTree implements Serializable {
      * @return if there is a search-hit, it will return the given ArrayList for the serach-hit (currently tested on postcodes
      *        and streetnames. (if given as a string)
      */
-    private List<AddressTrieNode> search(AddressTrieNode trieNode, String address, int index) {
+    private ArrayList<AddressTrieNode> search(AddressTrieNode trieNode, String address, int index) {
         address = address.toLowerCase();
         // returns null if there is address going by that postcode
         if (index == address.length()) {
