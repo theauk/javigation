@@ -92,21 +92,12 @@ public class DijkstraSP implements Serializable {
 
 
 
-    private double getAngle(Node p1, Node p2, Node p3) {
-        return Math.toDegrees(Math.atan2(p3.getyMax() - p1.getyMax(), p3.getxMax() - p1.getxMax()) - Math.atan2(p2.getyMax() - p1.getyMax(), p2.getxMax() - p1.getxMax()));
-    }
-
-    private static void getTurnDirection(Point2D p1, Point2D p2, Point2D p3) {
-        Point2D v1 = new Point2D((p2.getX() - p1.getX()), (p2.getY() - p1.getY()));
-        Point2D v2 = new Point2D((p3.getX() - p2.getX()), (p3.getY() - p2.getY()));
-        double cross = v1.getX() * v2.getX() - v1.getY() * v2.getX();
-        System.out.println("Cross: " + cross);
-        //if(cross > 0) return "Left";
-        //if(cross < 0) return "Right";
-
-        //double dot = v1.getX() * v2.getX() + v1.getY() * v2.getY();
-        //if(dot > 0) return "Straight";
-        //return "UTurn";
+    private double getAngle(Point2D p1, Point2D p2, Point2D p3) {
+        double v1 = Math.atan2(p3.getY() - p1.getY(), p3.getX() - p1.getX());
+        double v2 = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+        double result = v1 - v2;
+        double degrees = Math.toDegrees(result);
+        return degrees;
     }
 
     public void dumpPath() {
@@ -117,36 +108,31 @@ public class DijkstraSP implements Serializable {
 
     private String lastDirection;
     private String currentDirection;
-    private double turnAngleThreshold = 6;
+    private double turnAngleThreshold = 5.0;
 
     private String getDirection(Node from, Node via, Node to) {
         double angle = getAngle(from, via, to);
-        double cross = MapMath.crossProduct(from, via, to);
-        double dot = MapMath.dotProduct(from, via, to);
 
-        if(cross > 0) {
-            if(angle > turnAngleThreshold) return "LEFT";
-            else return "STRAIGHT";
-        } else if(cross < 0) { ;
-            if(angle < -turnAngleThreshold) return "RIGHT";
-            else return "STRAIGHT";
-        } else {
-            if(dot > 0) return "STRAIGHT";
-            return "U-TURN";
-        }
+        System.out.println("Angle: " + angle);
+
+        //LEFT POSITIVE
+        //RIGHT NEGATIVE
+        if(angle > turnAngleThreshold) return "RIGHT";
+        if(angle < -turnAngleThreshold) return "LEFT";
+        else return "STRAIGHT";
     }
 
-    public void calculateResult(Node from, Node via, Node to) {
+    public void calculateResult(Point2D from, Point2D via, Point2D to) {
         System.out.println("Calculate Result");
 
-        System.out.println("F = (" + from.getxMax() + ", " + convertToGeo(from.getyMax()) + ")");
-        System.out.println("V = (" + via.getxMax() + ", " + convertToGeo(via.getyMax()) + ")");
-        System.out.println("T = (" + to.getxMax() + ", " + to.getyMax() + ")");
+        System.out.println("F = (" + from.getX() + ", " + from.getY() + ")");
+        System.out.println("V = (" + via.getX() + ", " + via.getY() + ")");
+        System.out.println("T = (" + to.getX() + ", " + to.getY() + ")");
 
         currentDirection = getDirection(from, via, to);
 
         if(!currentDirection.equals(lastDirection)) {
-            if(lastDirection == null) System.out.println("Go " + MapMath.compassDirection(from, via));   //START POINT
+            //if(lastDirection == null) System.out.println("Go " + MapMath.compassDirection(from, via));   //START POINT
         }
 
         if(currentDirection.equals("LEFT")) {
@@ -173,7 +159,17 @@ public class DijkstraSP implements Serializable {
                 break;
             }
 
-            calculateResult(path.get(i), path.get(i - 1), path.get(i - 2));
+            Node f = path.get(i);
+            Node v = path.get(i - 1);
+            Node t = path.get(i - 2);
+
+            Point2D from = MapMath.convertToGeoCoords(new Point2D(f.getxMax(), f.getyMax()));
+            Point2D via = MapMath.convertToGeoCoords(new Point2D(v.getxMax(), v.getyMax()));
+            Point2D to = MapMath.convertToGeoCoords(new Point2D(t.getxMax(), t.getyMax()));
+
+            calculateResult(from, via, to);
+
+            System.out.println();
 
 
             //System.out.println("----");
