@@ -91,15 +91,6 @@ public class DijkstraSP implements Serializable {
     }
 
 
-
-    private double getAngle(Point2D p1, Point2D p2, Point2D p3) {
-        double v1 = Math.atan2(p3.getY() - p1.getY(), p3.getX() - p1.getX());
-        double v2 = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
-        double result = v1 - v2;
-        double degrees = Math.toDegrees(result);
-        return degrees;
-    }
-
     public void dumpPath() {
         for(int j = 0; j < path.size(); j++) {
             System.out.println("(" + path.get(j).getxMax() + ", " + convertToGeo(path.get(j).getyMax()) + ")");
@@ -111,12 +102,12 @@ public class DijkstraSP implements Serializable {
     private double turnAngleThreshold = 5.0;
 
     private String getDirection(Point2D from, Point2D via, Point2D to) {
-        double angle = getAngle(from, via, to);
+        double angle = MapMath.turnAngle(from, via, to);
 
         System.out.println("Angle: " + angle);
 
-        //LEFT POSITIVE
-        //RIGHT NEGATIVE
+        //LEFT NEGATIVE
+        //RIGHT POSITIVE
         if(angle > turnAngleThreshold) return "RIGHT";
         if(angle < -turnAngleThreshold) return "LEFT";
         else return "STRAIGHT";

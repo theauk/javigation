@@ -38,6 +38,24 @@ public class MapMath {
     }
 
     /**
+     * Calculates the angle between p1 and p3 through p2 in degrees.
+     *
+     * @param p1 the start point.
+     * @param p2 the via point.
+     * @param p3 the end point.
+     * @return
+     */
+    public static double turnAngle(Point2D p1, Point2D p2, Point2D p3) {
+        double v1 = Math.atan2(p3.getY() - p1.getY(), p3.getX() - p1.getX());
+        double v2 = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+        double result = v1 - v2;
+
+        if(result > Math.PI) result -= 2 * Math.PI;
+        else if (result <= -Math.PI) result += 2 * Math.PI;
+        return Math.toDegrees(result);
+    }
+
+    /**
      * Calculates a bearing compass angle from two points.
      * A bearing angle is the horizontal angle between the direction between two objects and true north.
      *
