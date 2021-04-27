@@ -1,7 +1,8 @@
 package bfst21.view;
 
 import bfst21.MapData;
-import bfst21.Osm_Elements.*;
+import bfst21.Osm_Elements.Element;
+import bfst21.Osm_Elements.Node;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
@@ -13,25 +14,20 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
-import javax.swing.tree.VariableHeightLayoutCache;
-import java.awt.*;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
+    public final static byte MIN_ZOOM_LEVEL = 1;
+    public final static byte MAX_ZOOM_LEVEL = 19;
+    public static Map<String, Byte> zoomMap;
+    private final int ZOOM_FACTOR = 2;
+    private final StringProperty ratio = new SimpleStringProperty("- - -");
     private MapData mapData;
     private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
-
-    public final static byte MIN_ZOOM_LEVEL = 1;
-    public final static byte MAX_ZOOM_LEVEL = 19;
-
-    private final int ZOOM_FACTOR = 2;
-    private final StringProperty ratio = new SimpleStringProperty("- - -");
-
     private boolean initialized;
     private byte zoomLevel = MIN_ZOOM_LEVEL;
-    public static Map<String, Byte> zoomMap;
 
     public void init(MapData mapData) {
         this.mapData = mapData;
@@ -70,17 +66,17 @@ public class MapCanvas extends Canvas {
         fillCoastLines(gc);
 
         int layers = mapData.getMapSegment().size();
-        for (int layer = 0; layer < layers-1; layer++) {
+        for (int layer = 0; layer < layers - 1; layer++) {
             for (Element element : mapData.getMapSegment().get(layer)) {
                 drawElement(gc, element);
             }
         }
-        for(Element element : mapData.getMapSegment().get(mapData.getMapSegment().size()-1)){ // toplayer is only text
+        for (Element element : mapData.getMapSegment().get(mapData.getMapSegment().size() - 1)) { // toplayer is only text
             drawText(gc, element);
         }
 
-        for (Element route : mapData.getCurrentDjikstraRoute()) {
-            if(theme.get(route.getType()).isNode()) drawRoundNode(gc, route);
+        for (Element route : mapData.getCurrentRoute()) {
+            if (theme.get(route.getType()).isNode()) drawRoundNode(gc, route);
             else drawElement(gc, route);
         }
 
@@ -110,15 +106,15 @@ public class MapCanvas extends Canvas {
 
     }
 
-    private void drawText(GraphicsContext gc, Element element){
+    private void drawText(GraphicsContext gc, Element element) {
         Theme.ThemeElement themeElement = theme.get(element.getType());
         String text = mapData.getTextFromElement(element);
         gc.setTextAlign(TextAlignment.CENTER);
-        Font font = new Font(themeElement.getOuterWidth()/Math.sqrt(trans.determinant()));
+        Font font = new Font(themeElement.getOuterWidth() / Math.sqrt(trans.determinant()));
         gc.setFont(font);
 
         gc.setFill(themeElement.getColor().getInner());
-        gc.fillText(text,element.getxMax(),element.getyMax());
+        gc.fillText(text, element.getxMax(), element.getyMax());
     }
 
 
@@ -132,10 +128,10 @@ public class MapCanvas extends Canvas {
 
     }
 
-    private void drawRoundNode(GraphicsContext gc, Element element){
+    private void drawRoundNode(GraphicsContext gc, Element element) {
         Theme.ThemeElement themeElement = theme.get(element.getType());
-        double innerRadius = (themeElement.getInnerWidth()/Math.sqrt(trans.determinant()));
-        double outerRadius = (themeElement.getOuterWidth()/Math.sqrt(trans.determinant()));
+        double innerRadius = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
+        double outerRadius = (themeElement.getOuterWidth() / Math.sqrt(trans.determinant()));
         gc.setFill(themeElement.getColor().getInner());
         gc.fillOval(element.getxMax(), element.getyMax(), innerRadius, innerRadius);
         gc.setStroke(themeElement.getColor().getOuter());
