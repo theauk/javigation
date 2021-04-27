@@ -210,7 +210,12 @@ public class AddressTriesTree implements Serializable {
         trie.put(node3, "København K", "Studievej", 1455, "25",2);
         trie.put(node4, "Roskilde", "Studiestræde", 4000, "4", 2);
 
-        
+        for(List<AddressTrieNode> innerList : trie.search("studiestræde")) {
+            for(AddressTrieNode address : innerList) {
+                System.out.println(innerList.size());
+                System.out.println(address.getAddress());
+            }
+        }
 
         //System.out.println(trie.keysWithPrefix("studie"));
 
