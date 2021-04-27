@@ -81,12 +81,10 @@ public class Controller {
     @FXML private MenuItem zoomOutItem;
     @FXML private MenuItem dumpItem;
     @FXML private RadioMenuItem rTreeDebug;
+    @FXML private RadioMenuItem kdTreeNearestNode;
 
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
-    @FXML private Button chooseCorButtonFromNav;
-    @FXML private Button chooseCorButtonToNav;
-    @FXML private Button searchNav;
 
     @FXML private TextField textFieldFromNav;
     @FXML private TextField textFieldToNav;
@@ -97,7 +95,6 @@ public class Controller {
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
     @FXML private Label distanceAndTimeNav;
-    @FXML private RadioMenuItem dijkstraNav;
     @FXML private RadioMenuItem aStarNav;
 
     @FXML private ComboBox<String> dropDownPoints;
@@ -444,7 +441,7 @@ public class Controller {
     }
 
     private void setNearestRoadLabel(double x, double y) {
-        nearestRoadLabel.setText("Nearest Road: " + mapData.getNearestRoad((float) x, (float) y));
+        nearestRoadLabel.setText("Nearest Road: " + mapData.getNearestRoad((float) x, (float) y, kdTreeNearestNode.isSelected()));
     }
 
     private void setBoundsLabels() {

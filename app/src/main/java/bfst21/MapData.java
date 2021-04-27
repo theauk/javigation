@@ -66,7 +66,12 @@ public class MapData implements Serializable {
         rTreeDebug = selected;
     }
 
-    public String getNearestRoad(float x, float y) {
+    public String getNearestRoad(float x, float y, boolean useKDTree) {
+        if (useKDTree) return getNearestRoadKDTree(x, y);
+        else return getNearestRoadRTree(x, y);
+    }
+
+    public String getNearestRoadKDTree(float x, float y) {
         String names = "";
         try {
             Node node = closetRoadTree.getNearestNode(x, y);
@@ -78,13 +83,13 @@ public class MapData implements Serializable {
         return names;
     }
 
-    /*public String getNearestRoad(float x, float y) { // TODO: 4/22/21 in progress
+    public String getNearestRoadRTree(float x, float y) { // TODO: 4/22/21 in progress
         Way way = rTree.getNearestRoad(x, y);
         if (way.getName() != null) {
             return way.getName();
         }
         return "";
-    }*/
+    }
 
     public String getNodeHighWayNames(Node node) {
         String names = "";

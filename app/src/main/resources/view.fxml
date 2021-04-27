@@ -48,15 +48,21 @@
                 </Menu>
 
                 <Menu text="Debug">
-                    <RadioMenuItem fx:id="informationBoard" text="Information Board" selected="true"/>
+                    <RadioMenuItem fx:id="informationBoard" text="Show Information Board" selected="true"/>
                     <SeparatorMenuItem/>
-                    <RadioMenuItem fx:id="rTreeDebug" text="R-tree" onAction="#setRTreeDebug"/>
+                    <RadioMenuItem fx:id="rTreeDebug" text="Show R-Tree Debug" onAction="#setRTreeDebug"/>
+                    <SeparatorMenuItem/>
+                    <fx:define>
+                        <ToggleGroup fx:id="typeOfNearestRoad"/>
+                    </fx:define>
+                    <RadioMenuItem fx:id="kdTreeNearestNode" text="Nearest Road: KD-Tree" selected="true" toggleGroup="$typeOfNearestRoad"/>
+                    <RadioMenuItem fx:id="rTreeNearestNode" text="Nearest Road: R-Tree" toggleGroup="$typeOfNearestRoad"/>
                     <SeparatorMenuItem/>
                     <fx:define>
                         <ToggleGroup fx:id="typeOfNavAlgorithm"/>
                     </fx:define>
-                    <RadioMenuItem fx:id="aStarNav" text="A*" selected="true" toggleGroup="$typeOfNavAlgorithm"/>
-                    <RadioMenuItem fx:id="dijkstraNav" text="Dijkstra" toggleGroup="$typeOfNavAlgorithm"/>
+                    <RadioMenuItem fx:id="aStarNav" text="Use A*" selected="true" toggleGroup="$typeOfNavAlgorithm"/>
+                    <RadioMenuItem fx:id="dijkstraNav" text="Use Dijkstra" toggleGroup="$typeOfNavAlgorithm"/>
                     <SeparatorMenuItem/>
                     <MenuItem fx:id="dumpItem" text="Dump MapData" onAction="#dumpBinary" accelerator="CTRL + D"/>
                 </Menu>
