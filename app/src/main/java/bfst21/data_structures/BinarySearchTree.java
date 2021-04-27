@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-
-/*
- * Adapted from Troels Bjerre Lund
+/**
+ * Binary search tree adapted from Troels Bjerre Lund.
+ * @param <Value>
  */
 public class BinarySearchTree<Value extends Element> {
     List<Value> values = new ArrayList<>();

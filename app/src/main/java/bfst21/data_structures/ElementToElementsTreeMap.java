@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * TreeMap which places Values with the same Key in the same Value ArrayList.
+ * @param <Key>
+ * @param <Value>
+ */
 public class ElementToElementsTreeMap<Key extends Element, Value extends Element> implements Serializable {
     @Serial
     private static final long serialVersionUID = 7599232655577398280L;

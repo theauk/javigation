@@ -10,6 +10,8 @@ import java.util.List;
 public abstract class NodeHolder extends Element implements Serializable {
     @Serial
     private static final long serialVersionUID = 4506251123911227447L;
+    protected float xMax;
+    protected float yMax;
 
     protected List<Node> nodes = new ArrayList<>();
 
@@ -19,6 +21,21 @@ public abstract class NodeHolder extends Element implements Serializable {
 
     public NodeHolder() {
 
+    }
+
+    @Override
+    public float getxMax() {
+        return xMax;
+    }
+    
+    @Override
+    public float getyMax() {
+        return yMax;
+    }
+
+    @Override
+    public float[] getCoordinates() {
+        return new float[]{xMin, xMax, yMin, yMax};
     }
 
     public void addNode(Node node) {
