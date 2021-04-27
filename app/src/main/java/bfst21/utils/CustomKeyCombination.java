@@ -1,4 +1,4 @@
-package bfst21.view;
+package bfst21.utils;
 
 import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
