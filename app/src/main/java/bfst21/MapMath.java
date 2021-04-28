@@ -45,9 +45,9 @@ public class MapMath {
      * @param p3 the end point.
      * @return
      */
-    public static double turnAngle(Point2D p1, Point2D p2, Point2D p3) {
-        double v1 = Math.atan2(p3.getY() - p1.getY(), p3.getX() - p1.getX());
-        double v2 = Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX());
+    public static double turnAngle(Node p1, Node p2, Node p3) {
+        double v1 = Math.atan2(p3.getyMax() - p1.getyMax(), p3.getxMax() - p1.getxMax());
+        double v2 = Math.atan2(p2.getyMax() - p1.getyMax(), p2.getxMax() - p1.getxMax());
         double result = v1 - v2;
 
         if(result > Math.PI) result -= 2 * Math.PI;
@@ -78,8 +78,7 @@ public class MapMath {
     }
 
     /**
-     * <p>Calculates a compass direction from a bearing angle between two points.</p>
-     * <img src="http://www.mathsmutt.co.uk/files/Bearings_files/bear2.gif" width="400" height="400">
+     * Calculates a compass direction from a bearing angle between two points.
      *
      * @param bearing the bearing angle.
      * @return a String containing a compass direction ranging from NORTH, NORTH EAST, EAST and so forth or UNKNOWN if not found.
@@ -97,8 +96,7 @@ public class MapMath {
     }
 
     /**
-     * <p>Calculates a compass direction from a bearing angle between two points.</p>
-     * <img src="http://www.mathsmutt.co.uk/files/Bearings_files/bear2.gif" width="400" height="400">
+     * Calculates a compass direction from a bearing angle between two points.
      *
      * @param n1 the start point.
      * @param n2 the end point.

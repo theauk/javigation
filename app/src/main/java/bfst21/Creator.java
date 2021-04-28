@@ -37,7 +37,10 @@ public class Creator extends Task<MapData> {
     private HashMap<String, Integer> typeToLayer;
     private Relation coastLines;
     private HashMap<Element, String> elementToText;
-    private boolean isFoot = false; // TODO: 4/15/21 is there a better way?
+    private boolean isFoot = false;
+    private boolean motorWayJunctionNode = false;
+    private HashMap<Node, String> destinationInfoMap = new HashMap<>();
+    private String motorwayExitInfo;
 
     public Creator(InputStream inputStream, long fileSize, boolean binary) {
         mapData = new MapData();
@@ -93,7 +96,7 @@ public class Creator extends Task<MapData> {
         Relation relation = null;
 
         KDTree<Node> highWayRoadNodes = new KDTree<>(2, 4);
-        RTree rTree = new RTree(1, 30, 4, topLayer); //remove nodes
+        RTree rTree = new RTree(1, 100, 4, topLayer); //remove nodes
         AddressTriesTree addressTree = new AddressTriesTree();
         ElementToElementsTreeMap<Node, Way> nodeToWayMap = new ElementToElementsTreeMap<>();
         ElementToElementsTreeMap<Node, Relation> nodeToRestriction = new ElementToElementsTreeMap<>();
@@ -151,6 +154,7 @@ public class Creator extends Task<MapData> {
                                 if (node != null) {
                                     // TODO: 09-04-2021 out commented node deletion
                                     //if(checkNodesNotCreate(k,v)) node = null;
+                                    checkMotorWayExitNode(k, v);
                                     checkAddressNode(k, v, node);
                                     break;
                                 }
@@ -215,6 +219,11 @@ public class Creator extends Task<MapData> {
                         switch (reader.getLocalName()) {
                             case "node":
                                 if (node != null) {
+                                    if (motorWayJunctionNode) {
+                                        motorWayJunctionNode = false;
+                                        destinationInfoMap.put(node, motorwayExitInfo);
+                                    }
+
                                     if(isAddress()){
                                         addressTree.put(node, city, streetName, postcode, houseNumber,2);
                                         node.setLayer(4);
@@ -271,6 +280,16 @@ public class Creator extends Task<MapData> {
         updateMessage("Finalizing...");
         mapData.addDataTrees(highWayRoadNodes, rTree, nodeToRestriction, wayToRestriction, addressTree, nodeToWayMap);
         reader.close();
+    }
+
+    private void checkMotorWayExitNode(String k, String v) {
+        if (k.equals("highway") && v.equals("motorway_junction")) {
+            motorWayJunctionNode = true;
+        } else if (k.equals("name")) {
+            motorwayExitInfo = v;
+        } else if (k.equals("ref")) {
+            motorwayExitInfo = v + "-" + motorwayExitInfo;
+        }
     }
 
     private void checkRelation(String k, String v, Relation relation) {
@@ -379,10 +398,10 @@ public class Creator extends Task<MapData> {
                 checkHighWayType(way, v);
                 break;
 
-
             case "name":
                 way.setName(v);
                 break;
+
         }
         checkHighWayAttributes(k, v, way);
     }

@@ -10,6 +10,7 @@ import javafx.geometry.Point2D;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 
@@ -67,13 +68,14 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Gets either the fastest or the shortest path between two Nodes.
-     * @param from The from Node.
-     * @param to The to Node.
-     * @param car True if travelling by car. Otherwise, false.
-     * @param bike True if travelling by bike. Otherwise, false.
-     * @param walk True if walking. Otherwise, false.
+     *
+     * @param from    The from Node.
+     * @param to      The to Node.
+     * @param car     True if travelling by car. Otherwise, false.
+     * @param bike    True if travelling by bike. Otherwise, false.
+     * @param walk    True if walking. Otherwise, false.
      * @param fastest True if fastest route needs to be found. False if shortest route should be found.
-     * @param aStar True if the A* algorithm should be used. False if Dijkstra should be used.
+     * @param aStar   True if the A* algorithm should be used. False if Dijkstra should be used.
      * @return An ArrayList with Nodes that make up the path in reverse order.
      * @throws NoNavigationResultException If no route can be found.
      */
@@ -89,18 +91,20 @@ public class RouteNavigation implements Serializable {
             if (n != to) throw new NoNavigationResultException();
             else {
                 path = getTrack(new ArrayList<>(), n);
+                getRouteDescription();
                 return path;
             }
 
         } else {
             path = getTrack(new ArrayList<>(), n);
-            //getRouteDescription();
+            getRouteDescription();
             return path;
         }
     }
 
     /**
      * Get the total distance for the path.
+     *
      * @return The total distance.
      */
     public double getTotalDistance() {
@@ -110,6 +114,7 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Gets the total travelling time for the path.
+     *
      * @return The total travelling time.
      */
     public double getTotalTime() {
@@ -117,48 +122,13 @@ public class RouteNavigation implements Serializable {
         else return 0;
     }
 
-    /*public String getRouteDescription() {
-        for (int i = path.size() - 1; i >= 2; i--) {
-            Node from = path.get(i);
-            Node via = path.get(i - 1);
-            Node to = path.get(i - 2);
-
-            double distanceFromAndVia = getDistanceBetweenTwoNodes(from, via);
-            double distanceViaAndTo = getDistanceBetweenTwoNodes(via, to);
-            double distanceFromAndTo = getDistanceBetweenTwoNodes(from, to);
-
-            double cosTurnAngle = (Math.pow(distanceViaAndTo, 2) + Math.pow(distanceFromAndVia, 2) - Math.pow(distanceFromAndTo, 2)) / (2 * distanceViaAndTo * distanceFromAndVia);
-            double turnAngle = Math.acos(cosTurnAngle);
-
-            double result = Math.atan2(to.getyMax() - via.getyMax(), to.getxMax() - via.getxMax()) - Math.atan2(from.getyMax() - via.getyMax(), from.getxMax() - via.getxMax());
-
-
-            double v1x = from.getxMax() - via.getxMax();
-            double v1y = from.getyMax() - via.getyMax();
-            double v2x = to.getxMax() - via.getxMax();
-            double v2y = to.getyMax() - via.getyMax();
-
-            double angle = Math.atan2(v1x, v1y) - Math.atan2(v2x, v2y);
-            double degreeAngle = Math.toDegrees(angle);
-
-            //System.out.println(turnAngle * (180f / Math.PI));
-
-            if (degreeAngle > 0) {
-                if (degreeAngle < 175 || degreeAngle > 185) {
-                    System.out.println("You turned right, by: " + degreeAngle + " " + Math.toDegrees(result));
-                }
-            } else {
-                if (degreeAngle > -175 || degreeAngle < -185) {
-                    System.out.println("You turned left, by: " + degreeAngle + " " + Math.toDegrees(result));
-                }
-            }
-        }
-        System.out.println("");
-        return "";
-    }*/
+    public ArrayList<String> getDirections() {
+        return routeDescription;
+    }
 
     /**
      * Checks the next node in the priority queue with the smallest units/cost.
+     *
      * @return The final Node found for the path.
      */
     private Node checkNode() {
@@ -173,7 +143,8 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Gets a list of the Nodes that make up the path.
-     * @param nodes A list of the Nodes making up the path.
+     *
+     * @param nodes       A list of the Nodes making up the path.
      * @param currentNode The Node which should be checked for the Node before it.
      * @return A list of the Nodes making up the path.
      */
@@ -187,6 +158,7 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Relaxes the Nodes adjacent to the current Node.
+     *
      * @param currentFrom The current Node to examine.
      */
     private void relax(Node currentFrom) {
@@ -232,9 +204,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Gets the Node before a specified Node on a certain Way.
+     *
      * @param adjacentNodes The list of adjacent Nodes to the current from Node.
-     * @param w The current Way.
-     * @param currentFrom The current from Node.
+     * @param w             The current Way.
+     * @param currentFrom   The current from Node.
      */
     private void getPreviousNode(ArrayList<Node> adjacentNodes, Way w, Node currentFrom) {
         Node previousNode = w.getPreviousNode(currentFrom);
@@ -243,9 +216,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Gets the next Node after a specified Node on a certain Way.
+     *
      * @param adjacentNodes The list of adjacent Nodes to the current from Node.
-     * @param w The current Way.
-     * @param currentFrom The current from Node.
+     * @param w             The current Way.
+     * @param currentFrom   The current from Node.
      */
     private void getNextNode(ArrayList<Node> adjacentNodes, Way w, Node currentFrom) {
         Node nextNode = w.getNextNode(currentFrom);
@@ -254,9 +228,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Checks if is a _no restriction (e.g. no left-turn).
+     *
      * @param fromWay The Way the path is coming from.
      * @param viaNode The Node the path is trying to go via.
-     * @param toWay The Way the path is trying to go to.
+     * @param toWay   The Way the path is trying to go to.
      * @return True if there is a restriction. False if not.
      */
     private boolean isThereARestriction(Way fromWay, Node viaNode, Way toWay) {
@@ -267,9 +242,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Checks if there is a _no restriction via a specified Node.
+     *
      * @param fromWay The Way the path is coming from.
      * @param viaNode The Node the path is trying to go via.
-     * @param toWay The Way the path is trying to go to.
+     * @param toWay   The Way the path is trying to go to.
      * @return True if there is a restriction. False if not.
      */
     private boolean checkRestrictionViaNode(Way fromWay, Node viaNode, Way toWay) {
@@ -288,9 +264,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Checks if there is a _no restriction via a specified Way.
+     *
      * @param fromWay The Way the path is coming from.
      * @param viaNode The Node the path is trying to go via.
-     * @param toWay The Way the path is trying to go to.
+     * @param toWay   The Way the path is trying to go to.
      * @return True if there is a restriction. False if not.
      */
     private boolean checkRestrictionViaWay(Way fromWay, Node viaNode, Way toWay) {
@@ -319,9 +296,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Find the cost between two Nodes to update the priority queue.
+     *
      * @param currentFrom The from Node.
-     * @param currentTo The to Node.
-     * @param w The Way between the two Nodes.
+     * @param currentTo   The to Node.
+     * @param w           The Way between the two Nodes.
      */
     private void checkDistanceAStar(Node currentFrom, Node currentTo, Way w) {
         double currentCost = unitsTo.get(currentTo) == null ? Double.POSITIVE_INFINITY : unitsTo.get(currentTo).cost;
@@ -348,9 +326,10 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Find the units between two Nodes to update the priority queue.
+     *
      * @param currentFrom The from Node.
-     * @param currentTo The to Node.
-     * @param w The Way between the Nodes.
+     * @param currentTo   The to Node.
+     * @param w           The Way between the Nodes.
      */
     private void checkDistanceDijkstra(Node currentFrom, Node currentTo, Way w) {
         double currentDistanceTo = unitsTo.get(currentTo) == null ? Double.POSITIVE_INFINITY : unitsTo.get(currentTo).distance;
@@ -374,12 +353,13 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Update the maps with new distance and time along with the unit/cost priority queue.
-     * @param currentTo The from Node.
-     * @param currentFrom The to Node.
-     * @param w The Way between the Nodes.
+     *
+     * @param currentTo             The from Node.
+     * @param currentFrom           The to Node.
+     * @param w                     The Way between the Nodes.
      * @param distanceBetweenFromTo The distance between the two Nodes.
-     * @param timeBetweenFromTo The travelling time between the two Nodes.
-     * @param newCost The cost between the two Nodes.
+     * @param timeBetweenFromTo     The travelling time between the two Nodes.
+     * @param newCost               The cost between the two Nodes.
      */
     private void updateMapsAndPQ(Node currentTo, Node currentFrom, Way w, double distanceBetweenFromTo, double timeBetweenFromTo, double newCost) {
         nodeBefore.put(currentTo, currentFrom);
@@ -415,8 +395,9 @@ public class RouteNavigation implements Serializable {
 
     /**
      * Gets the travel time for a given distance and speed.
+     *
      * @param distance The distance to be used for the calculation.
-     * @param w The Way used to find the speed if travelling by car.
+     * @param w        The Way used to find the speed if travelling by car.
      * @return The travelling time.
      */
     private double getTravelTime(double distance, Way w) {
@@ -428,76 +409,110 @@ public class RouteNavigation implements Serializable {
     }
 
     public void dumpPath() {
-        for(int j = 0; j < path.size(); j++) {
+        for (int j = 0; j < path.size(); j++) {
             System.out.println("(" + path.get(j).getxMax() + ", " + convertToGeo(path.get(j).getyMax()) + ")");
         }
     }
 
-    private String lastDirection;
-    private String currentDirection;
-    private double turnAngleThreshold = 5.0;
-
-    private String getDirection(Point2D from, Point2D via, Point2D to) {
-        double angle = MapMath.turnAngle(from, via, to);
-
-        System.out.println("Angle: " + angle);
-
-        //LEFT NEGATIVE
-        //RIGHT POSITIVE
-        if(angle > turnAngleThreshold) return "RIGHT";
-        if(angle < -turnAngleThreshold) return "LEFT";
-        else return "STRAIGHT";
-    }
-
-    public void calculateResult(Point2D from, Point2D via, Point2D to) {
-        System.out.println("Calculate Result");
-
-        System.out.println("F = (" + from.getX() + ", " + from.getY() + ")");
-        System.out.println("V = (" + via.getX() + ", " + via.getY() + ")");
-        System.out.println("T = (" + to.getX() + ", " + to.getY() + ")");
-
-        currentDirection = getDirection(from, via, to);
-
-        if(!currentDirection.equals(lastDirection)) {
-            //if(lastDirection == null) System.out.println("Go " + MapMath.compassDirection(from, via));   //START POINT
+    private void printDirections() {
+        System.out.println("");
+        for (String s : routeDescription) {
+            System.out.println(s);
+            System.out.println("");
         }
-
-        if(currentDirection.equals("LEFT")) {
-            System.out.println("Go LEFT");
-        }
-        else if(currentDirection.equals("RIGHT")) {
-            System.out.println("Go RIGHT");
-        }
-        else if(currentDirection.equals("STRAIGHT")) {
-            System.out.println("Go STRAIGHT");
-        }
-
-        lastDirection = currentDirection;
     }
 
     public void getRouteDescription() {
-        System.err.println("Size: " + path.size());
-        if(path.size() % 3 != 0) System.err.println("Warning can't do 3 each time!");
-        lastDirection = null;
+        double currentDistance = 0;
+        double currentTime = 0;
+        boolean roundabout = false;
+        int roundAboutStartNodeIndex = 0;
 
-        for (int i = path.size() - 1; i >= 0; i--) {
-            if(i - 2 < 0) {
-                System.err.println("SKIPPING 2");
-                break;
-            }
+        if (path.size() < 3) {
+            routeDescription.add("Follow " + wayBefore.get(path.get(1)) + ": " + unitsTo.get(path.get(1)).distance + " " + unitsTo.get(path.get(1)).time);
+        } else {
+            currentDistance += unitsTo.get(path.get(path.size() - 2)).distance - unitsTo.get(path.get(path.size() - 1)).distance;
+            currentTime += unitsTo.get(path.get(path.size() - 2)).time - unitsTo.get(path.get(path.size() - 1)).time;
+        }
 
+        for (int i = path.size() - 1; i >= 2; i--) {
             Node f = path.get(i);
             Node v = path.get(i - 1);
             Node t = path.get(i - 2);
+            Way wayBeforeVia = wayBefore.get(v);
+            Way wayBeforeTo = wayBefore.get(t);
+            String wayBeforeViaName = wayBeforeVia.getName() != null ? wayBeforeVia.getName() : "no name";
+            String wayBeforeToName = wayBeforeTo.getName() != null ? wayBeforeTo.getName() : "no name";
 
-            Point2D from = MapMath.convertToGeoCoords(new Point2D(f.getxMax(), f.getyMax()));
-            Point2D via = MapMath.convertToGeoCoords(new Point2D(v.getxMax(), v.getyMax()));
-            Point2D to = MapMath.convertToGeoCoords(new Point2D(t.getxMax(), t.getyMax()));
+            if (!wayBeforeViaName.equals(wayBeforeToName)) {
+                if (roundabout) {
+                    routeDescription.add("At the roundabout, take the " + getRoundaboutExit(roundAboutStartNodeIndex, i - 1, wayBeforeVia) + ". exit onto " + wayBeforeTo.getName() + "\n" + currentDistance + " m " + "\n" + currentTime + " s");
+                    roundabout = false;
+                } else {
+                    routeDescription.add("Follow " + wayBeforeVia.getName() + "\n" + currentDistance + " m " + "\n" + currentTime + " s");
+                }
 
-            calculateResult(from, via, to);
+                currentDistance = unitsTo.get(t).distance - unitsTo.get(v).distance;
+                currentTime = unitsTo.get(t).time - unitsTo.get(v).time;
 
-            System.out.println();
+                String directionBetweenViaAndToWay = getDirection(MapMath.turnAngle(f, v, t), wayBeforeTo);
+                if (directionBetweenViaAndToWay.equals("ROUNDABOUT")) {
+                    roundabout = true;
+                    roundAboutStartNodeIndex =  i - 1;
+                } else {
+                    routeDescription.add("Turn " + directionBetweenViaAndToWay + " onto " + wayBeforeTo.getName());
+                }
+            }
+            currentDistance += unitsTo.get(t).distance - unitsTo.get(v).distance;
+            currentTime += unitsTo.get(t).time - unitsTo.get(v).time;
         }
+
+        if (roundabout) routeDescription.add("Follow the roundabout and you will arrive at your destination\n" + currentDistance + " m " + "\n" + currentTime + " s");
+        else routeDescription.add("Follow " + wayBefore.get(path.get(0)).getName() + " and you will arrive at your destination\n" + currentDistance + " m " + "\n" + currentTime + " s");
+
+        fixFirstDirection();
+
+        printDirections();
+    }
+
+    private String getDirection(double angle, Way wayBeforeTo) {
+
+        System.out.println("Angle: " + angle);
+
+        if (angle > 0) {
+            if (wayBeforeTo.getType().equals("roundabout")) return "ROUNDABOUT";
+            else return "right";
+        }
+        if (angle < 0) {
+            return "left";
+        }
+
+        return "ERROR";
+    }
+
+    private String getRoundaboutExit(int roundaboutStartNodeIndex, int roundaboutEndIndex, Way roundaboutWay) {
+        int exits = 0;
+
+        for (int i = roundaboutStartNodeIndex - 1; i >= roundaboutEndIndex; i--) {
+            ArrayList<Way> ways = nodeToWayMap.getElementsFromNode(path.get(i));
+            if (ways.size() > 1) {
+                for (Way w: ways) {
+                    if (w != roundaboutWay) {
+                        if (!w.isOnewayRoad()) exits++;
+                        else if (w.getNextNode(path.get(i)) != null) exits++;
+                        break;
+                    }
+                }
+            }
+        }
+        return String.valueOf(exits);
+    }
+
+    private void fixFirstDirection() {
+        Node f = path.get(path.size() - 1);
+        Node t = path.get(path.size() - 2);
+        routeDescription.add(1, routeDescription.get(0).replace("Follow", "Head " + MapMath.compassDirection(f, t).toLowerCase() + " on"));
+        routeDescription.remove(0);
     }
 
     /**

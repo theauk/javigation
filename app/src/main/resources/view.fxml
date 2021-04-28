@@ -198,6 +198,9 @@
                         </HBox>
                         <Button fx:id="searchNav" text="Search" onAction="#searchNav"/>
                         <Label fx:id="distanceAndTimeNav" visible="false"></Label>
+                        <ScrollPane fx:id="directionsScrollPane" visible="false">
+                            <VBox fx:id="directionsBox"></VBox>
+                        </ScrollPane>
                         <VBox>
                             <HBox.margin>
                                 <Insets right="30.0"/>

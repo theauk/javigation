@@ -19,6 +19,12 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -29,9 +35,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class Controller {
     private MapData mapData;
@@ -96,6 +104,8 @@ public class Controller {
     @FXML private RadioButton radioButtonShortestNav;
     @FXML private Label distanceAndTimeNav;
     @FXML private RadioMenuItem aStarNav;
+    @FXML private VBox directionsBox;
+    @FXML private ScrollPane directionsScrollPane;
 
     @FXML private ComboBox<String> dropDownPoints;
     @FXML private TextField textFieldPointName;
@@ -512,12 +522,14 @@ public class Controller {
     public void searchNav() {
         if (currentToNode == null || currentFromNode == null) {
             showDialogBox("Navigation Error", "Please enter both from and to");
+        } else if (currentFromNode == currentToNode) {
+            showDialogBox("Navigation Error", "From and to are the same entries");
         } else if (!radioButtonCarNav.isSelected() && !radioButtonBikeNav.isSelected() && !radioButtonWalkNav.isSelected()) {
             showDialogBox("Navigation Error", "Please select a vehicle type");
         } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
             showDialogBox("Navigation Error", "Please select either fastest or shortest");
         } else {
-            getDijkstraPath();
+            getRoute();
         }
     }
 
@@ -533,14 +545,29 @@ public class Controller {
     }
 
     @FXML
-    public void getDijkstraPath() {
+    public void getRoute() {
         try {
             mapData.setRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
             setDistanceAndTimeNav(mapData.getDistanceNav(), mapData.getTimeNav());
+            setDirections(mapData.getDirections());
             mapCanvas.repaint();
         } catch (NoNavigationResultException e) {
             showDialogBox("No Route Found", "It was not possible to find a route between the two points");
         }
+    }
+
+    public void setDirections(ArrayList<String> directions) {
+        directionsBox.getChildren().removeAll(directionsBox.getChildren());
+        int order = 1;
+        for (String s: directions) {
+            Label l = new Label(order + ". " + s);
+            directionsBox.getChildren().add(l);
+            directionsBox.getChildren().add(new Label(""));
+            order++;
+        }
+        directionsScrollPane.setMinSize(160, 200);
+        directionsScrollPane.setPrefSize(160, 200);
+        directionsScrollPane.setVisible(true);
     }
 
     public void setDistanceAndTimeNav(double distance, double time) {

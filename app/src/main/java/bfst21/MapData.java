@@ -134,6 +134,10 @@ public class MapData implements Serializable {
         }
     }
 
+    public ArrayList<String> getDirections() {
+        return routeNavigation.getDirections();
+    }
+
     public double getDistanceNav() throws NoNavigationResultException {
         return routeNavigation.getTotalDistance();
     }
