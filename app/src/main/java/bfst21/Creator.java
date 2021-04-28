@@ -222,6 +222,7 @@ public class Creator extends Task<MapData> {
                                     if (motorWayJunctionNode) {
                                         motorWayJunctionNode = false;
                                         destinationInfoMap.put(node, motorwayExitInfo);
+                                        motorwayExitInfo = null;
                                     }
 
                                     if(isAddress()){
@@ -285,10 +286,13 @@ public class Creator extends Task<MapData> {
     private void checkMotorWayExitNode(String k, String v) {
         if (k.equals("highway") && v.equals("motorway_junction")) {
             motorWayJunctionNode = true;
-        } else if (k.equals("name")) {
-            motorwayExitInfo = v;
-        } else if (k.equals("ref")) {
-            motorwayExitInfo = v + "-" + motorwayExitInfo;
+        } else if (motorWayJunctionNode) {
+            if (k.equals("name")) {
+                motorwayExitInfo = v;
+            } else if (k.equals("ref")) {
+                if (motorwayExitInfo != null) motorwayExitInfo = "exit " + v + "-" + motorwayExitInfo;
+                else motorwayExitInfo = "exit " + v;
+            }
         }
     }
 
@@ -532,6 +536,15 @@ public class Creator extends Task<MapData> {
             way.setType(v, true, isFoot);
             way.setMaxSpeed(80);
             return;
+        }
+
+        if (v.equals("motorway_link")) {
+            for(Node n : way.getNodes()) {
+                if (destinationInfoMap.get(n) != null) {
+                    way.setName(destinationInfoMap.get(n));
+                    break;
+                }
+            }
         }
 
         if (restOfHighWays(v)) way.setType(v, true, isFoot);
