@@ -134,7 +134,7 @@ public class MapData implements Serializable {
         }
     }
 
-    public ArrayList<String> getDirections() {
+    public ArrayList<String> getDirections() { // TODO: 4/28/21 what if no directions yet?
         return routeNavigation.getDirections();
     }
 

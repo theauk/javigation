@@ -406,8 +406,24 @@ public class Creator extends Task<MapData> {
                 way.setName(v);
                 break;
 
+            case "ref":
+                if (way.getName() == null && !way.getType().equals("roundabout")) way.setName(fixNumberWayName(v));
+
         }
         checkHighWayAttributes(k, v, way);
+    }
+
+    private String fixNumberWayName(String v) {
+        String[] wayNumbers = v.split(";");
+        String[] names = new String[wayNumbers.length];
+
+        for (int i = 0; i < wayNumbers.length; i++) {
+            if (wayNumbers[i].length() < 3) names[i] = "Hovedvej " + wayNumbers[i];
+            else names[i] = "Sekundærvej " + wayNumbers[i];
+        }
+
+        return String.join("/", names);
+
     }
 
     private void checkHighWayAttributes(String k, String v, Way way) {

@@ -450,17 +450,17 @@ public class RouteNavigation implements Serializable {
                     roundabout = false;
                 } else {
                     routeDescription.add("Follow " + wayBeforeVia.getName() + "\n" + currentDistance + " m " + "\n" + currentTime + " s");
-                }
 
-                currentDistance = unitsTo.get(t).distance - unitsTo.get(v).distance;
-                currentTime = unitsTo.get(t).time - unitsTo.get(v).time;
+                    currentDistance = unitsTo.get(t).distance - unitsTo.get(v).distance;
+                    currentTime = unitsTo.get(t).time - unitsTo.get(v).time;
 
-                String directionBetweenViaAndToWay = getDirection(MapMath.turnAngle(f, v, t), wayBeforeTo);
-                if (directionBetweenViaAndToWay.equals("ROUNDABOUT")) {
-                    roundabout = true;
-                    roundAboutStartNodeIndex =  i - 1;
-                } else {
-                    routeDescription.add("Turn " + directionBetweenViaAndToWay + " onto " + wayBeforeTo.getName());
+                    String directionBetweenViaAndToWay = getDirection(MapMath.turnAngle(f, v, t), wayBeforeTo);
+                    if (directionBetweenViaAndToWay.equals("ROUNDABOUT")) {
+                        roundabout = true;
+                        roundAboutStartNodeIndex =  i - 1;
+                    } else {
+                        routeDescription.add("Turn " + directionBetweenViaAndToWay + " onto " + wayBeforeTo.getName());
+                    }
                 }
             }
             currentDistance += unitsTo.get(t).distance - unitsTo.get(v).distance;
