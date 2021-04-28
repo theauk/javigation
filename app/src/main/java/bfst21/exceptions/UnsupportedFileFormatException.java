@@ -1,4 +1,4 @@
-package bfst21.Exceptions;
+package bfst21.exceptions;
 
 public class UnsupportedFileFormatException extends Exception {
     private final String format;

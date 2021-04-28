@@ -1,7 +1,7 @@
 package bfst21.file_io;
 
-import bfst21.Exceptions.NoOSMInZipFileException;
-import bfst21.Exceptions.UnsupportedFileFormatException;
+import bfst21.exceptions.NoOSMInZipFileException;
+import bfst21.exceptions.UnsupportedFileFormatException;
 import bfst21.view.Theme;
 
 import java.io.*;
