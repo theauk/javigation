@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 // TODO: 25-04-2021 implement HashMap<city(String), Arraylist<AddressTrieNodes>
 
@@ -14,9 +15,10 @@ public class AddressTrieNode implements Serializable {
     @Serial
     private static final long serialVersionUID = -9059402923966729263L;
     private HashMap<Character, AddressTrieNode> children;
-    private HashMap<String, City> citiesWithThisStreet;
+    private HashMap<String, ArrayList<HouseNumberNode>> citiesWithThisStreet;
     private String streetname;
-    private Integer postcode;
+    private int postcode;
+    HashMap<String,String> addresses;
     private boolean isAddress;
 
 
@@ -29,7 +31,9 @@ public class AddressTrieNode implements Serializable {
 
     public void setAddress(Node node, String city, String streetname, int postcode, String houseNumber){
         citiesWithThisStreet = new HashMap<>();
-        citiesWithThisStreet.put(city, new City(city, node, houseNumber));
+        ArrayList<HouseNumberNode> list = new ArrayList<>();
+        list.add(new HouseNumberNode(node, houseNumber));
+        citiesWithThisStreet.put(city, list);
         this.streetname = streetname;
         this.postcode = postcode;
         isAddress = true;
@@ -41,14 +45,12 @@ public class AddressTrieNode implements Serializable {
 
     public void addHouseNumber(String city, Node node, String houseNumber){
         if(citiesWithThisStreet.containsKey(city)){
-            citiesWithThisStreet.get(city).houseNumberNodes.add(new HouseNumberNode(node, houseNumber));
+            citiesWithThisStreet.get(city).add(new HouseNumberNode(node, houseNumber));
         } else {
-            citiesWithThisStreet.put(city, new City(city, node, houseNumber));
+            ArrayList<HouseNumberNode> list = new ArrayList<>();
+            list.add(new HouseNumberNode(node, houseNumber));
+            citiesWithThisStreet.put(city, list);
         }
-    }
-
-    public HashMap<String, City> getCitiesWithThisStreet() {
-        return citiesWithThisStreet;
     }
 
     public HashMap<Character, AddressTrieNode> getChildren(){
@@ -56,47 +58,33 @@ public class AddressTrieNode implements Serializable {
     }
 
 
-    public Node getNode(){
-        return node;
-    }
-
-    public String getCity() {
-        //return this.city;
-        return null;
-    }
-
-    public String getStreetname() {
-        return this.streetName;
-    }
-
-    public int getPostcode() {
-        return this.postcode;
-    }
-
-    public String getHouseNumber() {
-        //return this.houseNumber;
-        return null;
-    }
-    public String getAddress(){
-        //return this.streetname + " " + this.houseNumber + ", " + this.postcode + " " + this.city;
-        return null;
-    }
-
-    public AddressTrieNode getAddressTrieNode(){
-        return this;
-    }
-
-
-
-    public class City{
-        String city;
-        ArrayList<HouseNumberNode> houseNumberNodes;
-        public City(String city, Node node, String houseNumber){
-            this.city = city;
-            houseNumberNodes = new ArrayList<>();
-            houseNumberNodes.add(new HouseNumberNode(node, houseNumber));
+    public HashMap<String, String> getAddresses(){
+        if(addresses != null){
+            return addresses;
+        } else {
+            addresses = new HashMap<>();
+            for(String val : citiesWithThisStreet.keySet()){
+                addresses.put(val, getAddressWithOutHouseNumber(val));
+            }
         }
+        return addresses;
     }
+
+    private String getAddressWithOutHouseNumber(String city){
+        return (this.streetname +  ", " + this.postcode + " " + city);
+    }
+    private String getFullAddress(HouseNumberNode node){
+        return (this.streetname + "  " + node.houseNumber + ", " + this.postcode);
+    }
+
+    public HashMap<String, Node> getHouseNumbersOnStreet(String city){
+        HashMap<String, Node> map = new HashMap<>();
+        for(HouseNumberNode houseNumberNode : citiesWithThisStreet.get(city) ){
+            map.put((getFullAddress(houseNumberNode) + " " + city), houseNumberNode.node);
+        }
+        return map;
+    }
+
     private class HouseNumberNode{
         Node node;
         String houseNumber;

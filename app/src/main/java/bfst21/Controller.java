@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class Controller {
     private MapData mapData;
@@ -125,6 +126,7 @@ public class Controller {
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
         addListenerToSearchFields();
+        testMethod();
     }
 
 
@@ -157,6 +159,10 @@ public class Controller {
                 if(newValue.length()>2) fillAutoCompleteText(autoCompleteFromNav, true);
             }
         });
+
+    }
+
+    private void testMethod(){
         textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable,
@@ -164,6 +170,11 @@ public class Controller {
                 if(newValue.length()>2) fillAutoCompleteText(autoCompleteToNav, false);
             }
         });
+
+    }
+
+    private void removeChildren(){
+        // TODO: 28-04-2021 Remove search when under 2 charachters 
     }
 
     /**
@@ -503,21 +514,21 @@ public class Controller {
 
     private void fillAutoCompleteText(VBox autoComplete, boolean fromNav){
         autoComplete.getChildren().removeAll(autoComplete.getChildren());
-        currentAutoCompleteList = new ArrayList<>();
+
         fillAutoCompleteText(fromNav);
     }
     
     
     private void fillAutoCompleteText(boolean fromNav){
         if(mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null){
-            // TODO: 27-04-2021 test with trie tree 
         for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
-            currentAutoCompleteList.add(addressNode);
+
             if (fromNav) {
-                labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, true);
+                labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
                 ScrollpaneAutoCompleteFromNav.setVisible(true);
             } else {
-                labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, false);
+                System.out.println("here");
+                labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
                 ScrollpaneAutoCompleteToNav.setVisible(true);
             }
             }
@@ -525,19 +536,44 @@ public class Controller {
     }
 
     private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav){
-        Label label = new Label(addressNode.getAddress());
+
+        for (Map.Entry<String, String> entry : addressNode.getAddresses().entrySet()){
+            String address = entry.getValue();
+            Label label = new Label(address);
             autoComplete.getChildren().add(label);
             label.prefWidth(autoComplete.getWidth());
             label.setOnMouseClicked((ActionEvent) -> {
-                    textField.setText(addressNode.getAddress());
-                    autoComplete.getChildren().removeAll(autoComplete.getChildren());
-                    if(fromNav) currentFromNode = addressNode.getNode();
-                    else currentToNode = addressNode.getNode();
-                    scrollPane.setVisible(false);
+                autoComplete.getChildren().removeAll(autoComplete.getChildren());
+
+                fullAddressLabelForAutoComplete(addressNode, autoComplete, textField,  scrollPane,  fromNav, entry.getKey());
+
+
+
 
             });
+        }
     }
-    
+
+    private void fullAddressLabelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav, String city) {
+
+        for (Map.Entry<String, Node> houserNumber : addressNode.getHouseNumbersOnStreet(city).entrySet()) {
+            String addressWithHouseNumber = houserNumber.getKey();
+            Node node = houserNumber.getValue();
+            Label labelHouseNumber = new Label(addressWithHouseNumber);
+            autoComplete.getChildren().add(labelHouseNumber);
+            labelHouseNumber.prefWidth(autoComplete.getWidth());
+            labelHouseNumber.setOnMouseClicked((ActionEvent2) -> {
+                System.out.println("here");
+                textField.setText(addressWithHouseNumber);
+                if (fromNav) currentFromNode = node;
+                else currentToNode = node;
+                autoComplete.getChildren().removeAll(autoComplete.getChildren());
+                scrollPane.setVisible(false);
+
+            });
+        }
+    }
+
 
     @FXML
     private void setRTreeDebug() {

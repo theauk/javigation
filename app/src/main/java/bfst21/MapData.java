@@ -171,8 +171,7 @@ public class MapData implements Serializable {
     }
 
     public List<AddressTrieNode> getAutoCompleteAdresses(String prefix){
-        List<AddressTrieNode> list = addressTree.search(prefix);
-        return list;
+        return addressTree.searchWithPrefix(prefix);
     }
 
     public void setElementToText(HashMap<Element, String> elementToCityname) {

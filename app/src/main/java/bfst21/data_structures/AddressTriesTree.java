@@ -171,26 +171,4 @@ public class AddressTriesTree implements Serializable {
             collect(child.getValue(), prefix + child.getKey(), queue);
         }
     }
-
-    // quick print test
-    public static void main(String[] args) {
-        Node node1 = new Node(340551927, 55.6786770f, 12.5694510f);
-        Node node2 = new Node(340551928, 55.6786400f, 12.5698360f);
-        Node node3 = new Node(340551929,55.6786500f,12.5698370f);
-        Node node4 = new Node(340551930,55.6783500f,12.5693370f);
-
-        AddressTriesTree trie = new AddressTriesTree();
-        trie.put(node1, "København K", "Studiestræde", 1455, "18");
-        trie.put(node2, "København K", "Studiestræde", 1455, "19");
-        trie.put(node3, "København K", "Studievej", 1455, "25");
-        trie.put(node4, "Roskilde", "Studiestræde", 4000, "4");
-
-
-        ArrayList<AddressTrieNode> list = trie.searchWithPrefix("Studie");
-        for(AddressTrieNode node : list){
-            System.out.println(node.getStreetname());
-        }
-
-
-    }
-        }
+}
