@@ -26,8 +26,8 @@ public class MapData implements Serializable {
     private AddressTriesTree addressTree;
     private boolean rTreeDebug;
     private ElementToElementsTreeMap<Node, Way> nodeToHighWay;
-    private DijkstraSP dijkstra;
-    private ArrayList<Element> currentDijkstraRoute;
+    private RouteNavigation routeNavigation;
+    private ArrayList<Element> currentRoute;
     private ArrayList<Node> userAddedPoints;
     private Relation coastlines;
     private HashMap<Element, String> elementToText;
@@ -41,10 +41,9 @@ public class MapData implements Serializable {
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
         nodeToHighWay = nodeToWayMap;
-        dijkstra = new DijkstraSP(nodeToHighWay, nodeToRestriction, wayToRestriction);
-        currentDijkstraRoute = new ArrayList<>();
+        routeNavigation = new RouteNavigation(nodeToHighWay, nodeToRestriction, wayToRestriction);
+        currentRoute = new ArrayList<>();
         userAddedPoints = new ArrayList<>();
-
         buildTrees();
     }
 
@@ -80,6 +79,14 @@ public class MapData implements Serializable {
         return names;
     }
 
+    /*public String getNearestRoad(float x, float y) { // TODO: 4/22/21 in progress
+        Way way = rTree.getNearestRoad(x, y);
+        if (way.getName() != null) {
+            return way.getName();
+        }
+        return "";
+    }*/
+
     public String getNodeHighWayNames(Node node) {
         String names = "";
         ArrayList<String> list = new ArrayList<>();
@@ -104,9 +111,9 @@ public class MapData implements Serializable {
         return nearestRoadNode;
     }
 
-    public void setDijkstraRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest) throws NoNavigationResultException {
-        ArrayList<Node> path = dijkstra.getPath(from, to, car, bike, walk, fastest);
-        currentDijkstraRoute = new ArrayList<>();
+    public void setRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) throws NoNavigationResultException {
+        ArrayList<Node> path = routeNavigation.getPath(from, to, car, bike, walk, fastest, aStar);
+        currentRoute = new ArrayList<>();
         if (path.size() > 0) {
             Way route = new Way();
             Node start = path.get(0);
@@ -117,18 +124,18 @@ public class MapData implements Serializable {
             for (int i = 0; i < path.size(); i++) {
                 route.addNode(path.get(i));
             }
-            currentDijkstraRoute.add(route);
-            currentDijkstraRoute.add(start);
-            currentDijkstraRoute.add(end);
+            currentRoute.add(route);
+            currentRoute.add(start);
+            currentRoute.add(end);
         }
     }
 
     public double getDistanceNav() throws NoNavigationResultException {
-        return dijkstra.getTotalDistance();
+        return routeNavigation.getTotalDistance();
     }
 
     public double getTimeNav() throws NoNavigationResultException {
-        return dijkstra.getTotalTime();
+        return routeNavigation.getTotalTime();
     }
 
     public void addToUserPointList(Node toAdd) {
@@ -146,12 +153,12 @@ public class MapData implements Serializable {
         end.setType("end_route_note");
     }
 
-    public ArrayList<Element> getCurrentDjikstraRoute() {
-        return currentDijkstraRoute;
+    public ArrayList<Element> getCurrentRoute() {
+        return currentRoute;
     }
 
-    public void removeCurrentDijkstraRoute() {
-        currentDijkstraRoute = new ArrayList<>();
+    public void removeCurrentRoute() {
+        currentRoute = new ArrayList<>();
     }
 
     public ArrayList<ArrayList<Element>> getMapSegment() {
@@ -164,12 +171,6 @@ public class MapData implements Serializable {
 
     public String getTextFromElement(Element element) {
         return elementToText.get(element);
-    }
-
-    public String getAddress(){
-        //Node address =
-        // TODO: 24-04-2021  needs addres as string but also the coordinates to show on map
-        return null;
     }
 
     public List<AddressTrieNode> getAutoCompleteAdresses(String prefix){

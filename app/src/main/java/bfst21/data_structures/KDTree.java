@@ -39,7 +39,6 @@ public class KDTree<Value extends Element> implements Serializable {
         hashList = new HashSet<>();
     }
 
-
     private Comparator<KDTreeNode> getComparatorFromDimension(int dim) {
         return dim == 0 ? comparatorX : comparatorY;
     }

@@ -10,9 +10,8 @@ public abstract class Element implements Spatializable, Serializable {
 
     protected long id;
     protected float xMin;
-    protected float xMax;
     protected float yMin;
-    protected float yMax;
+
     protected String type;
     protected int layer;
 
@@ -54,7 +53,7 @@ public abstract class Element implements Spatializable, Serializable {
     }
 
     public float getxMax() {
-        return xMax;
+        return xMin;
     }
 
     public float getyMin() {
@@ -62,11 +61,11 @@ public abstract class Element implements Spatializable, Serializable {
     }
 
     public float getyMax() {
-        return yMax;
+        return yMin;
     }
 
     public float[] getCoordinates() {
-        return new float[]{xMin, xMax, yMin, yMax};
+        return new float[]{xMin, xMin, yMin, yMin};
     }
 
     public void setLayer(int lay) {

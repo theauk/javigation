@@ -93,7 +93,7 @@ public class Creator extends Task<MapData> {
         Relation relation = null;
 
         KDTree<Node> highWayRoadNodes = new KDTree<>(2, 4);
-        RTree rTree = new RTree(1, 30, 4, topLayer);
+        RTree rTree = new RTree(1, 30, 4, topLayer); //remove nodes
         AddressTriesTree addressTree = new AddressTriesTree();
         ElementToElementsTreeMap<Node, Way> nodeToWayMap = new ElementToElementsTreeMap<>();
         ElementToElementsTreeMap<Node, Relation> nodeToRestriction = new ElementToElementsTreeMap<>();

@@ -52,7 +52,11 @@
                     <SeparatorMenuItem/>
                     <RadioMenuItem fx:id="rTreeDebug" text="R-tree" onAction="#setRTreeDebug"/>
                     <SeparatorMenuItem/>
-                    <RadioMenuItem fx:id="dijkstraDebug" text="Dijkstra" onAction="#getDijkstraPath"/>
+                    <fx:define>
+                        <ToggleGroup fx:id="typeOfNavAlgorithm"/>
+                    </fx:define>
+                    <RadioMenuItem fx:id="aStarNav" text="A*" selected="true" toggleGroup="$typeOfNavAlgorithm"/>
+                    <RadioMenuItem fx:id="dijkstraNav" text="Dijkstra" toggleGroup="$typeOfNavAlgorithm"/>
                     <SeparatorMenuItem/>
                     <MenuItem fx:id="dumpItem" text="Dump MapData" onAction="#dumpBinary" accelerator="CTRL + D"/>
                 </Menu>

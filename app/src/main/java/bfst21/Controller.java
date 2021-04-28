@@ -99,6 +99,8 @@ public class Controller {
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
     @FXML private Label distanceAndTimeNav;
+    @FXML private RadioMenuItem dijkstraNav;
+    @FXML private RadioMenuItem aStarNav;
 
     @FXML private ComboBox<String> dropDownPoints;
     @FXML private TextField textFieldPointName;
@@ -595,7 +597,6 @@ public class Controller {
     private Alert createAlert(Alert.AlertType alertType, String title, String header, String text, ButtonType... buttons) {
         Alert alert = new Alert(alertType, text, buttons);
         alert.setTitle(title);
-        alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         return alert;
     }
@@ -603,11 +604,11 @@ public class Controller {
     @FXML
     public void getDijkstraPath() {
         try {
-            mapData.setDijkstraRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected());
+            mapData.setRoute(currentFromNode, currentToNode, radioButtonCarNav.isSelected(), radioButtonBikeNav.isSelected(), radioButtonWalkNav.isSelected(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
             setDistanceAndTimeNav(mapData.getDistanceNav(), mapData.getTimeNav());
             mapCanvas.repaint();
         } catch (NoNavigationResultException e) {
-            e.printStackTrace();
+            showDialogBox("No Route Found", "It was not possible to find a route between the two points");
         }
     }
 
@@ -662,9 +663,6 @@ public class Controller {
                 }
             };
             mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
-
-
-
         }
     }
 
