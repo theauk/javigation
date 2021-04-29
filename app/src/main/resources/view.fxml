@@ -5,6 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
+<?import bfst21.utils.VehicleType?>
 <Scene xmlns="https://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
        fx:controller="bfst21.Controller"
@@ -134,62 +135,60 @@
                 </AnchorPane>
 
                 <AnchorPane id="navigationControl" visible="${navigationPane.selected}" pickOnBounds="false">
-                    <VBox alignment="BASELINE_LEFT" AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5">
+                    <VBox AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5" spacing="5">
                         <HBox>
                             <TextField fx:id="textFieldFromNav" promptText="From"/>
                             <Button fx:id="chooseCorButtonFromNav" text="Choose on map" onAction="#getPointNavFrom"/>
                         </HBox>
+
                         <HBox>
                             <TextField fx:id="textFieldToNav" promptText="To"/>
                             <Button fx:id="chooseCorButtonToNav" text="Choose on map" onAction="#getPointNavTo"/>
                         </HBox>
-                        <HBox>
-                            <RadioButton fx:id="radioButtonCarNav" text="Car">
-                                <HBox.margin>
-                                    <Insets right="3.0"/>
-                                </HBox.margin>
+
+                        <GridPane hgap="5" vgap="5">
+                            <ToggleButton fx:id="carNavToggleButton" text="Car" GridPane.columnIndex="0">
                                 <toggleGroup>
-                                    <ToggleGroup fx:id="radioButtonVehicleNavGroup"/>
+                                    <ToggleGroup fx:id="vehicleNavGroup"/>
                                 </toggleGroup>
-                            </RadioButton>
-                            <RadioButton fx:id="radioButtonBikeNav" text="Bike">
-                                <HBox.margin>
-                                    <Insets right="30.0"/>
-                                    <Insets bottom="10.0"/>
-                                </HBox.margin>
+                                <userData>
+                                    <VehicleType fx:constant="CAR"/>
+                                </userData>
+                            </ToggleButton>
+
+                            <ToggleButton fx:id="bikeNavToggleButton" text="Bike" GridPane.columnIndex="1">
                                 <toggleGroup>
-                                    <fx:reference source="radioButtonVehicleNavGroup"/>
+                                    <fx:reference source="vehicleNavGroup"/>
                                 </toggleGroup>
-                            </RadioButton>
-                            <RadioButton fx:id="radioButtonWalkNav" text="Walk">
-                                <HBox.margin>
-                                    <Insets right="30.0"/>
-                                    <Insets bottom="10.0"/>
-                                </HBox.margin>
+                                <userData>
+                                    <VehicleType fx:constant="BIKE"/>
+                                </userData>
+                            </ToggleButton>
+
+                            <ToggleButton fx:id="WalkNavToggleButton" text="Walk" GridPane.columnIndex="2">
                                 <toggleGroup>
-                                    <fx:reference source="radioButtonVehicleNavGroup"/>
+                                    <fx:reference source="vehicleNavGroup"/>
                                 </toggleGroup>
-                            </RadioButton>
-                        </HBox>
-                        <HBox>
+                                <userData>
+                                    <VehicleType fx:constant="WALK"/>
+                                </userData>
+                            </ToggleButton>
+                        </GridPane>
+
+                        <HBox spacing="5">
                             <RadioButton fx:id="radioButtonShortestNav" text="Shortest">
-                                <HBox.margin>
-                                    <Insets right="3.0"/>
-                                </HBox.margin>
                                 <toggleGroup>
                                     <ToggleGroup fx:id="radioButtonFastestShortestNavGroup"/>
                                 </toggleGroup>
                             </RadioButton>
+
                             <RadioButton fx:id="radioButtonFastestNav" text="Fastest">
-                                <HBox.margin>
-                                    <Insets right="30.0"/>
-                                    <Insets bottom="10.0"/>
-                                </HBox.margin>
                                 <toggleGroup>
                                     <fx:reference source="radioButtonFastestShortestNavGroup"/>
                                 </toggleGroup>
                             </RadioButton>
                         </HBox>
+
                         <Button fx:id="searchNav" text="Search" onAction="#searchNav"/>
                         <Label fx:id="distanceAndTimeNav" visible="false"></Label>
                         <VBox>
