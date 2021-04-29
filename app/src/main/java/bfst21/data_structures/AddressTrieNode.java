@@ -7,9 +7,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-
-// TODO: 25-04-2021 implement HashMap<city(String), Arraylist<AddressTrieNodes>
 
 public class AddressTrieNode implements Serializable {
     @Serial
