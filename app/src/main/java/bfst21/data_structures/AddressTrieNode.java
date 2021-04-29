@@ -55,31 +55,12 @@ public class AddressTrieNode implements Serializable {
         return children;
     }
 
-
-    public String getCity() {
-        //return this.city;
-        return null;
-    }
-
     public String getStreetname() {
         return this.streetname;
     }
 
     public int getPostcode() {
         return this.postcode;
-    }
-
-    public String getHouseNumber() {
-        //return this.houseNumber;
-        return null;
-    }
-    public String getAddress(){
-        //return this.streetname + " " + this.houseNumber + ", " + this.postcode + " " + this.city;
-        return null;
-    }
-
-    public AddressTrieNode getAddressTrieNode(){
-        return this;
     }
 
 
