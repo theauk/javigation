@@ -126,7 +126,6 @@ public class Controller {
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
         addListenerToSearchFields();
-        testMethod();
     }
 
 
@@ -136,6 +135,8 @@ public class Controller {
         //TODO MOVE LISTENERS
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
+
+        // TODO: 29-04-2021 textfields should remove text og user added points
     }
 
     private void loadThemes() {
@@ -159,10 +160,6 @@ public class Controller {
                 if(newValue.length()>2) fillAutoCompleteText(autoCompleteFromNav, true);
             }
         });
-
-    }
-
-    private void testMethod(){
         textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable,
@@ -520,20 +517,23 @@ public class Controller {
     
     
     private void fillAutoCompleteText(boolean fromNav){
-        if(mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null){
-        for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
+        //if(mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null){
+
 
             if (fromNav) {
-                labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
-                ScrollpaneAutoCompleteFromNav.setVisible(true);
+                for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
+                    labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
+                    ScrollpaneAutoCompleteFromNav.setVisible(true);
+                }
             } else {
-                System.out.println("here");
-                labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
-                ScrollpaneAutoCompleteToNav.setVisible(true);
+                for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldToNav.getText())) {
+                    labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
+                    ScrollpaneAutoCompleteToNav.setVisible(true);
+                }
             }
-            }
-        }
+
     }
+
 
     private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav){
 
@@ -546,9 +546,6 @@ public class Controller {
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
 
                 fullAddressLabelForAutoComplete(addressNode, autoComplete, textField,  scrollPane,  fromNav, entry.getKey());
-
-
-
 
             });
         }
