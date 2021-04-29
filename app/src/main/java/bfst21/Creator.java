@@ -289,8 +289,8 @@ public class Creator extends Task<MapData> {
             if (k.equals("name")) {
                 motorwayExitInfo = v;
             } else if (k.equals("ref")) {
-                if (motorwayExitInfo != null) motorwayExitInfo = "exit " + v + "-" + motorwayExitInfo;
-                else motorwayExitInfo = "exit " + v;
+                if (motorwayExitInfo != null) motorwayExitInfo = "Exit " + v + "-" + motorwayExitInfo;
+                else motorwayExitInfo = "Exit " + v;
             }
         }
     }
@@ -343,6 +343,12 @@ public class Creator extends Task<MapData> {
 
     private void checkWay(String k, String v, Way way) {
         switch (k) {
+            case "amenity":
+                if (v.equals("parking")) {
+                    way.setType("asphalt", typeToLayer.get("asphalt"));
+                }
+                break;
+
             case "natural":
                 if (v.equals("water") || v.equals("wetland")) {
                     way.setType((v), typeToLayer.get(v));
@@ -368,7 +374,6 @@ public class Creator extends Task<MapData> {
                     way.setType(k, typeToLayer.get(k));
                     break;
                 }
-
                 break;
 
             case "leisure":
@@ -392,11 +397,7 @@ public class Creator extends Task<MapData> {
                     break;
                 }
                 break;
-            case "amenity":
-                if (v.equals("parking")) {
-                    way.setType("asphalt", typeToLayer.get("asphalt"));
-                }
-                break;
+
             case "highway":
                 checkHighWayType(way, v);
                 break;
@@ -407,12 +408,22 @@ public class Creator extends Task<MapData> {
 
             case "railway":
                 way.setType(v, typeToLayer.get("railway"));
-
-            case "tunnel":
-                if (v.equals("yes")) way.setType(null);
+                break;
 
             case "ref":
                 if (way.getName() == null && way.getType() != null && !way.getType().equals("roundabout")) way.setName(fixNumberWayName(v));
+                break;
+
+            case "route":
+                if (v.equals("ferry")) {
+                    way.setType("ferry", typeToLayer.get("ferry"));
+                    way.setAsHighWay();
+                }
+                break;
+
+            case "tunnel":
+                if (v.equals("yes")) way.setType(null);
+                break;
 
         }
         checkHighWayAttributes(k, v, way);
@@ -446,6 +457,10 @@ public class Creator extends Task<MapData> {
                 if (v.equals("no")) way.setNotCycleable();
                 break;
 
+            case "bicycle":
+                if (v.equals("no")) way.setNotCycleable();
+                break;
+
             case "maxspeed":
                 try {
                     way.setMaxSpeed(Integer.parseInt(v));
@@ -472,8 +487,22 @@ public class Creator extends Task<MapData> {
                 break;
 
             case "foot":
-                if (v.equals("yes")) {
-                    isFoot = true;
+                if (v.equals("yes")) isFoot = true;
+                break;
+
+            case "service":
+                if (v.equals("driveway")) {
+                    way.setNotDriveable();
+                    way.setNotCycleable();
+                    way.setNotWalkable();
+                }
+                break;
+
+            case "duration":
+                if (v.matches("[0-9]{1,2}:[0-9]{1,2}")) {
+                    double duration = MapMath.colonTimeToHours(v);
+                    double distance = MapMath.getTotalDistance(way.getNodes());
+                    way.setMaxSpeed(distance / duration);
                 }
                 break;
         }
@@ -673,6 +702,7 @@ public class Creator extends Task<MapData> {
         typeToLayer.put("farmland", layerTwo);
         typeToLayer.put("asphalt", layerTwo);
         typeToLayer.put("railway", layerTwo);
+        typeToLayer.put("ferry", layerTwo);
 
         typeToLayer.put("dark_green", layerThree);
         typeToLayer.put("bridge", layerThree);

@@ -3,11 +3,11 @@ package bfst21;
 import bfst21.Osm_Elements.Node;
 import javafx.geometry.Point2D;
 
+import java.util.List;
+
 public class MapMath {
 
-    private MapMath() {
-
-    }
+    private MapMath() { }
 
     /**
      * Calculates the cross product between the two vectors from p1 to p2 na dp2 to p3.
@@ -106,12 +106,23 @@ public class MapMath {
         return compassDirection(bearing(n1, n2));
     }
 
+    /**
+     * Calculates the distance between two points by first converting the coordinates to geo-coordinates.
+     * @param p1 The first point.
+     * @param p2 The second point.
+     * @return The distance in meters.
+     */
     public static double distanceBetween(Point2D p1, Point2D p2) {
         //Adapted from https://www.movable-type.co.uk/scripts/latlong.html
+        p1 = convertToGeoCoords(p1);
+        p2 = convertToGeoCoords(p2);
+
         double earthRadius = 6371e3; //in meters
 
-        double lat1 = Math.toRadians(p1.getX());
-        double lat2 = Math.toRadians(p2.getX());
+        //double lat1 = Math.toRadians(p1.getX()); // TODO: 4/29/21 what on earth...? Det her tror jeg virker
+        //double lat2 = Math.toRadians(p2.getX());
+        double lat1 = p1.getX();
+        double lat2 = p2.getX();
         double lon1 = p1.getY();
         double lon2 = p2.getY();
 
@@ -124,6 +135,23 @@ public class MapMath {
         return earthRadius * c;
     }
 
+    /**
+     * Finds the distance between two nodes in meters.
+     * @param from The from Node.
+     * @param to The to Node.
+     * @return The distance in meters.
+     */
+    public static double distanceBetweenTwoNodes(Node from, Node to) {
+        Point2D p1 = new Point2D(from.getxMax(), from.getyMax());
+        Point2D p2 = new Point2D(to.getxMax(), to.getyMax());
+        return distanceBetween(p1, p2);
+    }
+
+    /**
+     * Converts a screen coordinate to a geo-coordinate.
+     * @param yCoordinate The coordinate as a screen coordinate.
+     * @return
+     */
     public static double convertToGeo(double yCoordinate) {
         return -yCoordinate * 0.56f;
     }
@@ -132,6 +160,11 @@ public class MapMath {
         return yCoordinate / -0.56f;
     }
 
+    /**
+     * Converts a point to a geo-coordinate point.
+     * @param p The point in screen coordinates.
+     * @return The point with coordinates converted to geo-coordinates,
+     */
     public static Point2D convertToGeoCoords(Point2D p) {
         return new Point2D(convertToGeo(p.getY()), p.getX());
     }
@@ -139,5 +172,26 @@ public class MapMath {
     public static double round(double number, int digits) {
         double scale = Math.pow(10, digits);
         return Math.round(number * scale) / scale;
+    }
+
+    /**
+     * Takes a string in the format hh:mm and converts it to total hours.
+     * @param colonTime The time to be converted in the format hh:mm.
+     * @return The time in hours.
+     */
+    public static double colonTimeToHours(String colonTime) {
+        String[] timeParts = colonTime.split(":");
+        double hours = Double.parseDouble(timeParts[0]);
+        double minutes = Double.parseDouble(timeParts[1]);
+        hours += minutes / 60;
+        return hours;
+    }
+
+    public static double getTotalDistance(List<Node> nodes) {
+        double distance = 0;
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            distance += distanceBetweenTwoNodes(nodes.get(i), nodes.get(i + 1));
+        }
+        return distance / 1000;
     }
 }

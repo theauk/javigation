@@ -174,8 +174,8 @@ public class MapCanvas extends Canvas {
     }
 
     private void calculateRatio() {
-        Point2D start = MapMath.convertToGeoCoords(new Point2D(bounds.getMinX(), bounds.getMinY()));
-        Point2D end = MapMath.convertToGeoCoords(new Point2D(bounds.getMaxX(), bounds.getMinY()));
+        Point2D start = new Point2D(bounds.getMinX(), bounds.getMinY());
+        Point2D end = new Point2D(bounds.getMaxX(), bounds.getMinY());
 
         double distance = MapMath.distanceBetween(start, end);
         double pixels = getWidth();

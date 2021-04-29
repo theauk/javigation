@@ -7,7 +7,10 @@ import bfst21.Osm_Elements.Node;
 import bfst21.data_structures.AddressTrieNode;
 import bfst21.file_io.Loader;
 import bfst21.file_io.Serializer;
-import bfst21.view.*;
+import bfst21.view.CanvasBounds;
+import bfst21.view.CustomKeyCombination;
+import bfst21.view.MapCanvas;
+import bfst21.view.Theme;
 import javafx.animation.FadeTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,12 +22,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -134,8 +131,8 @@ public class Controller {
         });
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
-        addListenerToSearchFields();
-        testMethod();
+        //addListenerToSearchFields();
+        //testMethod();
     }
 
     private void initMapCanvas() {
@@ -163,24 +160,32 @@ public class Controller {
             @Override
             public void changed(ObservableValue<? extends String> observable,
                                 String oldValue, String newValue) {
-                if(newValue.length()>2) fillAutoCompleteText(autoCompleteFromNav, true);
+                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteFromNav, true);
             }
         });
 
-    }
-
-    private void testMethod(){
         textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable,
                                 String oldValue, String newValue) {
-                if(newValue.length()>2) fillAutoCompleteText(autoCompleteToNav, false);
+                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteToNav, false);
             }
         });
 
     }
 
-    private void removeChildren(){
+    private void testMethod() {
+        textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable,
+                                String oldValue, String newValue) {
+                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteToNav, false);
+            }
+        });
+
+    }
+
+    private void removeChildren() {
         // TODO: 28-04-2021 Remove search when under 2 charachters
     }
 
@@ -201,8 +206,10 @@ public class Controller {
      */
     @FXML
     private void zoom(ActionEvent e) {
-        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton)) zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
-        else if (e.getSource().equals(zoomOutItem) || e.getSource().equals(zoomOutButton)) zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        if (e.getSource().equals(zoomInItem) || e.getSource().equals(zoomInButton))
+            zoom(true, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
+        else if (e.getSource().equals(zoomOutItem) || e.getSource().equals(zoomOutButton))
+            zoom(false, new Point2D(mapCanvas.getWidth() / 2, mapCanvas.getHeight() / 2));
     }
 
     /**
@@ -270,19 +277,19 @@ public class Controller {
     private void onKeyPressed(KeyEvent e) {
         int acceleration = 50;
 
-        if(upLeftCombination.match(e)) mapCanvas.pan(acceleration, acceleration);
-        else if(upRightCombination.match(e)) mapCanvas.pan(-acceleration, acceleration);
-        else if(downLeftCombination.match(e)) mapCanvas.pan(acceleration, -acceleration);
-        else if(downRightCombination.match(e)) mapCanvas.pan(-acceleration, -acceleration);
-        else if(e.getCode().equals(KeyCode.UP)) mapCanvas.pan(0, acceleration);
-        else if(e.getCode().equals(KeyCode.DOWN)) mapCanvas.pan(0, -acceleration);
-        else if(e.getCode().equals(KeyCode.LEFT)) mapCanvas.pan(acceleration, 0);
-        else if(e.getCode().equals(KeyCode.RIGHT)) mapCanvas.pan(-acceleration, 0);
+        if (upLeftCombination.match(e)) mapCanvas.pan(acceleration, acceleration);
+        else if (upRightCombination.match(e)) mapCanvas.pan(-acceleration, acceleration);
+        else if (downLeftCombination.match(e)) mapCanvas.pan(acceleration, -acceleration);
+        else if (downRightCombination.match(e)) mapCanvas.pan(-acceleration, -acceleration);
+        else if (e.getCode().equals(KeyCode.UP)) mapCanvas.pan(0, acceleration);
+        else if (e.getCode().equals(KeyCode.DOWN)) mapCanvas.pan(0, -acceleration);
+        else if (e.getCode().equals(KeyCode.LEFT)) mapCanvas.pan(acceleration, 0);
+        else if (e.getCode().equals(KeyCode.RIGHT)) mapCanvas.pan(-acceleration, 0);
     }
 
     @FXML
     private void onKeyReleased() {
-        if(CustomKeyCombination.keyCodes.size() == 0) mapCanvas.updateMap();
+        if (CustomKeyCombination.keyCodes.size() == 0) mapCanvas.updateMap();
     }
 
     @FXML
@@ -300,9 +307,9 @@ public class Controller {
         Alert warning = createAlert(Alert.AlertType.WARNING, "Dump MapData", "MapData Dump", contentText, ButtonType.YES, ButtonType.NO);
         warning.showAndWait();
 
-        if(warning.getResult() == ButtonType.YES) {
+        if (warning.getResult() == ButtonType.YES) {
             File file = showFileChooser("save").showSaveDialog(scene.getWindow());
-            if(file != null) {
+            if (file != null) {
                 Serializer serializer = new Serializer(mapData, file);
                 showLoaderPane(true);
 
@@ -338,7 +345,7 @@ public class Controller {
 
         try {
             if (file != null) {
-                if(file.getName().endsWith(".bmapdata")) binary = true;
+                if (file.getName().endsWith(".bmapdata")) binary = true;
                 inputStream = loader.load(file.getPath());
                 fileSize = file.getName().endsWith(".zip") ? loader.getZipFileEntrySize(file.getPath()) : file.length();    //If it's a zip file get the size of the entry else use the default file size.
             } else {
@@ -390,11 +397,10 @@ public class Controller {
     }
 
     private void taskFailed(Task<?> task, boolean showMap) {
-        if(showMap) {
+        if (showMap) {
             state = State.MAP;
             showLoaderPane(false);
-        }
-        else state = State.MENU;
+        } else state = State.MENU;
         task.exceptionProperty().getValue().printStackTrace();
         statusLabel.setText("Failed: " + task.exceptionProperty().getValue().getMessage());
         cleanupTask();
@@ -500,12 +506,12 @@ public class Controller {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home") + "/Desktop"));
 
-        if(option.equals("open")) {
+        if (option.equals("open")) {
             fileChooser.setTitle("Open File");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All OSM Files", "*.osm", "*zip", "*.bmapdata"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("OSM File", "*.osm"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zipped OSM File", "*zip"));
-        } else if(option.equals("save")) {
+        } else if (option.equals("save")) {
             fileChooser.setTitle("Save File");
             fileChooser.setInitialFileName("binary_map_data");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Binary MapData", "*.bmapdata"));
@@ -514,32 +520,29 @@ public class Controller {
         return fileChooser;
     }
 
-    private void fillAutoCompleteText(VBox autoComplete, boolean fromNav){
+    private void fillAutoCompleteText(VBox autoComplete, boolean fromNav) {
         autoComplete.getChildren().removeAll(autoComplete.getChildren());
-
         fillAutoCompleteText(fromNav);
     }
 
 
-    private void fillAutoCompleteText(boolean fromNav){
-        if(mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null){
-        for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
-
-            if (fromNav) {
-                labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
-                ScrollpaneAutoCompleteFromNav.setVisible(true);
-            } else {
-                System.out.println("here");
-                labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
-                ScrollpaneAutoCompleteToNav.setVisible(true);
-            }
+    private void fillAutoCompleteText(boolean fromNav) {
+        if (mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null) {
+            for (AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
+                if (fromNav) {
+                    labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
+                    ScrollpaneAutoCompleteFromNav.setVisible(true);
+                } else {
+                    labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
+                    ScrollpaneAutoCompleteToNav.setVisible(true);
+                }
             }
         }
     }
 
-    private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav){
+    private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav) {
 
-        for (Map.Entry<String, String> entry : addressNode.getAddresses().entrySet()){
+        for (Map.Entry<String, String> entry : addressNode.getAddresses().entrySet()) {
             String address = entry.getValue();
             Label label = new Label(address);
             autoComplete.getChildren().add(label);
@@ -547,9 +550,7 @@ public class Controller {
             label.setOnMouseClicked((ActionEvent) -> {
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
 
-                fullAddressLabelForAutoComplete(addressNode, autoComplete, textField,  scrollPane,  fromNav, entry.getKey());
-
-
+                fullAddressLabelForAutoComplete(addressNode, autoComplete, textField, scrollPane, fromNav, entry.getKey());
 
 
             });
@@ -656,7 +657,7 @@ public class Controller {
     public void setDirections(ArrayList<String> directions) {
         directionsBox.getChildren().removeAll(directionsBox.getChildren());
         int order = 1;
-        for (String s: directions) {
+        for (String s : directions) {
             Label l = new Label(order + ". " + s);
             directionsBox.getChildren().add(l);
             directionsBox.getChildren().add(new Label(""));
@@ -674,13 +675,13 @@ public class Controller {
         if (distance < 1000) {
             s += MapMath.round(distance, 0) + " m";
         } else {
-            s += MapMath.round(distance / 1000f, 2) + " km";
+            s += MapMath.round(distance / 1000f, 3) + " km";
         }
 
         if (time < 60) {
             s += " , Total time: " + MapMath.round(time, 0) + " s";
         } else {
-            s += " , Total time: " + MapMath.round(time / 60f, 2) + " min";
+            s += " , Total time: " + MapMath.round(time / 60f, 3) + " min";
         }
         distanceAndTimeNav.setText(s);
     }
@@ -699,7 +700,8 @@ public class Controller {
 
     @FXML
     public void addUserPoint(ActionEvent actionEvent) {
-        if (textFieldPointName.getText().equals("")) showDialogBox("User added point error", "Please input name for your point");
+        if (textFieldPointName.getText().equals(""))
+            showDialogBox("User added point error", "Please input name for your point");
         else {
             EventHandler<MouseEvent> event = new EventHandler<>() {
                 @Override
