@@ -359,9 +359,9 @@ public class Controller {
             showLoaderPane(false);
         }
         else state = State.MENU;
+        cleanupTask();
         task.exceptionProperty().getValue().printStackTrace();
         statusLabel.setText("Failed: " + task.exceptionProperty().getValue().getMessage());
-        cleanupTask();
     }
 
     private void taskCancelled() {
