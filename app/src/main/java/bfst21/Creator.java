@@ -6,6 +6,7 @@ import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.*;
 import bfst21.file_io.ProgressInputStream;
+import bfst21.utils.MapMath;
 import javafx.concurrent.Task;
 
 import javax.xml.stream.XMLInputFactory;

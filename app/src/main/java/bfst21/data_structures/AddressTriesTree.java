@@ -12,9 +12,11 @@ public class AddressTriesTree implements Serializable {
     private static final long serialVersionUID = 5713923887785799744L;
 
     private AddressTrieNode root;
+    private HashMap<Integer, String> citiesToPostCodes;
 
     public AddressTriesTree() {
         root = new AddressTrieNode();
+        citiesToPostCodes = new HashMap<>();
     }
 
 
@@ -35,7 +37,8 @@ public class AddressTriesTree implements Serializable {
 
     public void insert(AddressTrieNode root, Node node, String city, String streetname, int postcode, String houseNumber) {
             streetname = streetname.toLowerCase();
-            insert_address_with_streetname(root,0 , node, city, streetname, postcode, houseNumber);
+            citiesToPostCodes.put(postcode, city);
+            insert_address_with_streetname(root,0 , node, streetname, postcode, houseNumber);
         }
 
     /**
@@ -44,19 +47,17 @@ public class AddressTriesTree implements Serializable {
      *                     afterwards in the recursive calls inside the method will call the method with the next node (a child), and proceed
      *                     to the bottom of the trie, where the addressNode will be added to the Arraylist in that last node's arraylist.
      *                     this @param trieNode could be omitted, but then the methods needs to be iterative instead of recursive.
-     * @param index -> the start index is always 0, since the method will start from the root, and go down through the tree.
-     *
+     * @param index -> the start index is always 0, since the method will start from the root, and go down through the tree.     *
      *                 index could be omitted as well, but the method would need to be made iterative instead of recursive.
      * @param node -> the node that contains the coordinates for the address
-     * @param city -> the name of the city given by the .osm file.
      * @param streetname -> the name of the street given by the .osm file.
      * @param postcode -> the postcode of the node given by the .osm file.
      * @param houseNumber -> the house number given by the .osm file.
      */
-    private void insert_address_with_streetname(AddressTrieNode trieNode, int index, Node node, String city, String streetname, int postcode, String houseNumber){
+    private void insert_address_with_streetname(AddressTrieNode trieNode, int index, Node node, String streetname, int postcode, String houseNumber){
         if (index == streetname.length()) {
-                if(trieNode.isAddress()) trieNode.addHouseNumber(city, node, houseNumber);
-                else trieNode.setAddress(node, city, streetname, postcode, houseNumber);
+                if(trieNode.isAddress()) trieNode.addHouseNumber(postcode, node, houseNumber);
+                else trieNode.setAddress(node, postcode, streetname, houseNumber, citiesToPostCodes);
                 }
             else {
                 Character currentChar = streetname.charAt(index);
@@ -64,7 +65,7 @@ public class AddressTriesTree implements Serializable {
                     AddressTrieNode new_child = new AddressTrieNode();
                     trieNode.getChildren().put(currentChar, new_child);
                 }
-                insert_address_with_streetname(trieNode.getChildren().get(currentChar), index + 1 , node, city, streetname, postcode, houseNumber);
+                insert_address_with_streetname(trieNode.getChildren().get(currentChar), index + 1 , node, streetname, postcode, houseNumber);
             }
     }
 

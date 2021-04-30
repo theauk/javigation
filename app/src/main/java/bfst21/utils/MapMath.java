@@ -143,6 +143,18 @@ public final class MapMath {
     }
 
     /**
+     * Finds the distance between two nodes in meters.
+     * @param from The from Node.
+     * @param to The to Node.
+     * @return The distance in meters.
+     */
+    public static double distanceBetweenTwoNodes(Node from, Node to) {
+        Point2D p1 = new Point2D(from.getxMax(), from.getyMax());
+        Point2D p2 = new Point2D(to.getxMax(), to.getyMax());
+        return distanceBetween(p1, p2);
+    }
+
+    /**
      * Converts a y-coordinate to a geographical one.
      *
      * @param yCoordinate The y-coordinate to be converted.

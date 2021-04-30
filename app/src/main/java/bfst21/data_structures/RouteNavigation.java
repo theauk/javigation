@@ -13,9 +13,8 @@ import javafx.geometry.Point2D;
 
 import java.util.*;
 
-public class RouteNavigation {
+public class RouteNavigation extends Service<List<Element>> {
 
-    private Node to;
     private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private ElementToElementsTreeMap<Way, Relation> wayToRestriction;

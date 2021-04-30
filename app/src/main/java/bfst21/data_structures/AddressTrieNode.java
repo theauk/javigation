@@ -12,10 +12,10 @@ public class AddressTrieNode implements Serializable {
     @Serial
     private static final long serialVersionUID = -9059402923966729263L;
     private HashMap<Character, AddressTrieNode> children;
-    private HashMap<String, ArrayList<HouseNumberNode>> citiesWithThisStreet;
+    private HashMap<Integer, ArrayList<HouseNumberNode>> citiesWithThisStreet;
     private String streetname;
-    private int postcode;
-    HashMap<String,String> addresses;
+    private HashMap<Integer,String> addresses;
+    private HashMap<Integer, String> postCodesToCities;
     private boolean isAddress;
 
 
@@ -26,27 +26,27 @@ public class AddressTrieNode implements Serializable {
     }
 
 
-    public void setAddress(Node node, String city, String streetname, int postcode, String houseNumber){
+    public void setAddress(Node node, int postcode, String streetname, String houseNumber, HashMap<Integer, String> postcodesToCities){
         citiesWithThisStreet = new HashMap<>();
         ArrayList<HouseNumberNode> list = new ArrayList<>();
         list.add(new HouseNumberNode(node, houseNumber));
-        citiesWithThisStreet.put(city, list);
+        citiesWithThisStreet.put(postcode, list);
         this.streetname = streetname;
-        this.postcode = postcode;
         isAddress = true;
+        this.postCodesToCities = postcodesToCities;
     }
 
     public boolean isAddress(){
         return isAddress;
     }
 
-    public void addHouseNumber(String city, Node node, String houseNumber){
-        if(citiesWithThisStreet.containsKey(city)){
-            citiesWithThisStreet.get(city).add(new HouseNumberNode(node, houseNumber));
+    public void addHouseNumber(int postcode, Node node, String houseNumber){
+        if(citiesWithThisStreet.containsKey(postcode)){
+            citiesWithThisStreet.get(postcode).add(new HouseNumberNode(node, houseNumber));
         } else {
             ArrayList<HouseNumberNode> list = new ArrayList<>();
             list.add(new HouseNumberNode(node, houseNumber));
-            citiesWithThisStreet.put(city, list);
+            citiesWithThisStreet.put(postcode, list);
         }
     }
 
@@ -55,29 +55,26 @@ public class AddressTrieNode implements Serializable {
     }
 
 
-    public HashMap<String, String> getAddresses(){
+    public HashMap<Integer, String> getAddresses(){
         if(addresses != null){
             return addresses;
         } else {
             addresses = new HashMap<>();
-            for(String val : citiesWithThisStreet.keySet()){
+            for(int val : citiesWithThisStreet.keySet()){
                 addresses.put(val, getAddressWithOutHouseNumber(val));
             }
         }
         return addresses;
     }
 
-    private String getAddressWithOutHouseNumber(String city){
-        return (this.streetname +  ", " + this.postcode + " " + city);
-    }
-    private String getFullAddress(HouseNumberNode node){
-        return (this.streetname + "  " + node.houseNumber + ", " + this.postcode);
+    private String getAddressWithOutHouseNumber(int postcode){
+        return (this.streetname +  ", " + postcode + " " + postCodesToCities.get(postcode));
     }
 
-    public HashMap<String, Node> getHouseNumbersOnStreet(String city){
+    public HashMap<String, Node> getHouseNumbersOnStreet(int postcode){
         HashMap<String, Node> map = new HashMap<>();
-        for(HouseNumberNode houseNumberNode : citiesWithThisStreet.get(city) ){
-            map.put((getFullAddress(houseNumberNode) + " " + city), houseNumberNode.node);
+        for(HouseNumberNode houseNumberNode : citiesWithThisStreet.get(postcode) ){
+            map.put((this.streetname + "  " + houseNumberNode.houseNumber + ", " + postcode + " " + postCodesToCities.get(postcode)), houseNumberNode.node);
         }
         return map;
     }
