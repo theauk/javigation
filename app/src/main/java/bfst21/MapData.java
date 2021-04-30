@@ -14,14 +14,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class MapData implements Serializable {
     @Serial
     private static final long serialVersionUID = 8514196836151887206L;
 
-    private KDTree<Node> closetRoadTree;
+    private KDTree<Node> kdTree;
     private RTree rTree;
     private transient ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
@@ -44,7 +43,7 @@ public class MapData implements Serializable {
 
     public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
         this.rTree = rTree;
-        this.closetRoadTree = highWayRoadNodes;
+        this.kdTree = highWayRoadNodes;
         this.addressTree = addressTree;
         this.nodeToHighWay = nodeToWayMap;
         this.nodeToRestriction = nodeToRestriction;
@@ -64,7 +63,7 @@ public class MapData implements Serializable {
     }
 
     private void buildTrees() {
-        closetRoadTree.buildTree();
+        kdTree.buildTree();
     }
 
     public void searchInData(CanvasBounds bounds, int zoomLevel) {
@@ -83,21 +82,13 @@ public class MapData implements Serializable {
     public String getNearestRoadKDTree(float x, float y) {
         String names = "";
         try {
-            Node node = closetRoadTree.getNearestNode(x, y);
+            Node node = kdTree.getNearestNode(x, y);
             names = getNodeHighWayNames(node);
 
         } catch (KDTreeEmptyException e) {
             names = e.getMessage();
         }
         return names;
-    }
-
-    public String getNearestRoadRTree(float x, float y) { // TODO: 4/22/21 in progress
-        Way way = rTree.getNearestRoad(x, y);
-        if (way.getName() != null) {
-            return way.getName();
-        }
-        return "";
     }
 
     public String getNodeHighWayNames(Node node) {
@@ -113,10 +104,18 @@ public class MapData implements Serializable {
         return names;
     }
 
+    public String getNearestRoadRTree(float x, float y) {
+        Way way = rTree.getNearestRoad(x, y);
+        if (way.getName() != null) {
+            return way.getName();
+        }
+        return "";
+    }
+
     public Node getNearestRoadNode(float x, float y) {
         Node nearestRoadNode = null;
         try {
-            nearestRoadNode = closetRoadTree.getNearestNode(x, y);
+            nearestRoadNode = kdTree.getNearestNode(x, y);
         } catch (KDTreeEmptyException e) {
             e.printStackTrace();
         }

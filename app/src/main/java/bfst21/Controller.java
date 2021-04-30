@@ -583,7 +583,7 @@ public class Controller {
     }
 
     @FXML
-    public void getPointNavFrom(ActionEvent actionEvent) { // TODO: 4/12/21 better way to do this to avoid two methods?
+    public void getPointNavFrom(ActionEvent actionEvent) {
         getPointNav(true);
     }
 
@@ -596,9 +596,8 @@ public class Controller {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
             public void handle(MouseEvent e) {
-                Point2D cursorPoint = new Point2D(e.getX(), e.getY());
                 Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
-                Node nearestRoadNode = mapData.getNearestRoadNode((float) coords.getX(), (float) coords.getY());
+                Node nearestRoadNode = mapData.getNearestRoadNode((float) coords.getX(), (float) coords.getY()); // TODO: 4/30/21 skal opdateres
 
                 String names = mapData.getNodeHighWayNames(nearestRoadNode);
                 if (fromSelected) {

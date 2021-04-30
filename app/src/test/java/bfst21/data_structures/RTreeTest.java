@@ -84,7 +84,6 @@ class RTreeTest {
         rTree.insert(w2);
         rTree.insert(w3);
         rTree.insert(w4);
-        rTree.printTree();
     }
 
     //@Test // TODO: 08-04-2021 out-commented due to build.gradle would fail this test, and terminate the build.
