@@ -152,11 +152,6 @@
                             <VBox fx:id="autoCompleteToNav" >
                             </VBox>
                         </ScrollPane>
-                        <HBox>
-                            <RadioButton fx:id="radioButtonCarNav" text="Car">
-                                <HBox.margin>
-                                    <Insets right="3.0"/>
-                                </HBox.margin>
 
                         <GridPane hgap="5" vgap="5">
                             <ToggleButton fx:id="carNavToggleButton" text="Car" GridPane.columnIndex="0">

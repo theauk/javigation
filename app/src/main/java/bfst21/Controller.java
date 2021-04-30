@@ -1,7 +1,5 @@
 package bfst21;
 
-import bfst21.Creator;
-import bfst21.MapData;
 import bfst21.Osm_Elements.Node;
 import bfst21.data_structures.AddressTrieNode;
 import bfst21.data_structures.RouteNavigation;
@@ -15,7 +13,6 @@ import bfst21.utils.VehicleType;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
 import bfst21.view.Theme;
-import bfst21.view.*;
 import javafx.animation.FadeTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -27,8 +24,13 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
-import javafx.scene.layout.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -676,7 +678,6 @@ public class Controller {
         Node node = mapData.getUserAddedPoints().get(i);
         mapCanvas.centerOnPoint(node.getxMin(), node.getyMin());
         mapCanvas.repaint();
-
     }
 
     @FXML
@@ -686,13 +687,10 @@ public class Controller {
             EventHandler<MouseEvent> event = new EventHandler<>() {
                 @Override
                 public void handle(MouseEvent e) {
-                    Point2D cursorPoint = new Point2D(e.getX(), e.getY());
-                    Point2D geoCoords = mapCanvas.getGeoCoords(cursorPoint.getX(), cursorPoint.getY());
-                    Node node = new Node((float) geoCoords.getX(), (float) -geoCoords.getY() / 0.56f);
-                    //// TODO: 20-04-2021 make this work
-
                     Point2D cursorPoint = mapCanvas.getTransCoords(e.getX(), e.getY());
                     Node node = new Node((float) cursorPoint.getX(), (float) cursorPoint.getY());
+                    //// TODO: 20-04-2021 make this work
+
                     String nodeName = textFieldPointName.getText();
                     mapData.addToUserPointList(node);
                     dropDownPoints.getItems().add(nodeName);
