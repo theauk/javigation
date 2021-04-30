@@ -1,6 +1,7 @@
 package bfst21;
 
 import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AddressTrieNode;
 import bfst21.data_structures.RouteNavigation;
 import bfst21.exceptions.NoOSMInZipFileException;
@@ -598,7 +599,8 @@ public class Controller {
             public void handle(MouseEvent e) {
                 Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
                 Node nearestRoadNode = mapData.getNearestRoadNode((float) coords.getX(), (float) coords.getY()); // TODO: 4/30/21 skal opdateres
-
+                Way nearestWay = mapData.getNearestRoadRTree((float) coords.getX(), (float) coords.getY());
+                // tænk ny metode
                 String names = mapData.getNodeHighWayNames(nearestRoadNode);
                 if (fromSelected) {
                     textFieldFromNav.setText(names);

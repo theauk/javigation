@@ -75,8 +75,18 @@ public class MapData implements Serializable {
     }
 
     public String getNearestRoad(float x, float y, boolean useKDTree) {
-        if (useKDTree) return getNearestRoadKDTree(x, y);
-        else return getNearestRoadRTree(x, y);
+        if (useKDTree) {
+            return getNearestRoadKDTree(x, y);
+        }
+        else {
+            Way w = getNearestRoadRTree(x, y);
+            if (w.getName() != null) return w.getName();
+            else return "";
+        }
+    }
+
+    public Way getNearestRoadRTree(float x, float y) {
+        return rTree.getNearestRoad(x, y);
     }
 
     public String getNearestRoadKDTree(float x, float y) {
@@ -102,14 +112,6 @@ public class MapData implements Serializable {
             names = String.join(", ", list);
         }
         return names;
-    }
-
-    public String getNearestRoadRTree(float x, float y) {
-        Way way = rTree.getNearestRoad(x, y);
-        if (way.getName() != null) {
-            return way.getName();
-        }
-        return "";
     }
 
     public Node getNearestRoadNode(float x, float y) {

@@ -69,7 +69,7 @@ public class MapCanvas extends Canvas {
         fillCoastLines(gc);
 
         int layers = mapData.getMapSegment().size();
-        for (int layer = 0; layer < layers - 1; layer++) {
+        for (int layer = 0; layer < layers - 1; layer++) { // -1 since toplayer is drawn below
             for (Element element : mapData.getMapSegment().get(layer)) {
                 drawElement(gc, element);
             }
