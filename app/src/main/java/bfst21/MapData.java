@@ -14,7 +14,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class MapData implements Serializable {
@@ -22,7 +21,7 @@ public class MapData implements Serializable {
     private static final long serialVersionUID = 8514196836151887206L;
 
     private KDTree<Node> closetRoadTree;
-    private RTree rTree;
+    private RTreeHolder rTreeHolder;
     private transient ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
     private AddressTriesTree addressTree;
@@ -42,8 +41,8 @@ public class MapData implements Serializable {
         currentRoute = new ArrayList<>();
     }
 
-    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
-        this.rTree = rTree;
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTreeHolder rTreeHolder, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
+        this.rTreeHolder = rTreeHolder;
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
         this.nodeToHighWay = nodeToWayMap;
@@ -68,7 +67,7 @@ public class MapData implements Serializable {
     }
 
     public void searchInData(CanvasBounds bounds, int zoomLevel) {
-        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug, zoomLevel);
+        mapSegment = rTreeHolder.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug, zoomLevel);
     }
 
     public void setRTreeDebug(boolean selected) {
@@ -93,7 +92,7 @@ public class MapData implements Serializable {
     }
 
     public String getNearestRoadRTree(float x, float y) { // TODO: 4/22/21 in progress
-        Way way = rTree.getNearestRoad(x, y);
+        Way way = rTreeHolder.getNearestRoad(x, y);
         if (way.getName() != null) {
             return way.getName();
         }

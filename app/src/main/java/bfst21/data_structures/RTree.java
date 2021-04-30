@@ -17,16 +17,14 @@ public class RTree implements Serializable {
     ArrayList<ArrayList<Long>> splitInsertResults;
     private RTreeNode root;
     private long size;
-    private int returnListSize;
 
-    public RTree(int minimumChildren, int maximumChildren, int numberOfCoordinates, int returnListSize) {
+    public RTree(int minimumChildren, int maximumChildren, int numberOfCoordinates) {
         this.minimumChildren = minimumChildren;
         this.maximumChildren = maximumChildren;
         this.numberOfCoordinates = numberOfCoordinates;
         root = null;
         size = 0;
         splitInsertResults = new ArrayList<>();
-        this.returnListSize = returnListSize;
     }
 
     /**
@@ -48,21 +46,19 @@ public class RTree implements Serializable {
      * @param yMin  The minimum y-coordinate of the canvas.
      * @param yMax  The maximum y-coordinate of the canvas.
      * @param debug True if debug mode is selected. Otherwise, false.
-     * @param currentZoomLevel The current zoom level for the GUI.
      * @return An ArrayList with the Element objects that intersect with the search bounds.
      */
-    public ArrayList<ArrayList<Element>> search(float xMin, float xMax, float yMin, float yMax, boolean debug, int currentZoomLevel) {
-        Map<String, Byte> zoomMap = MapCanvas.zoomMap;
+    public ArrayList<ArrayList<Element>> search(float xMin, float xMax, float yMin, float yMax, boolean debug, ArrayList<ArrayList<Element>> results) {
         if (root != null) {
             float[] searchCoordinates = new float[]{xMin, xMax, yMin, yMax};
-            ArrayList<ArrayList<Element>> results = prepareResultArray();
+
             if (debug) {
                 float coordinateChange = xMin * 0.0005f;
                 searchCoordinates = new float[]{xMin + coordinateChange, xMax + (-coordinateChange), yMin + coordinateChange, yMax + (-coordinateChange)};
                 results.get(0).addAll(createDebugRectangle(searchCoordinates, "motorway"));
-                searchDebug(searchCoordinates, root, results, currentZoomLevel, zoomMap);
+                searchDebug(searchCoordinates, root, results);
             } else {
-                search(searchCoordinates, root, results, currentZoomLevel, zoomMap);
+                search(searchCoordinates, root, results);
             }
             return results;
         } else {
@@ -70,32 +66,18 @@ public class RTree implements Serializable {
         }
     }
 
-    /**
-     * Make a list with as many lists as layers for the map.
-     * @return An ArrayList with empty nested Arraylists.
-     */
-    private ArrayList<ArrayList<Element>> prepareResultArray() {
-        ArrayList<ArrayList<Element>> results = new ArrayList<>();
-        while (results.size() <= returnListSize) {
-            results.add(new ArrayList<>());
-        }
-        return results;
-    }
 
     /**
      * Search for elements in the R-tree based on search coordinates.
      * @param searchCoordinates The coordinates to search for elements within where the minimum coordinate is followed by maximum for each dimension.
      * @param node The current Node to check.
      * @param results List with elements that are within the search coordinates.
-     * @param currentZoomLevel The current zoom level for the GUI.
-     * @param zoomMap A map with types as keys and the layers where the types should be drawn as values.
      */
-    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results, int currentZoomLevel, Map<String, Byte> zoomMap) {
+    private void search(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
-                    String type = e.getType();
-                    if (zoomMap.get(type) != null && zoomMap.get(type) <= currentZoomLevel && intersects(searchCoordinates, e.getCoordinates())) {
+                    if (intersects(searchCoordinates, e.getCoordinates())) {
                         int layer = e.getLayer();
                         results.get(layer).add(e);
                     }
@@ -104,7 +86,7 @@ public class RTree implements Serializable {
         } else {
             for (RTreeNode r : node.getChildren()) {
                 if (intersects(searchCoordinates, r.getCoordinates())) {
-                    search(searchCoordinates, r, results, currentZoomLevel, zoomMap);
+                    search(searchCoordinates, r, results);
                 }
             }
         }
@@ -116,15 +98,12 @@ public class RTree implements Serializable {
      * @param searchCoordinates The coordinates to search for elements within where the minimum coordinate is followed by maximum for each dimension.
      * @param node The current Node to check.
      * @param results List with elements that are within the search coordinates.
-     * @param currentZoomLevel The current zoom level for the GUI.
-     * @param zoomMap A map with types as keys and the layers where the types should be drawn as values.
      */
-    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results, int currentZoomLevel, Map<String, Byte> zoomMap) {
+    private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
         if (node.isLeaf()) {
             for (RTreeNode r : node.getChildren()) {
                 for (Element e : r.getElementEntries()) {
-                    String type = e.getType();
-                    if (zoomMap.get(type) != null && zoomMap.get(type) <= currentZoomLevel && intersects(searchCoordinates, e.getCoordinates())) {
+                    if (intersects(searchCoordinates, e.getCoordinates())) {
                         int layer = e.getLayer();
                         results.get(layer).addAll(createDebugRectangle(e.getCoordinates(), "residential"));
                         results.get(layer).add(e);
@@ -135,7 +114,7 @@ public class RTree implements Serializable {
             for (RTreeNode r : node.getChildren()) {
                 if (intersects(searchCoordinates, r.getCoordinates())) {
                     //results.add(createDebugRelation(r.getCoordinates())); // TODO: 4/5/21 Decide if the r-tree node' boxes also should be drawn (non-leaf nodes) 
-                    searchDebug(searchCoordinates, r, results, currentZoomLevel, zoomMap);
+                    searchDebug(searchCoordinates, r, results);
                 }
             }
         }

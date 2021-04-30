@@ -97,7 +97,8 @@ public class Creator extends Task<MapData> {
         Relation relation = null;
 
         KDTree<Node> highWayRoadNodes = new KDTree<>(2, 4);
-        RTree rTree = new RTree(1, 100, 4, topLayer); //remove nodes
+        RTreeHolder rTreeHolder = new RTreeHolder(1, 100, 4, topLayer); //remove nodes
+        RTree closetRoadRTree = new RTree(1, 100, 4);
         AddressTriesTree addressTree = new AddressTriesTree();
         ElementToElementsTreeMap<Node, Way> nodeToWayMap = new ElementToElementsTreeMap<>();
         ElementToElementsTreeMap<Node, Relation> nodeToRestriction = new ElementToElementsTreeMap<>();
@@ -231,7 +232,7 @@ public class Creator extends Task<MapData> {
                                         node.setLayer(4);
                                         nullifyAddress();
                                     } else {
-                                        if (node.hasType()) rTree.insert(node);
+                                        if (node.hasType()) rTreeHolder.insert(node);
                                         idToNode.put(node);
                                     }
                                     node = null;
@@ -242,12 +243,13 @@ public class Creator extends Task<MapData> {
                                 if (way != null) {
                                     idToWay.put(way);
                                     if (way.hasType()) {
-                                        rTree.insert(way);
+                                        rTreeHolder.insert(way);
 
                                     }
                                     if (way.isHighWay()) {
                                         nodeToWayMap.putAll(way.getNodes(), way);
                                         if (way.hasName()) {
+                                            closetRoadRTree.insert(way);
                                             highWayRoadNodes.addAll(way.getNodes());
                                         }
                                     }
@@ -264,7 +266,7 @@ public class Creator extends Task<MapData> {
                                             else if (relation.getViaWay() != null)
                                                 wayToRestriction.put(relation.getViaWay(), relation);
                                         } else {
-                                            rTree.insert(relation);
+                                            rTreeHolder.insert(relation);
                                         }
                                     }
                                 }
@@ -278,8 +280,9 @@ public class Creator extends Task<MapData> {
         coastLines.mergeWays();
         mapData.setCoastlines(coastLines);
         mapData.setElementToText(elementToText);
+        rTreeHolder.setClosetRoadRTree(closetRoadRTree);
         updateMessage("Finalizing...");
-        mapData.addDataTrees(highWayRoadNodes, rTree, nodeToRestriction, wayToRestriction, addressTree, nodeToWayMap);
+        mapData.addDataTrees(highWayRoadNodes, rTreeHolder, nodeToRestriction, wayToRestriction, addressTree, nodeToWayMap);
         reader.close();
     }
 
