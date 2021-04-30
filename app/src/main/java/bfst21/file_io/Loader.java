@@ -1,7 +1,7 @@
 package bfst21.file_io;
 
-import bfst21.Exceptions.NoOSMInZipFileException;
-import bfst21.Exceptions.UnsupportedFileFormatException;
+import bfst21.exceptions.NoOSMInZipFileException;
+import bfst21.exceptions.UnsupportedFileFormatException;
 import bfst21.view.Theme;
 
 import java.io.*;
@@ -20,7 +20,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class Loader {
-    public InputStream load(String file) throws IOException, NoOSMInZipFileException, UnsupportedFileFormatException {
+    public static InputStream load(String file) throws IOException, NoOSMInZipFileException, UnsupportedFileFormatException {
         if(file.endsWith(".osm") || file.endsWith(".bmapdata")) return loadFile(file);
         else if(file.endsWith(".zip")) return loadZIP(file);
         throw new UnsupportedFileFormatException(file);
@@ -35,7 +35,7 @@ public class Loader {
      * @throws IOException if the file is not found.
      * @throws NoOSMInZipFileException if there is no OSM file in the zip file.
      */
-    private ZipInputStream loadZIP(String file) throws IOException, NoOSMInZipFileException {
+    private static ZipInputStream loadZIP(String file) throws IOException, NoOSMInZipFileException {
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
         ZipEntry entry;
 
@@ -46,16 +46,16 @@ public class Loader {
         throw new NoOSMInZipFileException(file);
     }
 
-    private FileInputStream loadFile(String file) throws IOException {
+    private static FileInputStream loadFile(String file) throws IOException {
         return new FileInputStream(file);
     }
 
-    public InputStream loadResource(String file) {
-        return getClass().getResourceAsStream(file);
+    public static InputStream loadResource(String file) {
+        return Loader.class.getResourceAsStream(file);
     }
 
-    public long getResourceFileSize(String file) throws IOException {
-        return getClass().getResource(file).openConnection().getContentLengthLong();
+    public static long getResourceFileSize(String file) throws IOException {
+        return Loader.class.getResource(file).openConnection().getContentLengthLong();
     }
 
     /**
@@ -67,7 +67,7 @@ public class Loader {
      * @throws IOException if file is not found.
      * @throws NoOSMInZipFileException if there are no OSM zip entries in the zip file.
      */
-    public long getZipFileEntrySize(String file) throws IOException, NoOSMInZipFileException {
+    public static long getZipFileEntrySize(String file) throws IOException, NoOSMInZipFileException {
         ZipFile zipFile = new ZipFile(file);
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
@@ -83,7 +83,7 @@ public class Loader {
         throw new NoOSMInZipFileException(file);
     }
 
-    public Theme loadTheme(String file) {
+    public static Theme loadTheme(String file) {
         try(BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
             Theme theme = new Theme();
 
@@ -95,7 +95,7 @@ public class Loader {
                 theme.parseData(line, lineNumber);
             }
 
-            URL cssPath = getClass().getResource("/themes/" + file.replace(".mtheme", ".css"));
+            URL cssPath = Loader.class.getResource("/themes/" + file.replace(".mtheme", ".css"));
             if(cssPath != null) theme.setStylesheet(cssPath.toString());
 
             return theme;
@@ -115,11 +115,11 @@ public class Loader {
      * @param extension the file extension, we want to filter the list after.
      * @return A List of Strings containing the name of the files/directories.
      */
-    public List<String> getFilesIn(String directory, String extension) {
+    public static List<String> getFilesIn(String directory, String extension) {
         List<String> files = new ArrayList<>();
 
         try {
-            URI uri = getClass().getResource(directory).toURI();
+            URI uri = Loader.class.getResource(directory).toURI();
             try (FileSystem fileSystem = (uri.getScheme().equals("jar") ? FileSystems.newFileSystem(uri, Collections.emptyMap()) : null)) {
                 Path path = Paths.get(uri);
                 Files.walkFileTree(path, new SimpleFileVisitor<>() {

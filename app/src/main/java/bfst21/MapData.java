@@ -1,14 +1,18 @@
 package bfst21;
 
-import bfst21.Exceptions.KDTreeEmptyException;
-import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
-import bfst21.data_structures.*;
+import bfst21.data_structures.AddressTriesTree;
+import bfst21.data_structures.ElementToElementsTreeMap;
+import bfst21.data_structures.KDTree;
+import bfst21.data_structures.RTree;
+import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.view.CanvasBounds;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,28 +25,34 @@ public class MapData implements Serializable {
 
     private KDTree<Node> closetRoadTree;
     private RTree rTree;
-    private ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
+    private transient ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
     private AddressTriesTree addressTree;
-    private boolean rTreeDebug;
+    private transient boolean rTreeDebug;
+
+    private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private ElementToElementsTreeMap<Node, Way> nodeToHighWay;
-    private RouteNavigation routeNavigation;
-    private ArrayList<Element> currentRoute;
-    private ArrayList<Node> userAddedPoints;
+    private ElementToElementsTreeMap<Way, Relation> wayToRestriction;
+    private transient List<Element> currentRoute;
+
+    private transient List<Node> userAddedPoints;
     private Relation coastlines;
     private HashMap<Element, String> elementToText;
 
     public MapData() {
         mapSegment = new ArrayList<>();
+        currentRoute = new ArrayList<>();
     }
 
     public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
         this.rTree = rTree;
         this.closetRoadTree = highWayRoadNodes;
         this.addressTree = addressTree;
-        nodeToHighWay = nodeToWayMap;
-        routeNavigation = new RouteNavigation(nodeToHighWay, nodeToRestriction, wayToRestriction);
+        this.nodeToHighWay = nodeToWayMap;
+        this.nodeToRestriction = nodeToRestriction;
+        this.wayToRestriction = wayToRestriction;
         currentRoute = new ArrayList<>();
+
         userAddedPoints = new ArrayList<>();
         buildTrees();
     }
@@ -97,8 +107,8 @@ public class MapData implements Serializable {
             }
             names = String.join(", ", list);
         }
-        return names;
 
+        return names;
     }
 
     public Node getNearestRoadNode(float x, float y) {
@@ -108,34 +118,8 @@ public class MapData implements Serializable {
         } catch (KDTreeEmptyException e) {
             e.printStackTrace();
         }
+
         return nearestRoadNode;
-    }
-
-    public void setRoute(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) throws NoNavigationResultException {
-        ArrayList<Node> path = routeNavigation.getPath(from, to, car, bike, walk, fastest, aStar);
-        currentRoute = new ArrayList<>();
-        if (path.size() > 0) {
-            Way route = new Way();
-            Node start = path.get(0);
-            Node end = path.get(path.size() - 1);
-            setRouteElementType(route, start, end);
-
-            route.setType("navigation");
-            for (int i = 0; i < path.size(); i++) {
-                route.addNode(path.get(i));
-            }
-            currentRoute.add(route);
-            currentRoute.add(start);
-            currentRoute.add(end);
-        }
-    }
-
-    public double getDistanceNav() throws NoNavigationResultException {
-        return routeNavigation.getTotalDistance();
-    }
-
-    public double getTimeNav() throws NoNavigationResultException {
-        return routeNavigation.getTotalTime();
     }
 
     public void addToUserPointList(Node toAdd) {
@@ -143,22 +127,31 @@ public class MapData implements Serializable {
         userAddedPoints.add(toAdd);
     }
 
-    public ArrayList<Node> getUserAddedPoints() {
+    public List<Node> getUserAddedPoints() {
         return userAddedPoints;
     }
 
-    private void setRouteElementType(Way way, Node start, Node end) {
-        way.setType("navigation");
-        start.setType("start_route_note");
-        end.setType("end_route_note");
+    /**
+     * Defines a custom read object method for deserialization of MapData
+     * to ensure no NullPointerExceptions are thrown because of transient fields.
+     *
+     * @param in the ObjectInputStream used for reading the object.
+     * @throws IOException if the file could not be found or the stream is interrupted.
+     * @throws ClassNotFoundException if used class could not be found.
+     */
+    @Serial
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        currentRoute = new ArrayList<>();
+        userAddedPoints = new ArrayList<>();
     }
 
-    public ArrayList<Element> getCurrentRoute() {
+    public List<Element> getCurrentRoute() {
         return currentRoute;
     }
 
-    public void removeCurrentRoute() {
-        currentRoute = new ArrayList<>();
+    public void setCurrentRoute(List<Element> currentRoute) {
+        this.currentRoute = currentRoute;
     }
 
     public ArrayList<ArrayList<Element>> getMapSegment() {
@@ -176,6 +169,19 @@ public class MapData implements Serializable {
 
     public void setElementToText(HashMap<Element, String> elementToCityname) {
         this.elementToText = elementToCityname;
+    }
+
+
+    public ElementToElementsTreeMap<Node, Relation> getNodeToRestriction() {
+        return nodeToRestriction;
+    }
+
+    public ElementToElementsTreeMap<Node, Way> getNodeToHighWay() {
+        return nodeToHighWay;
+    }
+
+    public ElementToElementsTreeMap<Way, Relation> getWayToRestriction() {
+        return wayToRestriction;
     }
 
     public float getMinX() {

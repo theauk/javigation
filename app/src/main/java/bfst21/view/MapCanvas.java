@@ -1,6 +1,7 @@
 package bfst21.view;
 
 import bfst21.MapData;
+import bfst21.utils.MapMath;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,17 +18,19 @@ import javafx.scene.transform.NonInvertibleTransformException;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
+    public static Map<String, Byte> zoomMap;
     public final static byte MIN_ZOOM_LEVEL = 1;
     public final static byte MAX_ZOOM_LEVEL = 19;
-    public static Map<String, Byte> zoomMap;
     private final int ZOOM_FACTOR = 2;
+    private byte zoomLevel = MIN_ZOOM_LEVEL;
+
     private final StringProperty ratio = new SimpleStringProperty("- - -");
     private MapData mapData;
-    private Affine trans;
     private CanvasBounds bounds;
     private Theme theme;
+    private Affine trans;
+
     private boolean initialized;
-    private byte zoomLevel = MIN_ZOOM_LEVEL;
 
     public void init(MapData mapData) {
         this.mapData = mapData;
@@ -45,7 +48,7 @@ public class MapCanvas extends Canvas {
 
     /**
      * Initializes the default theme and creates a zoom map for each theme element.
-     * This method may only be run once!
+     * This method may only be called once!
      *
      * @param theme the default theme to create a zoom map from.
      */
@@ -103,7 +106,6 @@ public class MapCanvas extends Canvas {
         if (themeElement.fill()) {
             fillElement(gc, themeElement);
         }
-
     }
 
     private void drawText(GraphicsContext gc, Element element) {
@@ -172,30 +174,11 @@ public class MapCanvas extends Canvas {
         return StrokeFactory.getStrokeWidth(themeElement.getOuterWidth(), trans);
     }
 
-    private double getDistance(Point2D start, Point2D end) {
-        //Adapted from https://www.movable-type.co.uk/scripts/latlong.html
-        //Calculations need y to be before x in a point, it is therefore switched below.
-        double earthRadius = 6371e3; //in meters
-
-        double lat1 = Math.toRadians(start.getY());
-        double lat2 = Math.toRadians(end.getY());
-        double lon1 = start.getX();
-        double lon2 = end.getX();
-
-        double deltaLat = Math.toRadians(lat2 - lat1);
-        double deltaLon = Math.toRadians(lon2 - lon1);
-
-        double a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return earthRadius * c;
-    }
-
     private void calculateRatio() {
-        Point2D start = new Point2D(bounds.getMinX(), convertToGeo(bounds.getMinY()));
-        Point2D end = new Point2D(bounds.getMaxX(), convertToGeo(bounds.getMinY()));
+        Point2D start = MapMath.convertToGeoCoords(new Point2D(bounds.getMinX(), bounds.getMinY()));
+        Point2D end = MapMath.convertToGeoCoords(new Point2D(bounds.getMaxX(), bounds.getMinY()));
 
-        double distance = getDistance(start, end);
+        double distance = MapMath.distanceBetween(start, end);
         double pixels = getWidth();
         double dPerPixel = distance / pixels;
         int scale = (int) (dPerPixel * 50);
@@ -286,16 +269,6 @@ public class MapCanvas extends Canvas {
         return null;
     }
 
-    public Point2D getGeoCoords(double x, double y) {
-        Point2D geoCoords = getTransCoords(x, y);
-
-        return new Point2D(geoCoords.getX(), convertToGeo(geoCoords.getY()));
-    }
-
-    private double convertToGeo(double value) {
-        return -value * 0.56f;
-    }
-
     public byte getZoomLevel() {
         return zoomLevel;
     }
@@ -344,8 +317,8 @@ public class MapCanvas extends Canvas {
         dx = dx * Math.sqrt(trans.determinant());
         dy = dy * Math.sqrt(trans.determinant());
 
+        pan(dx,dy);
         pan(dx, dy);
-
     }
 
     public void rTreeDebugMode() {

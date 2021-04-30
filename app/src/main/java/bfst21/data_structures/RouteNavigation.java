@@ -1,86 +1,108 @@
 package bfst21.data_structures;
 
-import bfst21.Exceptions.NoNavigationResultException;
+import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
+import bfst21.exceptions.NoNavigationResultException;
+import bfst21.utils.MapMath;
+import bfst21.utils.VehicleType;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.geometry.Point2D;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.PriorityQueue;
+import java.util.*;
 
-public class RouteNavigation implements Serializable {
-    @Serial
-    private static final long serialVersionUID = -488598808136557757L;
+public class RouteNavigation extends Service<List<Element>> {
     // TODO: 4/10/21 Add restrictions
     // TODO: 4/19/21 Hide fastest for bike/walk in the view.
 
-    private Node to;
     private ElementToElementsTreeMap<Node, Way> nodeToWayMap;
     private ElementToElementsTreeMap<Node, Relation> nodeToRestriction;
     private ElementToElementsTreeMap<Way, Relation> wayToRestriction;
-    private ArrayList<Node> path;
-    private ArrayList<String> routeDescription;
-    private HashMap<Node, DistanceAndTimeEntry> unitsTo;
-    private HashMap<Node, Node> nodeBefore;
-    private HashMap<Node, Way> wayBefore;
-    private PriorityQueue<Node> pq;
-    private boolean car;
-    private boolean bike;
-    private boolean walk;
-    private boolean fastest;
-    private boolean needToCheckUTurns;
-    private boolean aStar;
-    private double bikingSpeed;
-    private double walkingSpeed;
-    private int maxSpeed;
 
-    public RouteNavigation(ElementToElementsTreeMap<Node, Way> nodeToWayMap, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
-        this.nodeToRestriction = nodeToRestriction;
-        this.wayToRestriction = wayToRestriction;
-        this.nodeToWayMap = nodeToWayMap;
+    private Node from, to;
+    private VehicleType vehicleType;
+    private boolean fastest;
+    private boolean aStar;
+
+    private List<Node> path;
+    private List<String> routeDescription;
+
+    private Map<Node, DistanceAndTimeEntry> unitsTo;
+    private Map<Node, Node> nodeBefore;
+    private Map<Node, Way> wayBefore;
+    private PriorityQueue<Node> pq;
+
+    private boolean needToCheckUTurns;
+    private final int maxSpeed;
+
+    public RouteNavigation() {
         this.maxSpeed = 130;
     }
 
-    private void setup(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) {
-        this.to = to;
-        this.car = car;
-        this.bike = bike;
-        this.walk = walk;
-        this.fastest = fastest;
-        this.aStar = aStar;
+    public void startRouting() {
+        if(!isRunning()) {
+            reset();
+            start();
+        }
+    }
+
+    @Override
+    protected Task<List<Element>> createTask() {
+        return new Task<>() {
+            @Override
+            protected List<Element> call() throws Exception {
+                updateMessage("Calculating the best route...");
+                List<Node> path = createRoute();
+                List<Element> currentRoute = new ArrayList<>();
+
+                if (path.size() > 0) {
+                    Way route = new Way();
+                    Node start = path.get(0);
+                    Node end = path.get(path.size() - 1);
+
+                    route.setType("navigation");
+                    start.setType("start_route_note");
+                    end.setType("end_route_note");
+
+                    for (int i = 0; i < path.size() - 1; i++) { //TODO SKIPS LAST INDEX?
+                        route.addNode(path.get(i));
+                    }
+
+                    currentRoute.add(route);
+                    currentRoute.add(start);
+                    currentRoute.add(end);
+                }
+
+                return currentRoute;
+            }
+        };
+    }
+
+    private void setup() {
         needToCheckUTurns = false;
         routeDescription = new ArrayList<>();
         unitsTo = new HashMap<>();
         nodeBefore = new HashMap<>();
         wayBefore = new HashMap<>();
         pq = new PriorityQueue<>((a, b) -> Integer.compare(unitsTo.get(a).compareTo(unitsTo.get(b)), 0)); // different comparator
-        bikingSpeed = 16; // from Google Maps 16 km/h
-        walkingSpeed = 5; // from Google Maps 5 km/h
         pq.add(from);
         unitsTo.put(from, new DistanceAndTimeEntry(0, 0, 0));
     }
 
     /**
-     * Gets either the fastest or the shortest path between two Nodes.
-     * @param from The from Node.
-     * @param to The to Node.
-     * @param car True if travelling by car. Otherwise, false.
-     * @param bike True if travelling by bike. Otherwise, false.
-     * @param walk True if walking. Otherwise, false.
-     * @param fastest True if fastest route needs to be found. False if shortest route should be found.
-     * @param aStar True if the A* algorithm should be used. False if Dijkstra should be used.
-     * @return An ArrayList with Nodes that make up the path in reverse order.
+     * Creates and returns either the fastest or the shortest path between two Nodes.
+     *
+     * @return a list with Nodes that make up the path in reverse order.
      * @throws NoNavigationResultException If no route can be found.
      */
-    public ArrayList<Node> getPath(Node from, Node to, boolean car, boolean bike, boolean walk, boolean fastest, boolean aStar) throws NoNavigationResultException {
-        setup(from, to, car, bike, walk, fastest, aStar);
+    private List<Node> createRoute() throws NoNavigationResultException {
+        setup();
         Node n = checkNode();
 
         if (n != to) {
-            setup(from, to, car, bike, walk, fastest, aStar);
+            setup();
             needToCheckUTurns = true; // TODO: 4/19/21 really not the most beautiful thing...
             n = checkNode();
 
@@ -92,9 +114,26 @@ public class RouteNavigation implements Serializable {
 
         } else {
             path = getTrack(new ArrayList<>(), n);
-            //getRouteDescription();
+            getRouteDescription();
             return path;
         }
+    }
+
+
+    /**
+     * Sets up the planned route to use the specified criteria.
+     *
+     * @param to the to Node.
+     * @param vehicleType the selected vehicle type.
+     * @param fastest true if fastest route needs to be found. False if shortest route should be found.
+     * @param aStar true if the A* algorithm should be used. False if Dijkstra should be used.
+     */
+    public void setupRoute(Node from, Node to, VehicleType vehicleType, boolean fastest, boolean aStar) {
+        this.from = from;
+        this.to = to;
+        this.vehicleType = vehicleType;
+        this.fastest = fastest;
+        this.aStar = aStar;
     }
 
     /**
@@ -114,46 +153,6 @@ public class RouteNavigation implements Serializable {
         if (unitsTo.get(to) != null) return unitsTo.get(to).time;
         else return 0;
     }
-
-    /*public String getRouteDescription() {
-        for (int i = path.size() - 1; i >= 2; i--) {
-            Node from = path.get(i);
-            Node via = path.get(i - 1);
-            Node to = path.get(i - 2);
-
-            double distanceFromAndVia = getDistanceBetweenTwoNodes(from, via);
-            double distanceViaAndTo = getDistanceBetweenTwoNodes(via, to);
-            double distanceFromAndTo = getDistanceBetweenTwoNodes(from, to);
-
-            double cosTurnAngle = (Math.pow(distanceViaAndTo, 2) + Math.pow(distanceFromAndVia, 2) - Math.pow(distanceFromAndTo, 2)) / (2 * distanceViaAndTo * distanceFromAndVia);
-            double turnAngle = Math.acos(cosTurnAngle);
-
-            double result = Math.atan2(to.getyMax() - via.getyMax(), to.getxMax() - via.getxMax()) - Math.atan2(from.getyMax() - via.getyMax(), from.getxMax() - via.getxMax());
-
-
-            double v1x = from.getxMax() - via.getxMax();
-            double v1y = from.getyMax() - via.getyMax();
-            double v2x = to.getxMax() - via.getxMax();
-            double v2y = to.getyMax() - via.getyMax();
-
-            double angle = Math.atan2(v1x, v1y) - Math.atan2(v2x, v2y);
-            double degreeAngle = Math.toDegrees(angle);
-
-            //System.out.println(turnAngle * (180f / Math.PI));
-
-            if (degreeAngle > 0) {
-                if (degreeAngle < 175 || degreeAngle > 185) {
-                    System.out.println("You turned right, by: " + degreeAngle + " " + Math.toDegrees(result));
-                }
-            } else {
-                if (degreeAngle > -175 || degreeAngle < -185) {
-                    System.out.println("You turned left, by: " + degreeAngle + " " + Math.toDegrees(result));
-                }
-            }
-        }
-        System.out.println("");
-        return "";
-    }*/
 
     /**
      * Checks the next node in the priority queue with the smallest units/cost.
@@ -175,7 +174,7 @@ public class RouteNavigation implements Serializable {
      * @param currentNode The Node which should be checked for the Node before it.
      * @return A list of the Nodes making up the path.
      */
-    private ArrayList<Node> getTrack(ArrayList<Node> nodes, Node currentNode) {
+    private List<Node> getTrack(List<Node> nodes, Node currentNode) {
         if (currentNode != null) {
             nodes.add(currentNode);
             getTrack(nodes, nodeBefore.get(currentNode));
@@ -188,26 +187,26 @@ public class RouteNavigation implements Serializable {
      * @param currentFrom The current Node to examine.
      */
     private void relax(Node currentFrom) {
-        ArrayList<Way> waysWithFromNode = nodeToWayMap.getElementsFromNode(currentFrom);
+        List<Way> waysWithFromNode = nodeToWayMap.getElementsFromNode(currentFrom);
 
         for (Way w : waysWithFromNode) {
-            ArrayList<Node> adjacentNodes = new ArrayList<>();
+            List<Node> adjacentNodes = new ArrayList<>();
 
-            if (car) {
+            if (vehicleType == VehicleType.CAR) {
                 if (w.isDriveable()) {
                     if (!w.isOnewayRoad()) {
                         getPreviousNode(adjacentNodes, w, currentFrom);
                     }
                     getNextNode(adjacentNodes, w, currentFrom);
                 }
-            } else if (bike) {
+            } else if (vehicleType == VehicleType.BIKE) {
                 if (w.isCycleable()) {
                     if (!w.isOneWayForBikes()) {
                         getPreviousNode(adjacentNodes, w, currentFrom);
                     }
                     getNextNode(adjacentNodes, w, currentFrom);
                 }
-            } else {
+            } else if (vehicleType == VehicleType.WALK) {
                 if (w.isWalkable()) {
                     getPreviousNode(adjacentNodes, w, currentFrom);
                     getNextNode(adjacentNodes, w, currentFrom);
@@ -234,7 +233,7 @@ public class RouteNavigation implements Serializable {
      * @param w The current Way.
      * @param currentFrom The current from Node.
      */
-    private void getPreviousNode(ArrayList<Node> adjacentNodes, Way w, Node currentFrom) {
+    private void getPreviousNode(List<Node> adjacentNodes, Way w, Node currentFrom) {
         Node previousNode = w.getPreviousNode(currentFrom);
         if (previousNode != null) adjacentNodes.add(previousNode);
     }
@@ -245,7 +244,7 @@ public class RouteNavigation implements Serializable {
      * @param w The current Way.
      * @param currentFrom The current from Node.
      */
-    private void getNextNode(ArrayList<Node> adjacentNodes, Way w, Node currentFrom) {
+    private void getNextNode(List<Node> adjacentNodes, Way w, Node currentFrom) {
         Node nextNode = w.getNextNode(currentFrom);
         if (nextNode != null) adjacentNodes.add(nextNode);
     }
@@ -271,7 +270,7 @@ public class RouteNavigation implements Serializable {
      * @return True if there is a restriction. False if not.
      */
     private boolean checkRestrictionViaNode(Way fromWay, Node viaNode, Way toWay) {
-        ArrayList<Relation> restrictionsViaNode = nodeToRestriction.getElementsFromNode(viaNode);
+        List<Relation> restrictionsViaNode = nodeToRestriction.getElementsFromNode(viaNode);
         if (restrictionsViaNode != null) {
             for (Relation restriction : restrictionsViaNode) {
                 if (restriction.getRestriction().contains("no_") && restriction.getFrom() == fromWay && restriction.getViaNode() == viaNode && restriction.getTo() == toWay) { // TODO: 4/19/21 er check med viaNode nødvendigt grundet nodeToorest lookup? same nedenunder for viaWay
@@ -292,7 +291,7 @@ public class RouteNavigation implements Serializable {
      * @return True if there is a restriction. False if not.
      */
     private boolean checkRestrictionViaWay(Way fromWay, Node viaNode, Way toWay) {
-        ArrayList<Relation> restrictionsViaWay = wayToRestriction.getElementsFromNode(fromWay);
+        List<Relation> restrictionsViaWay = wayToRestriction.getElementsFromNode(fromWay);
         if (restrictionsViaWay != null) {
             for (Relation restriction : restrictionsViaWay) {
                 if (restriction.getRestriction().contains("no_") && restriction.getViaWay() == fromWay && restriction.getTo() == toWay) {
@@ -419,10 +418,95 @@ public class RouteNavigation implements Serializable {
      */
     private double getTravelTime(double distance, Way w) {
         double speed;
-        if (bike) speed = bikingSpeed;
-        else if (walk) speed = walkingSpeed;
-        else speed = w.getMaxSpeed();
+
+        if(vehicleType == VehicleType.CAR) speed = w.getMaxSpeed();
+        else speed = vehicleType.speed();
         return distance / (speed * (5f / 18f));
+    }
+
+    public void dumpPath() {
+        for(int j = 0; j < path.size(); j++) {
+            System.out.println("(" + path.get(j).getxMax() + ", " + convertToGeo(path.get(j).getyMax()) + ")");
+        }
+    }
+
+    private String lastDirection;
+    private String currentDirection;
+    private double turnAngleThreshold = 5.0;
+
+    private String getDirection(Point2D from, Point2D via, Point2D to) {
+        double angle = MapMath.turnAngle(from, via, to);
+
+        //System.out.println("Angle: " + angle);
+
+        //LEFT NEGATIVE
+        //RIGHT POSITIVE
+        if(angle > turnAngleThreshold) return "RIGHT";
+        if(angle < -turnAngleThreshold) return "LEFT";
+        else return "STRAIGHT";
+    }
+
+    public void calculateResult(Point2D from, Point2D via, Point2D to) {
+        //System.out.println("Calculate Result");
+
+        //System.out.println("F = (" + from.getX() + ", " + from.getY() + ")");
+        //System.out.println("V = (" + via.getX() + ", " + via.getY() + ")");
+        //System.out.println("T = (" + to.getX() + ", " + to.getY() + ")");
+
+        currentDirection = getDirection(from, via, to);
+
+        if(!currentDirection.equals(lastDirection)) {
+            //if(lastDirection == null) System.out.println("Go " + MapMath.compassDirection(from, via));   //START POINT
+        }
+
+        if(currentDirection.equals("LEFT")) {
+            //System.out.println("Go LEFT");
+        }
+        else if(currentDirection.equals("RIGHT")) {
+            //System.out.println("Go RIGHT");
+        }
+        else if(currentDirection.equals("STRAIGHT")) {
+            //System.out.println("Go STRAIGHT");
+        }
+
+        lastDirection = currentDirection;
+    }
+
+    public void getRouteDescription() {
+        //System.err.println("Size: " + path.size());
+        //if(path.size() % 3 != 0) System.err.println("Warning can't do 3 each time!");
+        lastDirection = null;
+
+        for (int i = path.size() - 1; i >= 0; i--) {
+            if(i - 2 < 0) {
+                //System.err.println("SKIPPING 2");
+                break;
+            }
+
+            Node f = path.get(i);
+            Node v = path.get(i - 1);
+            Node t = path.get(i - 2);
+
+            Point2D from = MapMath.convertToGeoCoords(new Point2D(f.getxMax(), f.getyMax()));
+            Point2D via = MapMath.convertToGeoCoords(new Point2D(v.getxMax(), v.getyMax()));
+            Point2D to = MapMath.convertToGeoCoords(new Point2D(t.getxMax(), t.getyMax()));
+
+            calculateResult(from, via, to);
+
+            //System.out.println();
+        }
+    }
+
+    public void setNodeToWayMap(ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
+        this.nodeToWayMap = nodeToWayMap;
+    }
+
+    public void setNodeToRestriction(ElementToElementsTreeMap<Node, Relation> nodeToRestriction) {
+        this.nodeToRestriction = nodeToRestriction;
+    }
+
+    public void setWayToRestriction(ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
+        this.wayToRestriction = wayToRestriction;
     }
 
     /**
@@ -430,7 +514,9 @@ public class RouteNavigation implements Serializable {
      * The class is necessary to keep track of both variables as time various by the road type for cars.
      */
     private class DistanceAndTimeEntry implements Comparable<DistanceAndTimeEntry> {
-        private double distance, time, cost;
+        private final double distance;
+        private final double time;
+        private final double cost;
 
         public DistanceAndTimeEntry(double distance, double time, double cost) {
             this.distance = distance;
