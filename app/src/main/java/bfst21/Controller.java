@@ -142,7 +142,9 @@ public class Controller {
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
-        // TODO: 29-04-2021 textfields should remove text og user added points
+        textFieldToNav.setText("");
+        textFieldFromNav.setText("");
+        dropDownPoints.getItems().removeAll(dropDownPoints.getItems());
     }
 
     private void loadThemes() {
