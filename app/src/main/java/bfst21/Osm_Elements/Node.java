@@ -15,6 +15,14 @@ public class Node extends Element implements Serializable {
         this.yMin = lat;
     }
 
+    public void setX(float x) {
+        xMin = x;
+    }
+
+    public void setY(float y) {
+        yMin = y;
+    }
+
     @Override
     public void draw(GraphicsContext gc) {
 

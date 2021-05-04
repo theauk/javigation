@@ -58,31 +58,39 @@ public class RouteNavigation extends Service<List<Element>> {
             @Override
             protected List<Element> call() throws Exception {
                 updateMessage("Calculating the best route...");
-                List<Node> path = createRoute();
-                List<Element> currentRoute = new ArrayList<>();
-
-                if (path.size() > 0) {
-                    Way route = new Way();
-                    Node start = path.get(0);
-                    Node end = path.get(path.size() - 1);
-
-                    route.setType("navigation");
-                    start.setType("start_route_note");
-                    end.setType("end_route_note");
-
-                    for (int i = 0; i < path.size(); i++) {
-                        route.addNode(path.get(i));
-                    }
-
-                    currentRoute.add(route);
-                    currentRoute.add(start);
-                    currentRoute.add(end);
-                }
-
-                removeFromToNodesFromTheirWays();
-                return currentRoute;
+                return getCurrentRoute();
             }
         };
+    }
+
+    private List<Element> getCurrentRoute() throws NoNavigationResultException {
+        List<Node> path = createRoute();
+        List<Element> currentRoute = new ArrayList<>();
+
+        if (path.size() > 0) {
+            Way route = new Way();
+            Node start = path.get(0);
+            Node end = path.get(path.size() - 1);
+
+            route.setType("navigation");
+            start.setType("start_route_note");
+            end.setType("end_route_note");
+
+            for (int i = 0; i < path.size(); i++) {
+                route.addNode(path.get(i));
+            }
+
+            currentRoute.add(route);
+            currentRoute.add(start);
+            currentRoute.add(end);
+        }
+
+        removeFromToNodesFromTheirWays();
+        return currentRoute;
+    }
+
+    public List<Element> testGetCurrentRoute() throws NoNavigationResultException {
+        return getCurrentRoute();
     }
 
     private void setup() {
@@ -133,15 +141,17 @@ public class RouteNavigation extends Service<List<Element>> {
         return path;
     }
 
-
     /**
      * Sets up the planned route to use the specified criteria.
-     *  @param to the to Node.
-     * @param nearestFromWaySegmentIndices
-     * @param nearestToWaySegmentIndices
-     * @param vehicleType the selected vehicle type.
-     * @param fastest true if fastest route needs to be found. False if shortest route should be found.
-     * @param aStar true if the A* algorithm should be used. False if Dijkstra should be used. // TODO: 5/1/21 fixxx
+     * @param from The from Node.
+     * @param to The to Node.
+     * @param fromWay The from Way.
+     * @param toWay The to Way.
+     * @param nearestFromWaySegmentIndices The indices in the to way where the to Node should be.
+     * @param nearestToWaySegmentIndices The indices in the from way where the from Node should be.
+     * @param vehicleType The selected vehicle type.
+     * @param fastest True if fastest route needs to be found. False if shortest route should be found.
+     * @param aStar True if the A* algorithm should be used. False if Dijkstra should be used.
      */
     public void setupRoute(Node from, Node to, Way fromWay, Way toWay, int[] nearestFromWaySegmentIndices, int[] nearestToWaySegmentIndices, VehicleType vehicleType, boolean fastest, boolean aStar) {
         this.from = from;
@@ -160,7 +170,9 @@ public class RouteNavigation extends Service<List<Element>> {
      * Adds the to and from node to their respective ways so that it is possible to navigate from/to them.
      */
     private void addFromToNodesToFromToWays() {
+        MapMath.updateNodeCoordinatesIfEndOfWay(fromWay, from);
         fromWay.addNodeBetweenIndices(from, nearestFromWaySegmentIndices[1]);
+        MapMath.updateNodeCoordinatesIfEndOfWay(toWay, to);
         toWay.addNodeBetweenIndices(to, nearestToWaySegmentIndices[1]);
     }
 
@@ -640,6 +652,9 @@ public class RouteNavigation extends Service<List<Element>> {
             else return "Turn right onto " + wayBeforeToName;
         } else if (angle < 0) {
             return "Turn left onto " + wayBeforeToName;
+        } else if (angle == 0) {
+            System.out.println("Angle is 0...."); // TODO: 5/4/21 delete
+            return "";
         } else {
             throw new RuntimeException("getDirection Error"); // TODO: 4/29/21 ???
         }

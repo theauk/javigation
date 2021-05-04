@@ -113,6 +113,7 @@ public abstract class NodeHolder extends Element implements Serializable {
         for (int i = 0; i < nodes.size() - 1; i++) {
             if (nodes.get(i) == currentNode) {
                 nextNode = nodes.get(i + 1);
+                break;
             }
         }
         return nextNode;
@@ -123,6 +124,7 @@ public abstract class NodeHolder extends Element implements Serializable {
         for (int i = 1; i < nodes.size(); i++) {
             if (nodes.get(i) == currentNode) {
                 previousNode = nodes.get(i - 1);
+                break;
             }
         }
         return previousNode;

@@ -759,6 +759,10 @@ public class RTree implements Serializable {
             return segmentIndices;
         }
 
+        public Way getSegment() {
+            return segment;
+        }
+
         @Override
         public int compareTo(NearestRoadPriorityQueueEntry e) {
             return Double.compare(distance, e.distance);

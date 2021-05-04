@@ -610,8 +610,9 @@ public class Controller {
     public void updateNodesNavigation(boolean fromSelected, double x, double y) {
         RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y);
         Way nearestWay = entry.getWay();
+        Way nearestSegment = entry.getSegment();
         int[] nearestWaySegmentIndices = entry.getSegmentIndices();
-        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestWay); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt???
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestSegment); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt???
 
         if (fromSelected) {
             textFieldFromNav.setText(nearestWay.getName());
@@ -667,7 +668,14 @@ public class Controller {
             //mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
             mapCanvas.repaint();
         });
-        routeNavigation.setOnFailed(e -> showDialogBox("No Route Found", routeNavigation.getException().getMessage()));
+        routeNavigation.setOnFailed(e -> {
+            showDialogBox("No Route Found", "Could not find a route between the two points");
+            try { // TODO: 5/4/21 delete 
+                throw routeNavigation.getException();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
         mapCanvas.repaint();
     }
 

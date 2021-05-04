@@ -15,8 +15,8 @@ class MapMathTest {
     @BeforeEach
     void setUp() {
         w1 = new Way();
-        Node n1 = new Node(1, 0);
-        Node n2 = new Node(3, 2);
+        Node n1 = new Node(0, 1, 0);
+        Node n2 = new Node(0, 3, 2);
         w1.addNode(n1);
         w1.addNode(n2);
     }
