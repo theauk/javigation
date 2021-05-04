@@ -14,7 +14,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class MapData implements Serializable {
@@ -159,7 +158,6 @@ public class MapData implements Serializable {
         return mapSegment;
     }
 
-
     public String getTextFromElement(Element element) {
         return elementToText.get(element);
     }
@@ -172,6 +170,9 @@ public class MapData implements Serializable {
         this.elementToText = elementToCityname;
     }
 
+    public AddressTriesTree getAddressTree() {
+        return addressTree;
+    }
 
     public ElementToElementsTreeMap<Node, Relation> getNodeToRestriction() {
         return nodeToRestriction;

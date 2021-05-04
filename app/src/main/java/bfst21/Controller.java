@@ -7,12 +7,11 @@ import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.exceptions.UnsupportedFileFormatException;
 import bfst21.file_io.Loader;
 import bfst21.file_io.Serializer;
+import bfst21.utils.AddressFilter;
 import bfst21.utils.CustomKeyCombination;
 import bfst21.utils.MapMath;
 import bfst21.utils.VehicleType;
-import bfst21.view.CanvasBounds;
-import bfst21.view.MapCanvas;
-import bfst21.view.Theme;
+import bfst21.view.*;
 import javafx.animation.FadeTransition;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -45,6 +44,7 @@ public class Controller {
     private MapData mapData;
     private Creator creator;
     private RouteNavigation routeNavigation;
+    private AddressFilter addressFilter;
 
     private static final String BINARY_FILE = "/small.bmapdata";
 
@@ -97,7 +97,7 @@ public class Controller {
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
 
-    @FXML private TextField textFieldFromNav;
+    @FXML private AutoFillTextField textFieldFromNav;
     @FXML private TextField textFieldToNav;
     @FXML private VBox autoCompleteFromNav;
     @FXML private ScrollPane ScrollpaneAutoCompleteToNav;
@@ -119,6 +119,7 @@ public class Controller {
     public void init() {
         mapData = new MapData();
         routeNavigation = new RouteNavigation();
+        addressFilter = new AddressFilter();
         loadThemes();
         initView();
         openFile();
@@ -134,6 +135,7 @@ public class Controller {
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
         addListenerToSearchFields();
+        textFieldFromNav.setFilter(addressFilter);
     }
 
     private void initMapCanvas() {
@@ -159,11 +161,9 @@ public class Controller {
     }
 
     private void addListenerToSearchFields() {
-        textFieldFromNav.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteFromNav, true);
+        textFieldFromNav.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isBlank()) {
+                fillAutoCompleteText(autoCompleteFromNav, true);
             }
         });
         textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
@@ -379,6 +379,7 @@ public class Controller {
         routeNavigation.setNodeToWayMap(mapData.getNodeToHighWay());
         routeNavigation.setNodeToRestriction(mapData.getNodeToRestriction());
         routeNavigation.setWayToRestriction(mapData.getWayToRestriction());
+        addressFilter.setAddressTree(mapData.getAddressTree());
         taskSuccess();
         initMapCanvas();
         resetView();
@@ -547,13 +548,11 @@ public class Controller {
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
 
                 fullAddressLabelForAutoComplete(addressNode, autoComplete, textField, scrollPane, fromNav, entry.getKey());
-
             });
         }
     }
 
     private void fullAddressLabelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav, int postcode) {
-
         for (Map.Entry<String, Node> houseNumber : addressNode.getHouseNumbersOnStreet(postcode).entrySet()) {
             String addressWithHouseNumber = houseNumber.getKey();
             Node node = houseNumber.getValue();
