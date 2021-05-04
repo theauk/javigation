@@ -570,7 +570,7 @@ public class Controller {
             labelHouseNumber.prefWidth(autoComplete.getWidth());
             labelHouseNumber.setOnMouseClicked((ActionEvent2) -> {
                 textField.setText(addressWithHouseNumber);
-                updateNodesNavigation(fromNav, node.getxMax(), node.getyMax());
+                updateNodesNavigation(fromNav, node.getxMax(), node.getyMax(), addressWithHouseNumber, addressNode.getStreetName());
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
                 scrollPane.setVisible(false);
 
@@ -600,28 +600,30 @@ public class Controller {
             @Override
             public void handle(MouseEvent e) {
                 Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY()); // TODO: 5/1/21 coordinates how?
-                updateNodesNavigation(fromSelected, coords.getX(), coords.getY());
+                updateNodesNavigation(fromSelected, coords.getX(), coords.getY(), null, null);
                 mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
             }
         };
         mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
     }
 
-    public void updateNodesNavigation(boolean fromSelected, double x, double y) {
-        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y);
+    public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay) {
+        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y, addressWay);
         Way nearestWay = entry.getWay();
         Way nearestSegment = entry.getSegment();
         int[] nearestWaySegmentIndices = entry.getSegmentIndices();
         Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestSegment); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt???
 
         if (fromSelected) {
-            textFieldFromNav.setText(nearestWay.getName());
+            if (addressWay == null) textFieldFromNav.setText(nearestWay.getName());
+            else textFieldFromNav.setText(fullAddress);
             currentFromWay = nearestWay;
             nearestFromWaySegmentIndices = nearestWaySegmentIndices;
             currentFromNode = nearestNodeOnNearestWay;
             mapCanvas.repaintTest(currentFromNode); // TODO: 5/2/21 delete 
         } else {
-            textFieldToNav.setText(nearestWay.getName());
+            if (addressWay == null) textFieldToNav.setText(nearestWay.getName());
+            else textFieldToNav.setText(fullAddress);
             currentToWay = nearestWay;
             currentToNode = nearestNodeOnNearestWay;
             nearestToWaySegmentIndices = nearestWaySegmentIndices;

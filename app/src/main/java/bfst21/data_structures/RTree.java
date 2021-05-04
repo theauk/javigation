@@ -660,14 +660,13 @@ public class RTree implements Serializable {
      * @param y The points y-coordinate.
      * @return An priority queue entry containing the nearest way.
      */
-    public NearestRoadPriorityQueueEntry getNearestRoad(float x, float y) {
+    public NearestRoadPriorityQueueEntry getNearestRoad(float x, float y, String addressWayName) { // TODO: 5/4/21 hvis vi kun kigger i ways kan jeg komme af med instance of
         // Adapted from Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
         PriorityQueue<NearestRoadPriorityQueueEntry> pq = new PriorityQueue<>();
         pq.add(new NearestRoadPriorityQueueEntry(true, false, root, null, null, null, 0));
 
         while (!pq.isEmpty()) {
             NearestRoadPriorityQueueEntry entry = pq.poll();
-
             if (!entry.isRTreeNode || entry.isBoundingRectangle) {
                 // check if the distance to the first pq entry's actual element is smaller than the next pq entry's distance
                 if (entry.isBoundingRectangle && !pq.isEmpty() && MapMath.shortestDistanceToElement(x, y, entry.segment) > pq.peek().distance) {
@@ -681,10 +680,12 @@ public class RTree implements Serializable {
                         if (e instanceof Way) { // only look for ways
                             Way w = (Way) e;
                             if (w.isHighWay() && w.hasName()) {
-                                for (int i = 0; i < w.getNodes().size() - 1; i++) {
-                                    Way segment = createWaySegment(w, i);
-                                    NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, true, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
-                                    pq.add(newEntry);
+                                if (addressWayName == null || w.getName().toLowerCase().equals(addressWayName)) { // to ensure that address nodes are matched with the way searched for even if another is nearer
+                                    for (int i = 0; i < w.getNodes().size() - 1; i++) {
+                                        Way segment = createWaySegment(w, i);
+                                        NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, true, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
+                                        pq.add(newEntry);
+                                    }
                                 }
                             }
                         }

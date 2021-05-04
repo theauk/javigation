@@ -82,6 +82,10 @@ public class AddressTrieNode implements Serializable {
         return map;
     }
 
+    public String getStreetName() {
+        return streetname;
+    }
+
     private class HouseNumberNode{
         Node node;
         String houseNumber;

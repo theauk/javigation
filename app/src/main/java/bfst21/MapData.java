@@ -135,7 +135,7 @@ public class MapData implements Serializable {
      * @return The nearest Way.
      */
     public Way getNearestRoadRTree(float x, float y) {
-        return getNearestRoadRTreePQEntry(x, y).getWay();
+        return getNearestRoadRTreePQEntry(x, y, null).getWay();
     }
 
     /**
@@ -144,8 +144,8 @@ public class MapData implements Serializable {
      * @param y The query point's y-coordinate.
      * @return The priority queue entry with the nearest Way.
      */
-    public RTree.NearestRoadPriorityQueueEntry getNearestRoadRTreePQEntry(float x, float y) {
-        return rTree.getNearestRoad(x, y);
+    public RTree.NearestRoadPriorityQueueEntry getNearestRoadRTreePQEntry(float x, float y, String addressWayName) {
+        return rTree.getNearestRoad(x, y, addressWayName);
     }
 
     /**
