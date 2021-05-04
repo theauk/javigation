@@ -283,6 +283,7 @@ public class Creator extends Task<MapData> {
         mapData.setElementToText(elementToText);
         rTreeHolder.setClosetRoadRTree(closetRoadRTree);
         updateMessage("Finalizing...");
+        rTreeHolder.print();
         mapData.addDataTrees(highWayRoadNodes, rTreeHolder, nodeToRestriction, wayToRestriction, addressTree, nodeToWayMap);
         reader.close();
     }
