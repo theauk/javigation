@@ -6,9 +6,9 @@ import bfst21.Osm_Elements.Way;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 class RTreeTest {
 
@@ -19,7 +19,7 @@ class RTreeTest {
     @BeforeEach
     void setUp() {
 
-        rTree = new RTree(1, 10, 4);
+        rTree = new RTree(1, 3, 4);
 
         w1 = new Way(1);
         Node n1 = new Node(1, 2, 3.5f);
@@ -41,50 +41,102 @@ class RTreeTest {
 
         w3 = new Way(3);
         n = new Node(5, 3, 2.5f);
-        //Node n6 = new Node(6, 9, 4);
+        Node n6 = new Node(6, 9, 4);
         w3.addNode(n);
-        //w3.addNode(n6);
+        w3.addNode(n6);
 
         w4 = new Way(4);
         Node n7 = new Node(7, 10, 3);
-        //Node n8 = new Node(8, 20, 14);
+        Node n8 = new Node(8, 20, 14);
         w4.addNode(n7);
-        //w4.addNode(n8);
+        w4.addNode(n8);
 
         w5 = new Way(5);
-        Node n9 = new Node(9, -5, 7);
-        //Node n10 = new Node(10, 20, 14);
+        Node n9 = new Node(9, 5, 7);
+        Node n10 = new Node(10, 14, 14);
         w5.addNode(n9);
-        //w4.addNode(n10);
+        w5.addNode(n10);
 
         w6 = new Way(6);
-        Node n11 = new Node(11, 17, 35);
-        //Node 12 = new Node(12, 20, 14);
+        Node n11 = new Node(11, 12, 12);
+        Node n12 = new Node(12, 10, 10);
         w6.addNode(n11);
-        //w4.addNode(n12);
+        w6.addNode(n12);
 
         w7 = new Way(7);
-        Node n13 = new Node(13, 40, 50);
-        //Node 14 = new Node(12, 20, 14);
+        Node n13 = new Node(13, 9, 9);
+        Node n14 = new Node(12, 9, 7);
         w7.addNode(n13);
-        //w7.addNode(n12);
+        w7.addNode(n14);
+
+        rTree.insert(w4);
+        rTree.insert(w5);
+        rTree.insert(w6);
+        rTree.insert(w1);
+        rTree.insert(w2);
+        rTree.insert(w3);
+
 
     }
 
     @Test
-    void name() {
-        rTree.insert(w1);
-        rTree.insert(w2);
+    void getNearestRoad() {
+
         RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax());
         assertEquals("w2", w.getWay().getName());
     }
 
     @Test
-    void linearSplitTest() {
-        rTree.insert(w1);
-        rTree.insert(w2);
-        rTree.insert(w3);
-        rTree.insert(w4);
+    void mapSegtment() {
+
+        ArrayList<ArrayList<Element>> result = rTree.search(1,10,1,6,false, getCleanArrayList());
+        assertEquals(3,elementsInList(result));
     }
+
+    @Test
+    void mapSegtmentDebug() {
+        ArrayList<ArrayList<Element>> result = rTree.search(1,10,1,6,true, getCleanArrayList());
+
+        int numberOfDebugRectangleWays = 4;
+        int numberOfELements = 3;
+        int numberOfBoundingRectangleWaysToElement = 4;
+        int amount = numberOfDebugRectangleWays + numberOfELements + numberOfELements * numberOfBoundingRectangleWaysToElement;
+
+        assertEquals(amount,elementsInList(result));
+    }
+
+    @Test
+    void emptyMapSegtment() {
+        ArrayList<ArrayList<Element>> result = rTree.search(13,14,1,2,false, getCleanArrayList());
+        assertEquals(0,elementsInList(result));
+    }
+   // @Test
+   // void emptyRTree() {
+   //     RTree rTree = new RTree(1, 3, 4);
+   //     RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax());
+   //     assertNull(w);
+   //
+   // }
+
+
+
+
+    private ArrayList<ArrayList<Element>> getCleanArrayList(){
+        ArrayList<ArrayList<Element>> results = new ArrayList<>();
+        while (results.size() <= 19) {
+            results.add(new ArrayList<>());
+        }
+        return results;
+    }
+
+    private int elementsInList(ArrayList<ArrayList<Element>> lists){
+        int i = 0;
+        for(ArrayList<Element> list : lists){
+            i += list.size();
+        }
+        return i;
+    }
+
+
 
 }
