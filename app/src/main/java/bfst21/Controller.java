@@ -600,31 +600,32 @@ public class Controller {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
             public void handle(MouseEvent e) {
-                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
-                Point2D coords1 = MapMath.convertToGeoCoords(mapCanvas.getTransCoords(e.getX(), e.getY())); // TODO: 5/1/21 coordinates how?
-                updateNodesNavigation(fromSelected, (float) coords.getX(), (float) coords.getY());
+                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY()); // TODO: 5/1/21 coordinates how?
+                updateNodesNavigation(fromSelected, coords.getX(), coords.getY());
                 mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
             }
         };
         mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
     }
 
-    public void updateNodesNavigation(boolean fromSelected, float x, float y) {
-        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry(x, y);
+    public void updateNodesNavigation(boolean fromSelected, double x, double y) {
+        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y);
         Way nearestWay = entry.getWay();
         int[] nearestWaySegmentIndices = entry.getSegmentIndices();
-        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestWay); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt??? Test på testen med andet end (4,4) og se om det er det samme
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestWay); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt???
 
         if (fromSelected) {
             textFieldFromNav.setText(nearestWay.getName());
             currentFromWay = nearestWay;
             nearestFromWaySegmentIndices = nearestWaySegmentIndices;
             currentFromNode = nearestNodeOnNearestWay;
+            mapCanvas.repaintTest(currentFromNode); // TODO: 5/2/21 delete 
         } else {
             textFieldToNav.setText(nearestWay.getName());
             currentToWay = nearestWay;
             currentToNode = nearestNodeOnNearestWay;
             nearestToWaySegmentIndices = nearestWaySegmentIndices;
+            mapCanvas.repaintTest(currentToNode); // TODO: 5/2/21 delete 
         }
     }
 
@@ -664,7 +665,7 @@ public class Controller {
             setDistanceAndTimeNav(routeNavigation.getTotalDistance(), routeNavigation.getTotalTime());
             setDirections(routeNavigation.getDirections());
             setSpecialPathFeatures(routeNavigation.getSpecialPathFeatures());
-            mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
+            //mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
             mapCanvas.repaint();
         });
         routeNavigation.setOnFailed(e -> showDialogBox("No Route Found", routeNavigation.getException().getMessage()));
@@ -723,7 +724,7 @@ public class Controller {
                 @Override
                 public void handle(MouseEvent e) {
                     Point2D cursorPoint = mapCanvas.getTransCoords(e.getX(), e.getY());
-                    Node node = new Node((float) cursorPoint.getX(), (float) cursorPoint.getY());
+                    Node node = new Node(0, (float) cursorPoint.getX(), (float) cursorPoint.getY());
                     //// TODO: 20-04-2021 make this work
 
                     String nodeName = textFieldPointName.getText();

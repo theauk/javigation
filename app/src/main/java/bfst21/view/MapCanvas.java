@@ -89,6 +89,40 @@ public class MapCanvas extends Canvas {
         gc.restore();
     }
 
+    public void repaintTest(Node selectedNode) { // TODO: 5/2/21 delete 
+        GraphicsContext gc = getGraphicsContext2D();
+        gc.save();
+        gc.setTransform(new Affine());
+
+        gc.setFill(theme.get("background").getColor().getInner());
+        gc.fillRect(0, 0, getWidth(), getHeight());
+
+        gc.setTransform(trans);
+        fillCoastLines(gc);
+
+        int layers = mapData.getMapSegment().size();
+        for (int layer = 0; layer < layers - 1; layer++) { // -1 since toplayer is drawn below
+            for (Element element : mapData.getMapSegment().get(layer)) {
+                drawElement(gc, element);
+            }
+        }
+        for (Element element : mapData.getMapSegment().get(mapData.getMapSegment().size() - 1)) { // toplayer is only text
+            drawText(gc, element);
+        }
+
+        for (Element route : mapData.getCurrentRoute()) {
+            if (theme.get(route.getType()).isNode()) drawRoundNode(gc, route);
+            else drawElement(gc, route);
+        }
+
+        for (Node point : mapData.getUserAddedPoints()) {
+            drawRectangleNode(gc, point);
+        }
+
+        drawRoundNode(gc, selectedNode);
+        gc.restore();
+    }
+
     private void fillCoastLines(GraphicsContext gc) {
         drawElement(gc, mapData.getCoastlines());
     }
@@ -308,6 +342,10 @@ public class MapCanvas extends Canvas {
     }
 
     public void panToRoute(float[] boundingBoxRouteCoordinates) { // TODO: 5/1/21 fix
+        trans = new Affine();
+        zoomLevel = MIN_ZOOM_LEVEL;
+        setBounds();
+
         double mapWidth = boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0];
         double boundsWidth = bounds.getMaxX() - bounds.getMinX();          
         double minXMap = boundingBoxRouteCoordinates[0];  

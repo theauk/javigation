@@ -253,7 +253,7 @@ public final class MapMath {
      * @param nearestWay The way to find the point on.
      * @return The point on the way as a Node with the coordinates.
      */
-    public static Node getClosestPointOnWayAsNode(float queryX, float queryY, Way nearestWay) {
+    public static Node getClosestPointOnWayAsNode(double queryX, double queryY, Way nearestWay) {
         Node p1NearestWay = nearestWay.getNodes().get(0);
         Node p2NearestWay = nearestWay.getNodes().get(1); // the way has max 2 nodes because of way segment split in R-tree
         double slopeNearestWay = getSlopeBetweenTwoNodes(p1NearestWay, p2NearestWay);
@@ -262,9 +262,9 @@ public final class MapMath {
         double perpendicularSlope = getReciprocalSlope(slopeNearestWay);
         double[] perpendicularStandardEquation = getStandardFormEquationFromPointAndSlope(queryX, queryY, perpendicularSlope);
 
-        double[] coordinatesPointOnNearestWay = findIntersectionCramersRule(nearestWayStandardEquation, perpendicularStandardEquation);
+        double[] coordinatesPointOnNearestWay = findIntersectionCramersRule(perpendicularStandardEquation, nearestWayStandardEquation);
 
-        return new Node((float) coordinatesPointOnNearestWay[1], (float) coordinatesPointOnNearestWay[0]); // TODO: 4/30/21 better to cast and have more precise cals or change to floats all the way through?
+        return new Node(0, (float) coordinatesPointOnNearestWay[1], (float) coordinatesPointOnNearestWay[0]); // TODO: 4/30/21 better to cast and have more precise cals or change to floats all the way through?
     }
 
     /**

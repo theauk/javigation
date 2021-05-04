@@ -155,8 +155,8 @@ public class RTree implements Serializable {
      */
     private Way createDebugWay(float firstCoordinate, float secondCoordinate, float thirdCoordinate, float fourthCoordinate) {
         Way w = new Way();
-        w.addNode(new Node(firstCoordinate, secondCoordinate));
-        w.addNode(new Node(thirdCoordinate, fourthCoordinate));
+        w.addNode(new Node(0, firstCoordinate, secondCoordinate));
+        w.addNode(new Node(0, thirdCoordinate, fourthCoordinate));
         return w;
     }
 
@@ -685,8 +685,8 @@ public class RTree implements Serializable {
         Way segment = new Way();
         segment.setAsHighWay();
         segment.setName(w.getName());
-        segment.addNode(w.getNodes().get(i + 1));
         segment.addNode(w.getNodes().get(i));
+        segment.addNode(w.getNodes().get(i + 1));
         return segment;
     }
 
@@ -706,7 +706,10 @@ public class RTree implements Serializable {
     /**
      * Priority queue class for the nearest road method. Sorts the queue in ascending order based on distance.
      */
-    public class NearestRoadPriorityQueueEntry implements Comparable<NearestRoadPriorityQueueEntry> {
+    public class NearestRoadPriorityQueueEntry implements Comparable<NearestRoadPriorityQueueEntry>, Serializable {
+        @Serial
+        private static final long serialVersionUID = 1904335497921633398L;
+
         private boolean isRTreeNode;
         private boolean isBoundingRectangle;
         private RTreeNode rTreeNode;

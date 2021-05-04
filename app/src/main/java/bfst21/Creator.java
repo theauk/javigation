@@ -42,6 +42,7 @@ public class Creator extends Task<MapData> {
     private boolean motorWayJunctionNode = false;
     private HashMap<Node, String> destinationInfoMap = new HashMap<>();
     private String motorwayExitInfo;
+    private static final float transformationConstant = -0.56f;
 
     public Creator(InputStream inputStream, long fileSize, boolean binary) {
         mapData = new MapData();
@@ -124,7 +125,7 @@ public class Creator extends Task<MapData> {
                             case "node":
                                 var idNode = Long.parseLong(reader.getAttributeValue(null, "id"));
                                 var lon = Float.parseFloat(reader.getAttributeValue(null, "lon"));
-                                var lat = Float.parseFloat(reader.getAttributeValue(null, "lat"));
+                                var lat = Float.parseFloat(reader.getAttributeValue(null, "lat")) / transformationConstant;
                                 node = new Node(idNode, lon, lat);
 
                                 if (!touched[0]) {
