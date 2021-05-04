@@ -6,7 +6,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
-public class AddressTrieNode implements Serializable {
+public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializable {
     @Serial
     private static final long serialVersionUID = -9059402923966729263L;
 
@@ -132,6 +132,15 @@ public class AddressTrieNode implements Serializable {
         }
 
         return -1;
+    }
+
+    public String getStreetname() {
+        return streetname;
+    }
+
+    @Override
+    public int compareTo(AddressTrieNode o) {
+        return this.streetname.compareTo(o.streetname);
     }
 
     private class HouseNumberNode implements Comparable<HouseNumberNode>, Serializable {

@@ -15,6 +15,7 @@ public class AddressFilter implements Filter {
     private AddressTriesTree addressTree;
     private List<String> suggestions;
 
+    //TODO FIX CITY KAN KUN TAGE ET BOGSTAV TIL SIDST
     private final String regex = "^ *(?<street>[a-zæøå0-9 \\-.]+?),? *(?<number>\\d{1,3}[a-zæøå]?)?,? *(?<postCode>\\d{1,4})?(?: (?<city>[a-zæøå]+?|[a-zæøå]+? *[a-zæøå])?)? *$";
     private final Pattern pattern = Pattern.compile(regex);
     private Matcher matcher;

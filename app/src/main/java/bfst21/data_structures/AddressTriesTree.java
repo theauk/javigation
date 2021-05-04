@@ -68,14 +68,6 @@ public class AddressTriesTree implements Serializable {
     }
 
     /**
-     *
-     * @return -> returns all the possible streetnames in the trie.
-     */
-    public List<AddressTrieNode> keys() {
-        return searchWithPrefix("");
-    }
-
-    /**
      * Adapted from the Algorithms book by Sedgewick & Wayne
      * @param prefix -> prefix to possible streetnames
      * @return -> a list (ArrayList) with the possible streetnames that matches the prefix with help from the help methods.
@@ -84,6 +76,7 @@ public class AddressTriesTree implements Serializable {
         List<AddressTrieNode> queue = new ArrayList<>();
         prefix = prefix.toLowerCase();
         collect(get(root, prefix, 0), prefix, queue);
+        Collections.sort(queue);
         return queue;
     }
 
