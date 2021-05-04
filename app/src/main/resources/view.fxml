@@ -56,8 +56,8 @@
                     <fx:define>
                         <ToggleGroup fx:id="typeOfNearestRoad"/>
                     </fx:define>
-                    <RadioMenuItem fx:id="kdTreeNearestNode" text="Nearest Road: KD-Tree" selected="true" toggleGroup="$typeOfNearestRoad"/>
-                    <RadioMenuItem fx:id="rTreeNearestNode" text="Nearest Road: R-Tree" toggleGroup="$typeOfNearestRoad"/>
+                    <RadioMenuItem fx:id="kdTreeNearestNode" text="Nearest Road: KD-Tree" toggleGroup="$typeOfNearestRoad"/>
+                    <RadioMenuItem fx:id="rTreeNearestNode" text="Nearest Road: R-Tree" selected="true" toggleGroup="$typeOfNearestRoad"/>
                     <SeparatorMenuItem/>
                     <fx:define>
                         <ToggleGroup fx:id="typeOfNavAlgorithm"/>

@@ -72,19 +72,18 @@ class RTreeTest {
 
     @Test
     void name() {
-        rTree.insert(w1);
+        /*rTree.insert(w1);
         rTree.insert(w2);
         Way w = rTree.getNearestRoad(n.getxMax(), n.getyMax());
-        System.out.println(w.getName());
+        System.out.println(w.getName());*/
     }
 
     @Test
     void linearSplitTest() {
-        rTree.insert(w1);
+        /*rTree.insert(w1);
         rTree.insert(w2);
         rTree.insert(w3);
-        rTree.insert(w4);
-        rTree.printTree();
+        rTree.insert(w4);*/
     }
 
     //@Test // TODO: 08-04-2021 out-commented due to build.gradle would fail this test, and terminate the build.

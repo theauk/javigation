@@ -3,8 +3,8 @@ package bfst21.data_structures;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
+import bfst21.utils.MapMath;
 import bfst21.view.MapCanvas;
-import javafx.geometry.Point2D;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -540,7 +540,7 @@ public class RTree implements Serializable {
                 }
                 if (elementsToSplit.get(j).getCoordinates()[i + 1] < leftmostRightSide) { // for the leftmost right side
                     leftmostRightSide = elementsToSplit.get(j).getCoordinates()[i + 1];
-                    currentFurthestPairIndices[1] = j;
+                    if (currentFurthestPairIndices[0] != j) currentFurthestPairIndices[1] = j; // to avoid getting the same element twice
                 }
                 if (elementsToSplit.get(j).getCoordinates()[i] < leftmostSide) { // for the greatest width
                     leftmostSide = elementsToSplit.get(j).getCoordinates()[i];
@@ -557,10 +557,6 @@ public class RTree implements Serializable {
                 furthestSeparation = normalizedWidth;
                 furthestPair = currentFurthestPairIndices;
             }
-        }
-
-        if (elementsToSplit.get(furthestPair[0]) == elementsToSplit.get(furthestPair[1])) {
-            throw new RuntimeException("Same element exists twice"); // Can only happen if two elements are completely on top of each other. // TODO: 4/27/21 FIXXXXXX 
         }
         return distributeNodesLinearCost(node, furthestPair, elementsToSplit);
     }
@@ -633,102 +629,39 @@ public class RTree implements Serializable {
         return areaWithBoth - areaElement1 - areaElement2;
     }
 
+
+
     /**
-     * Visualizes the R-Tree by printing the nodes, their information, and their level.
+     * Gets the nearest way from a point.
+     * @param x The point's x-coordinate.
+     * @param y The points y-coordinate.
+     * @return An priority queue entry containing the nearest way.
      */
-    public void printTree() {
-        int level = 0;
-        HashMap<Integer, ArrayList<RTreeNode>> result = new HashMap<>();
-        result = getPrintTree(root, level, result);
-
-        while (result.get(level) != null) {
-            System.out.println("Level: " + level);
-            for (RTreeNode r : result.get(level)) {
-                if (r.getParent() == null) {
-                    System.out.println("Node Coordinates: " + Arrays.toString(r.getCoordinates()) + " Parent: " + null + " leaf: " + r.isLeaf());
-                } else {
-                    System.out.println("Node Coordinates: " + Arrays.toString(r.getCoordinates()) + " Parent Coordinates: " + Arrays.toString(r.getParent().getCoordinates()) + " leaf: " + r.isLeaf());
-                }
-            }
-            level++;
-        }
-    }
-
-    private HashMap<Integer, ArrayList<RTreeNode>> getPrintTree(RTreeNode theRoot, int level, HashMap<Integer, ArrayList<RTreeNode>> result) {
-        if (theRoot != null) {
-
-            if (result.get(level) == null) {
-                ArrayList<RTreeNode> newAL = new ArrayList<>();
-                newAL.add(theRoot);
-                result.put(level, newAL);
-            } else {
-                ArrayList<RTreeNode> current = result.get(level);
-                current.add(theRoot);
-                result.put(level, current);
-            }
-            level += 1;
-            for (RTreeNode child : theRoot.getChildren()) {
-                getPrintTree(child, level, result);
-            }
-        }
-        return result;
-    }
-
-    public void splitMethodInsertTest(Element element) {
-        size++;
-        ArrayList<Long> currentResult = new ArrayList<>();
-        currentResult.add(size);
-
-        long start = System.nanoTime();
-        insert(element);
-        long finish = System.nanoTime();
-        long timeElapsed = finish - start;
-        currentResult.add(timeElapsed);
-
-        splitInsertResults.add(currentResult);
-    }
-
-    // TODO: 4/21/21 move name to nodeholder to avoid cast
-    // TODO: 4/22/21  get rid of [] part and use element coor immediately
-    /*public Way getNearestRoad(float x, float y) {
-        // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
-        //System.out.println(x + " " + y);
-        //x = 10.526522f;
-        //y = -98.54738f;
-        PriorityQueue<PriorityQueueEntry> pq = new PriorityQueue<>();
-        pq.add(new PriorityQueueEntry(true, root, null, 0));
+    public NearestRoadPriorityQueueEntry getNearestRoad(float x, float y) {
+        // Adapted from Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
+        PriorityQueue<NearestRoadPriorityQueueEntry> pq = new PriorityQueue<>();
+        pq.add(new NearestRoadPriorityQueueEntry(true, false, root, null, null, null, 0));
 
         while (!pq.isEmpty()) {
-            PriorityQueueEntry entry = pq.poll();
+            NearestRoadPriorityQueueEntry entry = pq.poll();
 
-            if (!entry.isRTreeNode) {
-                //System.out.println("");
-                while (entry.element == pq.peek().element) {
-                    pq.poll();
-                }
-                /*PriorityQueueEntry another = pq.poll();
-                double diAnother = another.distance;
-                double entryDi = entry.distance;
-                //System.out.println(entryDi < diAnother);
-
-                return (Way) entry.element;/*
-                Way way = (Way) entry.element;
-                if (!pq.isEmpty() && distanceToElement(x, y, way) > pq.peek().distance) {
-                    pq.add(new PriorityQueueEntry(false, null, entry.element, distanceToElement(x, y, way)));
+            if (!entry.isRTreeNode || entry.isBoundingRectangle) {
+                // check if the distance to the first pq entry's actual element is smaller than the next pq entry's distance
+                if (entry.isBoundingRectangle && !pq.isEmpty() && MapMath.shortestDistanceToElement(x, y, entry.segment) > pq.peek().distance) {
+                    pq.add(new NearestRoadPriorityQueueEntry(false, false, null, entry.originalWay, entry.segment, entry.segmentIndices, MapMath.shortestDistanceToElement(x, y, entry.segment)));
                 } else {
-                    return way;
+                    return entry;
                 }
             } else if (entry.rTreeNode.isLeaf()) {
                 for (RTreeNode n : entry.rTreeNode.getChildren()) {
                     for (Element e : n.getElementEntries()) {
-                        if (e instanceof Way) {
+                        if (e instanceof Way) { // only look for ways
                             Way w = (Way) e;
                             if (w.isHighWay() && w.hasName()) {
-                                ArrayList<Way> segments = createWaySegments(w);
-                                for (Way segment : segments) {
-                                    //if (distanceToElement(x, y, segment) >= minDistMBB(x, y, n.getCoordinates())) { // TODO: 4/22/21 ???
-                                        pq.add(new PriorityQueueEntry(false, null, segment, distanceToElement(x, y, segment)));
-                                    //}
+                                for (int i = 0; i < w.getNodes().size() - 1; i++) {
+                                    Way segment = createWaySegment(w, i);
+                                    NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, true, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
+                                    pq.add(newEntry);
                                 }
                             }
                         }
@@ -736,148 +669,72 @@ public class RTree implements Serializable {
                 }
             } else {
                 for (RTreeNode node : entry.rTreeNode.getChildren()) {
-                    pq.add(new PriorityQueueEntry(true, node, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
-                }
-            }
-        }
-        return null;
-    }*/
-
-    // TODO: 4/21/21 move name to nodeholder to avoid cast
-    // TODO: 4/22/21  get rid of [] part and use element coor immediately
-    public Way getNearestRoad(float x, float y) {
-        // Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
-        //x = 10.530582f;
-        //y = -98.55807f;
-        //test(x, y);
-        //System.out.println(x + " " + y);
-        PriorityQueue<PriorityQueueEntry> pq = new PriorityQueue<>();
-        pq.add(new PriorityQueueEntry(true, false, root, null, 0));
-
-        while (!pq.isEmpty()) {
-            PriorityQueueEntry entry = pq.poll();
-
-            if (!entry.isRTreeNode || entry.isBoundingRectangle) {
-                if (entry.isBoundingRectangle && !pq.isEmpty() && distanceToElement(x, y, (Way) entry.element) > pq.peek().distance) {
-                    pq.add(new PriorityQueueEntry(false, false, null, entry.element, distanceToElement(x, y, (Way) entry.element)));
-                } else {
-                    /*double dis1 = distanceToElement(x, y, (Way) entry.element);
-                    double disbb1 = minDistMBB(x, y, entry.element.getCoordinates());
-                    PriorityQueueEntry entry2 = pq.poll();
-                    double dis2 = distanceToElement(x, y, (Way) entry2.element);
-                    double disbb2 = minDistMBB(x, y, entry2.element.getCoordinates());*/
-
-                    return (Way) entry.element;
-                }
-            } else if (entry.rTreeNode.isLeaf()) {
-                for (RTreeNode n : entry.rTreeNode.getChildren()) {
-                    for (Element e : n.getElementEntries()) {
-                        if (e instanceof Way) {
-                            Way w = (Way) e;
-                            if (w.isHighWay() && w.hasName()) { // TODO: 4/22/21 highway?
-                                pq.add(new PriorityQueueEntry(false, true, null, e, minDistMBB(x, y, e.getCoordinates())));
-                            }
-                        }
-                    }
-                }
-            } else {
-                for (RTreeNode node : entry.rTreeNode.getChildren()) {
-                    pq.add(new PriorityQueueEntry(true, false, node, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
+                    pq.add(new NearestRoadPriorityQueueEntry(true, false, node, null, null, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
                 }
             }
         }
         return null;
     }
 
-    public ArrayList<Way> createWaySegments(Way w) {
-        ArrayList<Way> segments = new ArrayList<>();
-        for (int i = 0; i < w.getNodes().size() - 1; i++) {
-            Way segment = new Way();
-            segment.setAsHighWay();
-            segment.setName(w.getName());
-            segment.addNode(w.getNodes().get(i));
-            segment.addNode(w.getNodes().get(i + 1));
-            segments.add(segment);
-        }
-        return segments;
+    /**
+     * Creates a way segment between two nodes in a way.
+     * @param w The way to split into a segment.
+     * @return The way segment.
+     */
+    public Way createWaySegment(Way w, int i) {
+        Way segment = new Way();
+        segment.setAsHighWay();
+        segment.setName(w.getName());
+        segment.addNode(w.getNodes().get(i + 1));
+        segment.addNode(w.getNodes().get(i));
+        return segment;
     }
 
-    public void test(float x, float y) {
-        Way min = test(x, y, root, Double.POSITIVE_INFINITY, null);
-        System.out.println(min);
-    }
-
-    private Way test(float x, float y, RTreeNode node, double minDistance, Way way) {
-        if (node == null) {
-            return way;
-        }
-        if (node.isLeaf()) {
-            for (RTreeNode n : node.getChildren()) {
-                for (Element e : n.getElementEntries()) {
-                    if (e instanceof Way) {
-                        Way w = (Way) e;
-                        if (w.isHighWay() && w.hasName()) {
-                            double distance = distanceToElement(x, y, w);
-                            if (distance < minDistance) {
-                                minDistance = distance;
-                                way = w;
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            for (RTreeNode n : node.getChildren()) {
-                return test(x, y, n, minDistance, null);
-            }
-        }
-        return way;
-    }
-
-    private double distanceToElement(float queryX, float queryY, Way way) {
-
-        double minDistance = Double.POSITIVE_INFINITY;
-
-        List<Node> nodes = way.getNodes();
-
-        for (int i = 0; i < nodes.size() - 1; i++) {
-            Point2D firstNode = new Point2D(nodes.get(i).getxMin(), nodes.get(i).getyMin());
-            Point2D lastNode = new Point2D(nodes.get(i + 1).getxMin(), nodes.get(i + 1).getyMin());
-
-            double numerator = Math.abs(((lastNode.getX() - firstNode.getX() ) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
-            double denominator = Math.sqrt(Math.pow(lastNode.getX() - firstNode.getX(), 2) + Math.pow(lastNode.getY() - firstNode.getY(), 2));
-            double distance = numerator / denominator;
-            if (distance < minDistance) minDistance = distance;
-        }
-
-        return minDistance;
-    }
-
-
-    private double minDistMBB(float queryX, float queryY, float[] coor) {
-        double dx = Math.max(coor[0] - queryX, Math.max(0, queryX - coor[1]));
-        double dy = Math.max(coor[2] - queryY, Math.max(0, queryY - coor[3]));
+    /**
+     * Find the minimum distance between a point and a bounding box.
+     * @param queryX The point's x-coordinate.
+     * @param queryY The point's y-coordinate.
+     * @param coordinates The coordinates of the bounding box.
+     * @return The minimum distance.
+     */
+    private double minDistMBB(float queryX, float queryY, float[] coordinates) {
+        double dx = Math.max(coordinates[0] - queryX, Math.max(0, queryX - coordinates[1]));
+        double dy = Math.max(coordinates[2] - queryY, Math.max(0, queryY - coordinates[3]));
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    private class PriorityQueueEntry implements Comparable<PriorityQueueEntry> {
+    /**
+     * Priority queue class for the nearest road method. Sorts the queue in ascending order based on distance.
+     */
+    public class NearestRoadPriorityQueueEntry implements Comparable<NearestRoadPriorityQueueEntry> {
         private boolean isRTreeNode;
         private boolean isBoundingRectangle;
         private RTreeNode rTreeNode;
-        private Element element;
+        private Way originalWay;
+        private Way segment;
         private double distance;
+        private int[] segmentIndices; // TODO: 5/1/21 kan nok nøjes med største indeks til højre da venstre hvis ikke bliver brugt 
 
-        public PriorityQueueEntry(boolean isRTreeNode, boolean isBoundingRectangle, RTreeNode rTreeNode, Element element, double distance) {
-        //public PriorityQueueEntry(boolean isRTreeNode, RTreeNode rTreeNode, Element element, double distance) {
+        public NearestRoadPriorityQueueEntry(boolean isRTreeNode, boolean isBoundingRectangle, RTreeNode rTreeNode, Way originalWay, Way segment, int[] segmentIndices, double distance) {
             this.isRTreeNode = isRTreeNode;
             this.isBoundingRectangle = isBoundingRectangle;
             this.rTreeNode = rTreeNode;
-            this.element = element;
+            this.originalWay = originalWay;
+            this.segment = segment;
+            this.segmentIndices = segmentIndices;
             this.distance = distance;
         }
 
+        public Way getWay() {
+            return originalWay;
+        }
+
+        public int[] getSegmentIndices() {
+            return segmentIndices;
+        }
+
         @Override
-        public int compareTo(PriorityQueueEntry e) {
+        public int compareTo(NearestRoadPriorityQueueEntry e) {
             return Double.compare(distance, e.distance);
         }
     }

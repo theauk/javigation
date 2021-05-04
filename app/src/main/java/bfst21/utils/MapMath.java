@@ -1,6 +1,8 @@
 package bfst21.utils;
 
 import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.NodeHolder;
+import bfst21.Osm_Elements.Way;
 import javafx.geometry.Point2D;
 
 import java.util.List;
@@ -208,6 +210,11 @@ public final class MapMath {
         return hours;
     }
 
+    /**
+     * Gets the total distance between a list of nodes.
+     * @param nodes A list of nodes.
+     * @return The distance between all the nodes in kilometers.
+     */
     public static double getTotalDistance(List<Node> nodes) {
         double distance = 0;
         for (int i = 0; i < nodes.size() - 1; i++) {
@@ -215,4 +222,122 @@ public final class MapMath {
         }
         return distance / 1000;
     }
+
+    /**
+     * Finds the shortest distance between a point and a line.
+     * @param queryX The x-coordinate for the point.
+     * @param queryY The y-coordinate for the point.
+     * @param nodeHolder The line.
+     * @return The shortest distance.
+     */
+    public static double shortestDistanceToElement(float queryX, float queryY, NodeHolder nodeHolder) {
+        double minDistance = Double.POSITIVE_INFINITY;
+        List<Node> nodes = nodeHolder.getNodes();
+
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            Point2D firstNode = new Point2D(nodes.get(i).getxMin(), nodes.get(i).getyMin());
+            Point2D lastNode = new Point2D(nodes.get(i + 1).getxMin(), nodes.get(i + 1).getyMin());
+
+            double numerator = Math.abs(((lastNode.getX() - firstNode.getX() ) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
+            double denominator = Math.sqrt(Math.pow(lastNode.getX() - firstNode.getX(), 2) + Math.pow(lastNode.getY() - firstNode.getY(), 2));
+            double distance = numerator / denominator;
+            if (distance < minDistance) minDistance = distance;
+        }
+        return minDistance;
+    }
+
+    /**
+     * Finds the coordinates for the closest point on a way from a query point.
+     * @param queryX The query point's x-coordinate.
+     * @param queryY The query point's y-coordinate.
+     * @param nearestWay The way to find the point on.
+     * @return The point on the way as a Node with the coordinates.
+     */
+    public static Node getClosestPointOnWayAsNode(float queryX, float queryY, Way nearestWay) {
+        Node p1NearestWay = nearestWay.getNodes().get(0);
+        Node p2NearestWay = nearestWay.getNodes().get(1); // the way has max 2 nodes because of way segment split in R-tree
+        double slopeNearestWay = getSlopeBetweenTwoNodes(p1NearestWay, p2NearestWay);
+        double[] nearestWayStandardEquation = getStandardFormEquationFromPointAndSlope(p1NearestWay.getxMax(), p1NearestWay.getyMax(), slopeNearestWay);
+
+        double perpendicularSlope = getReciprocalSlope(slopeNearestWay);
+        double[] perpendicularStandardEquation = getStandardFormEquationFromPointAndSlope(queryX, queryY, perpendicularSlope);
+
+        double[] coordinatesPointOnNearestWay = findIntersectionCramersRule(nearestWayStandardEquation, perpendicularStandardEquation);
+
+        return new Node((float) coordinatesPointOnNearestWay[1], (float) coordinatesPointOnNearestWay[0]); // TODO: 4/30/21 better to cast and have more precise cals or change to floats all the way through?
+    }
+
+    /**
+     * Gets the slope between two Nodes.
+     * @param n1 The first Node.
+     * @param n2 The second Node.
+     * @return The slope.
+     */
+    private static double getSlopeBetweenTwoNodes(Node n1, Node n2) {
+        return (n2.getyMax() - n1.getyMax()) / (n2.getxMax() - n1.getxMax());
+    }
+
+    /**
+     * Gets the reciprocal of a slope.
+     * @param slope The slope.
+     * @return The reciprocal slope.
+     */
+    public static double getReciprocalSlope(double slope) {
+        return - (1 / slope);
+    }
+
+    /**
+     * Gets the standard form of an equation (Ax + BX = C) given a point and a slope.
+     * @param x The point's x-coordinate.
+     * @param y The point's y-coordinate.
+     * @param slope The slope.
+     * @return The standard form of the equation as an array where the first index is A, the second B, and third C.
+     */
+    private static double[] getStandardFormEquationFromPointAndSlope(double x, double y, double slope) {
+        double a = 1;
+        double b = -slope;
+        double c = slope * (-x) + y;
+        return new double[]{a, b, c};
+    }
+
+    /**
+     * Finds the intersection point between two lines.
+     * @param line1 The first line in standard form as an array where the first index is A, the second B, and third C.
+     * @param line2 The second line in standard form as an array where the first index is A, the second B, and third C.
+     * @return The intersection point as an array where the first index is x and the second y.
+     */
+    private static double[] findIntersectionCramersRule(double[] line1, double[] line2) {
+        double a1 = line1[0];
+        double b1 = line1[1];
+        double c1 = line1[2];
+
+        double a2 = line2[0];
+        double b2 = line2[1];
+        double c2 = line2[2];
+
+        double xNumerator = (c1 * b2) - (c2 * b1);
+        double xDenominator = (a1 * b2) - (a2 * b1);
+        double x = xNumerator / xDenominator;
+
+        double yNumerator = (a1 * c2) - (a2 * c1);
+        double yDenominator = (a1 * b2) - (a2 * b1);
+        double y = yNumerator / yDenominator;
+
+        return new double[]{x, y};
+    }
+
+    public static String formatDistance(double meters, int digits) {
+        String s = "";
+        if (meters < 1000) s += MapMath.round(meters, digits) + " m";
+        else s += MapMath.round(meters / 1000f, digits) + " km";
+        return s;
+    }
+
+    public static String formatTime(double seconds, int digits) {
+        String s = "";
+        if (seconds < 60) s += " , Total time: " + round(seconds, digits) + " s";
+        else s += " , Total time: " + round(seconds / 60f, digits) + " min";
+        return s;
+    }
+
 }

@@ -1,7 +1,9 @@
 package bfst21;
 
 import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AddressTrieNode;
+import bfst21.data_structures.RTree;
 import bfst21.data_structures.RouteNavigation;
 import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.exceptions.UnsupportedFileFormatException;
@@ -60,6 +62,12 @@ public class Controller {
 
     private Node currentFromNode;
     private Node currentToNode;
+    private Way currentFromWay;
+    private Way currentToWay;
+    private int currentFromNodeIndexInWay;
+    private int currentToNodeIndexInWay;
+    private int[] nearestFromWaySegmentIndices;
+    private int[] nearestToWaySegmentIndices;
 
     private ArrayList<AddressTrieNode> currentAutoCompleteList;
 
@@ -378,7 +386,7 @@ public class Controller {
 
     private void loadSuccess() {
         mapData = creator.getValue();
-        routeNavigation.setNodeToWayMap(mapData.getNodeToHighWay());
+        routeNavigation.setNodeToHighwayMap(mapData.getNodeToHighWay());
         routeNavigation.setNodeToRestriction(mapData.getNodeToRestriction());
         routeNavigation.setWayToRestriction(mapData.getWayToRestriction());
         taskSuccess();
@@ -525,12 +533,12 @@ public class Controller {
 
     private void fillAutoCompleteText(boolean fromNav){
             if (fromNav) {
-                for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
+                for(AddressTrieNode addressNode : mapData.getAutoCompleteAddresses(textFieldFromNav.getText())) {
                     labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
                     ScrollpaneAutoCompleteFromNav.setVisible(true);
                 }
             } else {
-                for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldToNav.getText())) {
+                for(AddressTrieNode addressNode : mapData.getAutoCompleteAddresses(textFieldToNav.getText())) {
                     labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
                     ScrollpaneAutoCompleteToNav.setVisible(true);
                 }
@@ -563,10 +571,8 @@ public class Controller {
             autoComplete.getChildren().add(labelHouseNumber);
             labelHouseNumber.prefWidth(autoComplete.getWidth());
             labelHouseNumber.setOnMouseClicked((ActionEvent2) -> {
-                System.out.println("here");
                 textField.setText(addressWithHouseNumber);
-                if (fromNav) currentFromNode = node;
-                else currentToNode = node;
+                updateNodesNavigation(fromNav, node.getxMax(), node.getyMax());
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
                 scrollPane.setVisible(false);
             });
@@ -581,12 +587,12 @@ public class Controller {
     }
 
     @FXML
-    public void getPointNavFrom(ActionEvent actionEvent) { // TODO: 4/12/21 better way to do this to avoid two methods?
+    public void getPointNavFrom() {
         getPointNav(true);
     }
 
     @FXML
-    public void getPointNavTo(ActionEvent actionEvent) {
+    public void getPointNavTo() {
         getPointNav(false);
     }
 
@@ -594,22 +600,32 @@ public class Controller {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
             public void handle(MouseEvent e) {
-                Point2D cursorPoint = new Point2D(e.getX(), e.getY());
                 Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
-                Node nearestRoadNode = mapData.getNearestRoadNode((float) coords.getX(), (float) coords.getY());
-
-                String names = mapData.getNodeHighWayNames(nearestRoadNode);
-                if (fromSelected) {
-                    textFieldFromNav.setText(names);
-                    currentFromNode = nearestRoadNode;
-                } else {
-                    textFieldToNav.setText(names);
-                    currentToNode = nearestRoadNode;
-                }
+                Point2D coords1 = MapMath.convertToGeoCoords(mapCanvas.getTransCoords(e.getX(), e.getY())); // TODO: 5/1/21 coordinates how?
+                updateNodesNavigation(fromSelected, (float) coords.getX(), (float) coords.getY());
                 mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
             }
         };
         mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
+    }
+
+    public void updateNodesNavigation(boolean fromSelected, float x, float y) {
+        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry(x, y);
+        Way nearestWay = entry.getWay();
+        int[] nearestWaySegmentIndices = entry.getSegmentIndices();
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestWay); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt??? Test på testen med andet end (4,4) og se om det er det samme
+
+        if (fromSelected) {
+            textFieldFromNav.setText(nearestWay.getName());
+            currentFromWay = nearestWay;
+            nearestFromWaySegmentIndices = nearestWaySegmentIndices;
+            currentFromNode = nearestNodeOnNearestWay;
+        } else {
+            textFieldToNav.setText(nearestWay.getName());
+            currentToWay = nearestWay;
+            currentToNode = nearestNodeOnNearestWay;
+            nearestToWaySegmentIndices = nearestWaySegmentIndices;
+        }
     }
 
     @FXML
@@ -640,7 +656,7 @@ public class Controller {
 
     @FXML
     public void getRoute() {
-        routeNavigation.setupRoute(currentFromNode, currentToNode, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
+        routeNavigation.setupRoute(currentFromNode, currentToNode, currentFromWay, currentToWay, nearestFromWaySegmentIndices, nearestToWaySegmentIndices, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
         routeNavigation.startRouting();
 
         routeNavigation.setOnSucceeded(e -> {
@@ -648,6 +664,7 @@ public class Controller {
             setDistanceAndTimeNav(routeNavigation.getTotalDistance(), routeNavigation.getTotalTime());
             setDirections(routeNavigation.getDirections());
             setSpecialPathFeatures(routeNavigation.getSpecialPathFeatures());
+            mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
             mapCanvas.repaint();
         });
         routeNavigation.setOnFailed(e -> showDialogBox("No Route Found", routeNavigation.getException().getMessage()));
@@ -668,21 +685,11 @@ public class Controller {
         directionsScrollPane.setVisible(true);
     }
 
-    public void setDistanceAndTimeNav(double distance, double time) {
+    public void setDistanceAndTimeNav(double meters, double seconds) {
         distanceAndTimeNav.setVisible(true);
         String s = "Total distance: ";
-
-        if (distance < 1000) {
-            s += MapMath.round(distance, 0) + " m";
-        } else {
-            s += MapMath.round(distance / 1000f, 3) + " km";
-        }
-
-        if (time < 60) {
-            s += " , Total time: " + MapMath.round(time, 0) + " s";
-        } else {
-            s += " , Total time: " + MapMath.round(time / 60f, 3) + " min";
-        }
+        s += MapMath.formatDistance(meters, 2);
+        s += MapMath.formatTime(seconds, 2);
         distanceAndTimeNav.setText(s);
     }
 

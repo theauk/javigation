@@ -5,7 +5,7 @@ name = "Default";
 
 #Background
 "background" = {iColor = [170, 211, 223]};
-"man_made" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
+"man_made" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
 "asphalt" = {iColor = [238, 238, 238], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
 
 #Coastline
