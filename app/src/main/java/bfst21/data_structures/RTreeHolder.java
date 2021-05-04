@@ -1,7 +1,6 @@
 package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Element;
-import bfst21.Osm_Elements.Way;
 import bfst21.view.MapCanvas;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class RTreeHolder {
         return results;
     }
 
-    public Way getNearestRoad(float x, float y){
+    public RTree.NearestRoadPriorityQueueEntry getNearestRoad(float x, float y){
         return closetRoadRTree.getNearestRoad(x,y);
     }
 

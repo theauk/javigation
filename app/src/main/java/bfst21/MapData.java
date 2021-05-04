@@ -7,6 +7,7 @@ import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.*;
 import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.view.CanvasBounds;
+import bfst21.view.MapCanvas;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,7 +22,7 @@ public class MapData implements Serializable {
     private static final long serialVersionUID = 8514196836151887206L;
 
     private KDTree<Node> kdTree;
-    private RTree rTree;
+    private RTreeHolder rTreeHolder;
     private transient ArrayList<ArrayList<Element>> mapSegment; //Only content within bounds
     private float minX, minY, maxX, maxY;
     private AddressTriesTree addressTree;
@@ -50,8 +51,8 @@ public class MapData implements Serializable {
      * @param addressTree A trie which can be used to search for addresses.
      * @param nodeToWayMap A tree map which maps nodes to ways which have the respective nodes on them.
      */
-    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTree rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
-        this.rTree = rTree;
+    public void addDataTrees(KDTree<Node> highWayRoadNodes, RTreeHolder rTree, ElementToElementsTreeMap<Node, Relation> nodeToRestriction, ElementToElementsTreeMap<Way, Relation> wayToRestriction, AddressTriesTree addressTree, ElementToElementsTreeMap<Node, Way> nodeToWayMap) {
+        this.rTreeHolder = rTree;
         this.kdTree = highWayRoadNodes;
         this.addressTree = addressTree;
         this.nodeToHighWay = nodeToWayMap;
@@ -91,7 +92,7 @@ public class MapData implements Serializable {
      * @param zoomLevel The current zoom level.
      */
     public void searchInRTree(CanvasBounds bounds, int zoomLevel) {
-        mapSegment = rTree.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug, zoomLevel);
+        mapSegment = rTreeHolder.search(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), rTreeDebug, zoomLevel);
     }
 
     /**
@@ -145,7 +146,7 @@ public class MapData implements Serializable {
      * @return The priority queue entry with the nearest Way.
      */
     public RTree.NearestRoadPriorityQueueEntry getNearestRoadRTreePQEntry(float x, float y) {
-        return rTree.getNearestRoad(x, y);
+        return rTreeHolder.getNearestRoad(x, y);
     }
 
     /**
