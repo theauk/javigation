@@ -198,6 +198,15 @@ public class Controller {
             }
         });
 
+        mapCanvas.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+            @Override
+            public void handle(ContextMenuEvent event) {
+                rightClickMenu.show(mapCanvas, event.getScreenX(), event.getScreenY());
+                currentRightClick = new Point2D(event.getX(), event.getY());
+                mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
+            }
+        });
+
     }
 
     private void removeChildren(){
@@ -738,7 +747,7 @@ public class Controller {
                 @Override
                 public void handle(MouseEvent e) {
                     Point2D cursorPoint = mapCanvas.getTransCoords(e.getX(), e.getY());
-                   addUserPoint(cursorPoint);
+                    addUserPoint(cursorPoint);
                     mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
                 }
             };
@@ -759,14 +768,7 @@ public class Controller {
 
     @FXML
     public void setRightClickMenu(ContextMenuEvent actionEvent) {
-        mapCanvas.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
-            @Override
-            public void handle(ContextMenuEvent event) {
-                rightClickMenu.show(mapCanvas, event.getScreenX(), event.getScreenY());
-                currentRightClick = new Point2D(event.getScreenX(), event.getScreenY());
-                mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
-            }
-        });
+
     }
 
     @FXML
