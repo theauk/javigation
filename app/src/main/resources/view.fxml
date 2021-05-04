@@ -157,6 +157,7 @@
                     <VBox AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5" spacing="5">
                         <HBox>
                             <TextField  />
+                            <AutoFillTextField fx:id="textFieldFromNav" promptText="From"/>
                             <Button fx:id="chooseCorButtonFromNav" text="Choose on map" onAction="#getPointNavFrom"/>
                         </HBox>
                             <ScrollPane fx:id="ScrollpaneAutoCompleteFromNav" visible="false" >
@@ -171,56 +172,6 @@
                             <VBox fx:id="autoCompleteToNav" >
                             </VBox>
                         </ScrollPane>
-
-                    <!--    <GridPane hgap="5" vgap="5">
-                            <ToggleButton fx:id="carNavToggleButton" text="Car" GridPane.columnIndex="0">
-                                <toggleGroup>
-                                    <ToggleGroup fx:id="vehicleNavGroup"/>
-                                </toggleGroup>
-                                <userData>
-                                    <VehicleType fx:constant="CAR"/>
-                                </userData>
-                            </ToggleButton>
-
-                            <ToggleButton fx:id="bikeNavToggleButton" text="Bike" GridPane.columnIndex="1">
-                                <toggleGroup>
-                                    <fx:reference source="vehicleNavGroup"/>
-                                </toggleGroup>
-                                <userData>
-                                    <VehicleType fx:constant="BIKE"/>
-                                </userData>
-                            </ToggleButton>
-
-                            <ToggleButton fx:id="WalkNavToggleButton" text="Walk" GridPane.columnIndex="2">
-                                <toggleGroup>
-                                    <fx:reference source="vehicleNavGroup"/>
-                                </toggleGroup>
-                                <userData>
-                                    <VehicleType fx:constant="WALK"/>
-                                </userData>
-                            </ToggleButton>
-                        </GridPane>
-
-                        <HBox spacing="5">
-                            <RadioButton fx:id="radioButtonShortestNav" text="Shortest">
-                                <toggleGroup>
-                                    <ToggleGroup fx:id="radioButtonFastestShortestNavGroup"/>
-                                </toggleGroup>
-                            </RadioButton>
-
-                            <RadioButton fx:id="radioButtonFastestNav" text="Fastest">
-                                <toggleGroup>
-                                    <fx:reference source="radioButtonFastestShortestNavGroup"/>
-                                </toggleGroup>
-                            </RadioButton>
-                        </HBox>
-
-                        <Button fx:id="searchNav" text="Search" onAction="#searchNav"/> -->
-                      <!--  <Label fx:id="distanceAndTimeNav" visible="false"></Label>
-                        <Label fx:id="specialPathFeaturesNav" visible="false"></Label>
-                        <ScrollPane fx:id="directionsScrollPane" visible="false"> -->
-                     <!--       <VBox fx:id="directionsBox"></VBox>
-                        </ScrollPane> -->
                         <VBox>
                             <HBox.margin>
                                 <Insets right="30.0"/>

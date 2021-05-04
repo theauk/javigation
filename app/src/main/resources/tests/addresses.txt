@@ -1,0 +1,44 @@
+10. Februarvej, 999, 6070, Christiansfeld
+9. Februarvej, 999, 6070, Christiansfeld
+8. Februarvej, 999, 6070, Christiansfeld
+7. Februarvej, 999, 6070, Christiansfeld
+6. Februarvej, 999, 6070, Christiansfeld
+5. Februarvej, 999, 6070, Christiansfeld
+4. Februarvej, 999, 6070, Christiansfeld
+3. Februarvej, 999, 6070, Christiansfeld
+2. Februarvej, 999, 6070, Christiansfeld
+1. Februarvej, 999, 6070, Christiansfeld
+Abenholst Allé, 3, 2300, København S
+Banevej, 78D, 2400, København NV
+Cirose Allé, 3, 2500, Valby
+Dwight-Robinsonvej, 55H, 2640, Hedehusene
+Elizabeth-Hansen Allé, 9, 2650, Hvidovre
+Feltvej, 777a, 2660, Brøndby Strand
+Gustavs gade, 66,  7100, Vejle
+Heinos' gade, 233, 7130, Juelsminde
+Idavej, 1, 7323, Give
+Jens' vej, 8, 7430, Ikast
+Kælkestræde, 2, 8305, Samsø
+Lars Løkke vej, 7, 8370, Hadsten
+Møns Allé, 135, 9990, Skagen
+Nicklas Steiner vej, 198, 9940, Læsø
+Oluf Ridsens gade, 768, 9600, Aars
+Peter Bangs vej, 99A, 9800, Hjørring
+Quistgaardsvej, 87M, 8990, Fårup
+Resthalevej, 81, 9200, Aalborg SV
+Slarranfen, 90, 9230, Svenstrup J
+Tollemosevej, 9a, 2300, København S
+Æ-Drøwt, 777, 8752, Østbirk
+Æ Gammel Havn, 1, 8752, Østbrik
+Østbanevej, 8, 5600, Faaborg
+Åboulevarden, 875, 4296, Nyrup
+Falkvej, 36, 2600, Glostrup
+Gl. Kongevej, 123, 1610, København V
+Studiestræde, 18, 1455, København K
+Studestræde, 18A, 1455, København K
+Studestræde, 18D, 1455, København K
+Studievej, 18, 1455, København K
+Studievej, 18A, 1455, København K
+Studievej, 10, 1455, København K
+Studiestræde, 18, 4000, Roskilde
+Ærøvej, 1, 3720, Aakirkeby

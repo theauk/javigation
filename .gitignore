@@ -296,9 +296,4 @@ gradle-app.setting
 **/build/
 
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,vscode,intellij+all,emacs,vim,windows,linux,macos
-app/src/main/resources/postnumre.txt
-app/src/main/resources/bfst21/paintprogram/lines8.txt
-app/src/main/resources/bfst21/paintprogram/lines336k.txt
-app/src/main/resources/bfst21/paintprogram/lines86k.txt
-app/src/main/resources/bfst21/paintprogram/lines20k.txt
-app/src/main/resources/bfst21/addressparser/postnumre.txt
+

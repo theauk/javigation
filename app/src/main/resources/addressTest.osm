@@ -1,0 +1,8 @@
+
+
+<node id="3404321317" visible="true" version="2" changeset="42513579" timestamp="2016-09-29T09:05:50Z" user="Hjart" uid="207581" lat="55.6658162" lon="12.5807684">
+  <tag k="addr:city" v="København S"/>
+  <tag k="addr:housenumber" v="27"/>
+  <tag k="addr:postcode" v="2300"/>
+  <tag k="addr:street" v="Njalsgade"/>
+</node>
