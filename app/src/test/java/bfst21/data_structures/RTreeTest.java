@@ -69,11 +69,20 @@ class RTreeTest {
         w7.addNode(n13);
         w7.addNode(n14);
 
-        rTree.insert(w4);
-        rTree.insert(w5);
-        rTree.insert(w6);
+        for(int i = -10; i<0; i++){
+            for(int j = -10; j<0; j++){
+                Node node = new Node(0,i,j);
+                rTree.insert(node);
+            }
+        }
+
+
+
         rTree.insert(w1);
+        rTree.insert(w5);
         rTree.insert(w2);
+        rTree.insert(w6);
+        rTree.insert(w4);
         rTree.insert(w3);
 
 
