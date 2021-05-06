@@ -44,3 +44,10 @@
     -fx-border-color: rgba(255, 0, 0, 0.4);
     -fx-background-color: rgba(255, 255, 255, 0.4);
 }
+
+#directionsButton{
+    -fx-graphic: url("icons/directions_from_figma.png");
+}
+#searchForAddress{
+    -fx-graphic: url("icons/search_icon.png");
+}

@@ -30,6 +30,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -125,6 +126,9 @@ public class Controller {
 
     @FXML private ToggleGroup optionNav;
     @FXML private Button showleft;
+    @FXML private Button directionsButton;
+    @FXML private AnchorPane address_myPlacesPane;
+    @FXML private AnchorPane navigationLeftPane;
 
     public void init() {
         mapData = new MapData();
@@ -743,6 +747,14 @@ public class Controller {
     public void rightClickPointNavTo(ActionEvent actionEvent) {
         Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
         updateNodesNavigation(false,point.getX(), point.getY());
+    }
+
+    @FXML
+    public void directionsButtonToPane(ActionEvent actionEvent){
+        directionsButton.setOnAction(e -> {
+            address_myPlacesPane.setVisible(false);
+            navigationLeftPane.setVisible(true);
+        });
     }
 
     private enum State {
