@@ -692,7 +692,7 @@ public class Controller {
     public void moveToPoint(ActionEvent actionEvent) {
         int i = dropDownPoints.getSelectionModel().getSelectedIndex();
         Node node = mapData.getUserAddedPoints().get(i);
-        mapCanvas.centerOnPoint(node.getxMin(), node.getyMin());
+        mapCanvas.centerOnPoint(node.getxMax(), node.getyMax());
         mapCanvas.repaint();
     }
 

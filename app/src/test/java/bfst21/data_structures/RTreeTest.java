@@ -119,13 +119,6 @@ class RTreeTest {
         ArrayList<ArrayList<Element>> result = rTree.search(13,14,1,2,false, getCleanArrayList());
         assertEquals(0,elementsInList(result));
     }
-   // @Test
-   // void emptyRTree() {
-   //     RTree rTree = new RTree(1, 3, 4);
-   //     RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax());
-   //     assertNull(w);
-   //
-   // }
 
 
 
