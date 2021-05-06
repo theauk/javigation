@@ -1,4 +1,4 @@
-package bfst21.exceptions;
+package bfst21.Exceptions;
 
 public class NoOSMInZipFileException extends Exception {
     private final String fileName;

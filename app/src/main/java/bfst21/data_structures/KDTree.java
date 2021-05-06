@@ -1,6 +1,6 @@
 package bfst21.data_structures;
 
-import bfst21.exceptions.KDTreeEmptyException;
+import bfst21.Exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
 import javafx.geometry.Point2D;
 
@@ -93,7 +93,9 @@ public class KDTree<Value extends Element> implements Serializable {
      * @throws KDTreeEmptyException throws if the tree is empty
      */
     public Value getNearestNode(float x, float y) throws KDTreeEmptyException {
-
+        if(root == null){
+            throw new KDTreeEmptyException();
+        }
         KDTreeNode nearestNode = getNearestNode(x, y, root, null);
         return nearestNode.node;
     }
@@ -158,49 +160,6 @@ public class KDTree<Value extends Element> implements Serializable {
             }
         }
         return currentNearest;
-    }
-
-    // TODO: 26-03-2021 remove both print methods when no longer needed.
-    public void printTree() {
-        Integer level = 1;
-        HashMap<Integer, ArrayList<KDTreeNode>> result = new HashMap<>();
-        result = getPrintTree(root, level, result);
-
-        while (result.get(level) != null) {
-            System.out.println("");
-            System.out.println("Level: " + level);
-            for (KDTreeNode node : result.get(level)) {
-                System.out.println("Node id: " + node.node.getId() + " : x: " + node.node.getxMax() + " y: " + node.node.getyMax() + " axis: " + node.onXAxis + " name: ");
-                if (node.leftChild != null) {
-                    System.out.println("Has left child, id: " + node.leftChild.node.getId() + " name: ");
-                }
-                if (node.rightChild != null) {
-                    System.out.println("Has right child, id: " + node.rightChild.node.getId() + " name: ");
-                }
-            }
-            level++;
-        }
-        System.out.println("");
-    }
-
-    private HashMap<Integer, ArrayList<KDTreeNode>> getPrintTree(KDTreeNode node, Integer level, HashMap<Integer, ArrayList<KDTreeNode>> result) {
-        if (node != null) {
-            if (result.get(level) == null) {
-                ArrayList<KDTreeNode> newAL = new ArrayList<>();
-                newAL.add(node);
-                result.put(level, newAL);
-            } else {
-                ArrayList<KDTreeNode> current = result.get(level);
-                current.add(node);
-                result.put(level, current);
-            }
-            level += 1;
-            int levelCopy = level;
-
-            getPrintTree(node.leftChild, level, result);
-            getPrintTree(node.rightChild, levelCopy, result);
-        }
-        return result;
     }
 
     private class KDTreeNode implements Serializable {

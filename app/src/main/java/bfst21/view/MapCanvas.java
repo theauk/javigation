@@ -341,7 +341,6 @@ public class MapCanvas extends Canvas {
         dy = dy * Math.sqrt(trans.determinant());
 
         pan(dx,dy);
-        pan(dx, dy);
     }
 
     public void rTreeDebugMode() {

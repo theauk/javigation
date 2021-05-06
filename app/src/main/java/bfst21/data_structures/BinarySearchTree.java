@@ -11,8 +11,8 @@ import java.util.List;
  * @param <Value>
  */
 public class BinarySearchTree<Value extends Element> {
-    List<Value> values = new ArrayList<>();
-    boolean sorted = true;
+    private List<Value> values = new ArrayList<>();
+    private boolean sorted = true;
 
     public void put(Value val) {
         values.add(val);

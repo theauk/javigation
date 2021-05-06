@@ -6,6 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
 <?import bfst21.utils.VehicleType?>
+<?import javafx.scene.text.Font?>
 <Scene xmlns="https://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
        fx:controller="bfst21.Controller"
@@ -34,6 +35,8 @@
                     <SeparatorMenuItem/>
                     <RadioMenuItem fx:id="showUIItem" text="Show UI" selected="true" accelerator="CTRL + T"/>
                     <RadioMenuItem fx:id="navigationPane" text="Show Navigation Pane" selected="true"/>
+                    <RadioMenuItem fx:id="leftscrollPane" text="show leftside"/>
+
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
                         <RadioMenuItem text="Default" userData="default.mtheme" selected="true">
@@ -71,6 +74,16 @@
         </top>
         <center>
             <StackPane fx:id="centerPane">
+                <fx:define>
+                    <ContextMenu fx:id="rightClickMenu" >
+                        <items>
+                            <MenuItem fx:id="addToYourPoints" text="Add to your points" onAction="#rightCLickAddUserPoint"/>
+                            <SeparatorMenuItem/>
+                            <MenuItem fx:id="routeFromHere" text="Route from here" onAction="#rightCLickPointNavFrom"/>
+                            <MenuItem fx:id="routeToHere" text="Route to here" onAction="#rightClickPointNavTo"/>
+                        </items>
+                    </ContextMenu>
+                </fx:define>
                 <Pane fx:id="mapPane">
                     <MapCanvas fx:id="mapCanvas"
                                width="${mapPane.width}"
@@ -82,6 +95,7 @@
                                onMouseReleased="#onMouseReleased"
                                onKeyPressed="#onKeyPressed"
                                onKeyReleased="#onKeyReleased"
+                               onContextMenuRequested="#setRightClickMenu"
                     />
                 </Pane>
 
@@ -140,91 +154,199 @@
                     </HBox>
                 </AnchorPane>
 
-                <AnchorPane id="navigationControl" visible="${navigationPane.selected}" pickOnBounds="false">
-                    <VBox AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5" spacing="5">
-                        <HBox>
-                            <TextField fx:id="textFieldFromNav" promptText="From" />
-                            <Button fx:id="chooseCorButtonFromNav" text="Choose on map" onAction="#getPointNavFrom"/>
-                        </HBox>
-                            <ScrollPane fx:id="ScrollpaneAutoCompleteFromNav" visible="false" >
-                                <VBox fx:id="autoCompleteFromNav" >
-                                </VBox>
-                            </ScrollPane>
-                        <HBox>
-                            <TextField fx:id="textFieldToNav" promptText="To" />
-                            <Button fx:id="chooseCorButtonToNav" text="Choose on map" onAction="#getPointNavTo"/>
-                        </HBox>
-                        <ScrollPane fx:id="ScrollpaneAutoCompleteToNav" visible="false" >
-                            <VBox fx:id="autoCompleteToNav" >
-                            </VBox>
-                        </ScrollPane>
-
-                        <GridPane hgap="5" vgap="5">
-                            <ToggleButton fx:id="carNavToggleButton" text="Car" GridPane.columnIndex="0">
-                                <toggleGroup>
-                                    <ToggleGroup fx:id="vehicleNavGroup"/>
-                                </toggleGroup>
-                                <userData>
-                                    <VehicleType fx:constant="CAR"/>
-                                </userData>
-                            </ToggleButton>
-
-                            <ToggleButton fx:id="bikeNavToggleButton" text="Bike" GridPane.columnIndex="1">
-                                <toggleGroup>
-                                    <fx:reference source="vehicleNavGroup"/>
-                                </toggleGroup>
-                                <userData>
-                                    <VehicleType fx:constant="BIKE"/>
-                                </userData>
-                            </ToggleButton>
-
-                            <ToggleButton fx:id="WalkNavToggleButton" text="Walk" GridPane.columnIndex="2">
-                                <toggleGroup>
-                                    <fx:reference source="vehicleNavGroup"/>
-                                </toggleGroup>
-                                <userData>
-                                    <VehicleType fx:constant="WALK"/>
-                                </userData>
-                            </ToggleButton>
-                        </GridPane>
-
-                        <HBox spacing="5">
-                            <RadioButton fx:id="radioButtonShortestNav" text="Shortest">
-                                <toggleGroup>
-                                    <ToggleGroup fx:id="radioButtonFastestShortestNavGroup"/>
-                                </toggleGroup>
-                            </RadioButton>
-
-                            <RadioButton fx:id="radioButtonFastestNav" text="Fastest">
-                                <toggleGroup>
-                                    <fx:reference source="radioButtonFastestShortestNavGroup"/>
-                                </toggleGroup>
-                            </RadioButton>
-                        </HBox>
-
-                        <Button fx:id="searchNav" text="Search" onAction="#searchNav"/>
-                        <Label fx:id="distanceAndTimeNav" visible="false"></Label>
-                        <Label fx:id="specialPathFeaturesNav" visible="false"></Label>
-                        <ScrollPane fx:id="directionsScrollPane" visible="false">
-                            <VBox fx:id="directionsBox"></VBox>
-                        </ScrollPane>
-                        <VBox>
-                            <HBox.margin>
-                                <Insets right="30.0"/>
-                                <Insets bottom="10.0"/>
-                            </HBox.margin>
-                            <Button fx:id="addPointButton" text="Choose on map to add point" onAction="#addUserPoint"/>
-                            <TextField fx:id="textFieldPointName" promptText="Name your point"/>
-                            <ComboBox fx:id="dropDownPoints" onAction="#moveToPoint"/>
-                        </VBox>
-                    </VBox>
-                </AnchorPane>
-
                 <VBox fx:id="loaderPane" alignment="CENTER" style="-fx-background-color: rgb(180, 180, 180);">
                     <ProgressIndicator fx:id="loadingBar" progress="0"/>
                     <Label fx:id="statusLabel" text="Waiting"/>
                 </VBox>
             </StackPane>
         </center>
-    </BorderPane>
-</Scene>
+
+        <left>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                <children>
+                    <AnchorPane fx:id="navigationLeftPane" prefHeight="616.0" prefWidth="200.0" visible="false" managed="${navigationLeftPane.visible}">
+                        <children>
+                            <GridPane layoutY="39.0" prefHeight="91.0" prefWidth="185.0">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                <children>
+                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                        <children>
+                                            <AutoFillTextField fx:id="textFieldFromNav" promptText="From" prefHeight="27.0" prefWidth="113.0">
+
+                                                <HBox.margin>
+                                                    <Insets />
+                                                </HBox.margin>
+                                                <padding>
+                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </padding>
+                                            </AutoFillTextField>
+                                            <Button mnemonicParsing="false" text="Find route" fx:id="searchNav" onAction="#searchNav"/>
+
+                                        </children>
+                                        <padding>
+                                            <Insets bottom="20.0" left="5.0" top="10.0" />
+                                        </padding>
+                                    </HBox>
+                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0" GridPane.rowIndex="1">
+                                        <children>
+                                            <AutoFillTextField fx:id="textFieldToNav" promptText="To" prefHeight="22.0" prefWidth="113.0">
+                                                <padding>
+                                                    <Insets left="5.0" right="5.0" top="5.0" />
+                                                </padding>
+                                            </AutoFillTextField>
+                                            <Button mnemonicParsing="false" text="Switch" />
+                                        </children>
+                                        <padding>
+                                            <Insets left="5.0" right="5.0" top="5.0" />
+                                        </padding>
+                                    </HBox>
+
+                                </children>
+                                <padding>
+                                    <Insets top="20.0" />
+                                </padding>
+                            </GridPane>
+                            <Separator layoutY="190.0" prefWidth="200.0" />
+                            <RadioButton fx:id="radioButtonShortestNav" layoutX="14.0" layoutY="141.0" text="Shortest">
+                                <toggleGroup>
+                                    <ToggleGroup fx:id="radioButtonFastestShortestNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+
+                            <RadioButton fx:id="radioButtonFastestNav" layoutX="94.0" layoutY="141.0" text="Fastest">
+                                <toggleGroup>
+                                    <fx:reference source="radioButtonFastestShortestNavGroup"/>
+                                </toggleGroup>
+                            </RadioButton>
+
+                            <VBox fx:id="routeTime" layoutX="8.0" layoutY="200.0" prefHeight="90.0" prefWidth="182.0">
+                                <Label fx:id="distanceAndTimeNav" visible="false"></Label>
+                                <Label fx:id="specialPathFeaturesNav" visible="false"></Label>
+                            </VBox>
+                            <ScrollPane fx:id="directionsScrollPane" visible="false" layoutX="8.0" layoutY="308.0" prefHeight="309.0" prefWidth="194.0">
+                                <content>
+                                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="311.0" prefWidth="204.0">
+                                        <children>
+                                            <VBox fx:id="directionsBox"></VBox>
+                                        </children>
+                                    </AnchorPane>
+                                </content>
+                            </ScrollPane>
+                            <GridPane layoutX="11.0" prefHeight="46.0" prefWidth="170.0">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="60.0" minWidth="10.0" prefWidth="50.20001220703125" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="68.0" minWidth="10.0" prefWidth="54.200018310546874" />
+                                    <ColumnConstraints hgrow="SOMETIMES" maxWidth="82.20001220703125" minWidth="10.0" prefWidth="78.19998168945314" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                <children>
+                                    <ToggleButton fx:id="carNavToggleButton" text="Car" GridPane.rowIndex="1">
+                                        <toggleGroup>
+                                            <ToggleGroup fx:id="vehicleNavGroup"/>
+                                        </toggleGroup>
+                                        <userData>
+                                            <VehicleType fx:constant="CAR"/>
+                                        </userData>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="bikeNavToggleButton" text="Bike" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                        <toggleGroup>
+                                            <fx:reference source="vehicleNavGroup"/>
+                                        </toggleGroup>
+                                        <userData>
+                                            <VehicleType fx:constant="BIKE"/>
+                                        </userData>
+                                    </ToggleButton>
+                                    <ToggleButton fx:id="WalkNavToggleButton" text="Walk" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                        <toggleGroup>
+                                            <fx:reference source="vehicleNavGroup"/>
+                                        </toggleGroup>
+                                        <userData>
+                                            <VehicleType fx:constant="WALK"/>
+                                        </userData>
+                                    </ToggleButton>
+                                </children>
+                            </GridPane>
+                        </children>
+                    </AnchorPane>
+
+                    <!--Second left pane-->
+
+                    <AnchorPane fx:id="Address_myPlacesPane" prefHeight="616.0" prefWidth="200.0" visible="true" managed="${Address_myPlacesPane.visible}">
+                        <children>
+                            <GridPane layoutX="7.0" layoutY="54.0" prefHeight="91.0" prefWidth="185.0">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                <children>
+                                    <HBox fx:id="searchForAddressHBox" prefHeight="66.0" prefWidth="182.0" spacing="5.0">
+                                        <children>
+                                            <TextField prefHeight="27.0" prefWidth="113.0">
+                                                <HBox.margin>
+                                                    <Insets />
+                                                </HBox.margin>
+                                                <padding>
+                                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                                </padding>
+                                            </TextField>
+                                            <Button fx:id="searchForAddress" mnemonicParsing="false" text="Search" />
+                                        </children>
+                                        <padding>
+                                            <Insets bottom="20.0" left="5.0" top="10.0" />
+                                        </padding>
+                                    </HBox>
+                                </children>
+                                <padding>
+                                    <Insets top="20.0" />
+                                </padding>
+                            </GridPane>
+                            <Separator layoutY="346.0" prefWidth="200.0" />
+                            <Label layoutX="14.0" layoutY="349.0" prefHeight="25.0" prefWidth="75.0" text="My places" />
+                            <GridPane layoutY="374.0">
+                                <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                <children>
+                                    <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="59.0" text="Add" onAction="#addUserPoint">
+                                        <GridPane.margin>
+                                            <Insets left="20.0" />
+                                        </GridPane.margin>
+                                    </Button>
+                                    <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="61.0" text="Delete" GridPane.columnIndex="1" onAction="#deleteUserPoint" />
+                                </children>
+                            </GridPane>
+                            <ScrollPane fx:id="ScrollPaneListView" layoutX="5.0" layoutY="414.0" prefHeight="188.0" prefWidth="179.0">
+                                <content>
+                                    <ListView fx:id="myPlacesListView" prefHeight="200.0" prefWidth="200.0" onMouseClicked="#moveToPoint">
+
+                                    </ListView>
+                                </content>
+                            </ScrollPane>
+                            <Label layoutX="21.0" layoutY="24.0" prefHeight="29.0" prefWidth="147.0" text="Search for an address">
+                                <font>
+                                    <Font name="System Bold" size="14.0" />
+                                </font>
+                            </Label>
+                        </children>
+                    </AnchorPane>
+                </children>
+            </AnchorPane>
+           </left>
+       </BorderPane>
+   </Scene>

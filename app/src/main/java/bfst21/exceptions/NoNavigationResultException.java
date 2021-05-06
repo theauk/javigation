@@ -1,4 +1,4 @@
-package bfst21.exceptions;
+package bfst21.Exceptions;
 
 public class NoNavigationResultException extends Exception {
     public NoNavigationResultException() {

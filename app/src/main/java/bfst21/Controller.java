@@ -5,19 +5,16 @@ import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AddressTrieNode;
 import bfst21.data_structures.RTree;
 import bfst21.data_structures.RouteNavigation;
-import bfst21.exceptions.NoOSMInZipFileException;
-import bfst21.exceptions.UnsupportedFileFormatException;
+import bfst21.Exceptions.NoOSMInZipFileException;
+import bfst21.Exceptions.UnsupportedFileFormatException;
 import bfst21.file_io.Loader;
 import bfst21.file_io.Serializer;
+import bfst21.utils.AddressFilter;
 import bfst21.utils.CustomKeyCombination;
 import bfst21.utils.MapMath;
 import bfst21.utils.VehicleType;
-import bfst21.view.CanvasBounds;
-import bfst21.view.MapCanvas;
-import bfst21.view.Theme;
+import bfst21.view.*;
 import javafx.animation.FadeTransition;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -26,10 +23,13 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.input.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -47,10 +47,12 @@ public class Controller {
     private MapData mapData;
     private Creator creator;
     private RouteNavigation routeNavigation;
+    private AddressFilter addressFilter;
 
     private static final String BINARY_FILE = "/small.bmapdata";
 
     private Point2D lastMouse = new Point2D(0, 0);
+    private Point2D currentRightClick = new Point2D(0,0);
     private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.LEFT);
     private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.RIGHT);
     private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.LEFT);
@@ -68,8 +70,6 @@ public class Controller {
     private int currentToNodeIndexInWay;
     private int[] nearestFromWaySegmentIndices;
     private int[] nearestToWaySegmentIndices;
-
-    private ArrayList<AddressTrieNode> currentAutoCompleteList;
 
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
@@ -105,12 +105,8 @@ public class Controller {
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
 
-    @FXML private TextField textFieldFromNav;
-    @FXML private TextField textFieldToNav;
-    @FXML private VBox autoCompleteFromNav;
-    @FXML private ScrollPane ScrollpaneAutoCompleteToNav;
-    @FXML private VBox autoCompleteToNav;
-    @FXML private ScrollPane ScrollpaneAutoCompleteFromNav;
+    @FXML private AutoFillTextField textFieldFromNav;
+    @FXML private AutoFillTextField textFieldToNav;
 
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
@@ -120,13 +116,18 @@ public class Controller {
     @FXML private ScrollPane directionsScrollPane;
     @FXML private Label specialPathFeaturesNav;
 
-    @FXML private ComboBox<String> dropDownPoints;
-    @FXML private TextField textFieldPointName;
-    @FXML private Button addPointButton;
+    @FXML private ListView<String> myPlacesListView;
+
+    @FXML private ContextMenu rightClickMenu;
+
+
+    @FXML private ToggleGroup optionNav;
+    @FXML private Button showleft;
 
     public void init() {
         mapData = new MapData();
         routeNavigation = new RouteNavigation();
+        addressFilter = new AddressFilter();
         loadThemes();
         initView();
         openFile();
@@ -141,7 +142,9 @@ public class Controller {
         });
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
-        addListenerToSearchFields();
+        addListeners();
+        textFieldFromNav.setFilter(addressFilter);
+        textFieldToNav.setFilter(addressFilter);
     }
 
     private void initMapCanvas() {
@@ -150,7 +153,9 @@ public class Controller {
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
-        // TODO: 29-04-2021 textfields should remove text og user added points
+        textFieldToNav.setText("");
+        textFieldFromNav.setText("");
+        myPlacesListView.getItems().removeAll(myPlacesListView.getItems());
     }
 
     private void loadThemes() {
@@ -166,19 +171,14 @@ public class Controller {
         }
     }
 
-    private void addListenerToSearchFields() {
-        textFieldFromNav.textProperty().addListener(new ChangeListener<String>() {
+    private void addListeners() {
+
+        mapCanvas.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
             @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteFromNav, true);
-            }
-        });
-        textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteToNav, false);
+            public void handle(ContextMenuEvent event) {
+                rightClickMenu.show(mapCanvas, event.getScreenX(), event.getScreenY());
+                currentRightClick = new Point2D(event.getX(), event.getY());
+                mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
             }
         });
 
@@ -261,6 +261,7 @@ public class Controller {
         lastMouse = new Point2D(e.getX(), e.getY());
         mapCanvas.requestFocus();
         setLabels(lastMouse);
+        rightClickMenu.hide();
     }
 
     @FXML
@@ -387,6 +388,7 @@ public class Controller {
         routeNavigation.setNodeToHighwayMap(mapData.getNodeToHighWay());
         routeNavigation.setNodeToRestriction(mapData.getNodeToRestriction());
         routeNavigation.setWayToRestriction(mapData.getWayToRestriction());
+        addressFilter.setAddressTree(mapData.getAddressTree());
         taskSuccess();
         initMapCanvas();
         resetView();
@@ -523,30 +525,10 @@ public class Controller {
         return fileChooser;
     }
 
-    private void fillAutoCompleteText(VBox autoComplete, boolean fromNav) {
-        autoComplete.getChildren().removeAll(autoComplete.getChildren());
-        fillAutoCompleteText(fromNav);
-    }
-
-
-    private void fillAutoCompleteText(boolean fromNav){
-        //if(mapData.getAutoCompleteAdresses(textFieldFromNav.getText()) != null){
-            if (fromNav) {
-                for(AddressTrieNode addressNode : mapData.getAutoCompleteAddresses(textFieldFromNav.getText())) {
-                    labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
-                    ScrollpaneAutoCompleteFromNav.setVisible(true);
-                }
-            } else {
-                for(AddressTrieNode addressNode : mapData.getAutoCompleteAddresses(textFieldToNav.getText())) {
-                    labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
-                    ScrollpaneAutoCompleteToNav.setVisible(true);
-                }
-            }
-    }
-
 
     private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav) {
-        for (Map.Entry<String, String> entry : addressNode.getAddresses().entrySet()) {
+
+        for (Map.Entry<Integer, String> entry : addressNode.getAddresses().entrySet()){
             String address = entry.getValue();
             Label label = new Label(address);
             autoComplete.getChildren().add(label);
@@ -555,16 +537,14 @@ public class Controller {
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
 
                 fullAddressLabelForAutoComplete(addressNode, autoComplete, textField, scrollPane, fromNav, entry.getKey());
-
             });
         }
     }
 
-    private void fullAddressLabelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav, String city) {
-
-        for (Map.Entry<String, Node> houserNumber : addressNode.getHouseNumbersOnStreet(city).entrySet()) {
-            String addressWithHouseNumber = houserNumber.getKey();
-            Node node = houserNumber.getValue();
+    private void fullAddressLabelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav, int postcode) {
+        for (Map.Entry<String, Node> houseNumber : addressNode.getHouseNumbersOnStreet(postcode).entrySet()) {
+            String addressWithHouseNumber = houseNumber.getKey();
+            Node node = houseNumber.getValue();
             Label labelHouseNumber = new Label(addressWithHouseNumber);
             autoComplete.getChildren().add(labelHouseNumber);
             labelHouseNumber.prefWidth(autoComplete.getWidth());
@@ -573,7 +553,6 @@ public class Controller {
                 updateNodesNavigation(fromNav, node.getxMax(), node.getyMax(), addressWithHouseNumber, addressNode.getStreetName());
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
                 scrollPane.setVisible(false);
-
             });
         }
     }
@@ -585,6 +564,7 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
+    // TODO: 05-05-2021 is this needed?
     @FXML
     public void getPointNavFrom() {
         getPointNav(true);
@@ -710,35 +690,75 @@ public class Controller {
     }
 
     @FXML
-    public void moveToPoint(ActionEvent actionEvent) {
-        int i = dropDownPoints.getSelectionModel().getSelectedIndex();
+    public void moveToPoint(MouseEvent actionEvent) {
+        int i = myPlacesListView.getSelectionModel().getSelectedIndex();
         Node node = mapData.getUserAddedPoints().get(i);
-        mapCanvas.centerOnPoint(node.getxMin(), node.getyMin());
+        mapCanvas.centerOnPoint(node.getxMax(), node.getyMax());
         mapCanvas.repaint();
     }
 
     @FXML
     public void addUserPoint(ActionEvent actionEvent) {
-        if (textFieldPointName.getText().equals(""))
-            showDialogBox("User added point error", "Please input name for your point");
-        else {
+
             EventHandler<MouseEvent> event = new EventHandler<>() {
                 @Override
                 public void handle(MouseEvent e) {
                     Point2D cursorPoint = mapCanvas.getTransCoords(e.getX(), e.getY());
-                    Node node = new Node(0, (float) cursorPoint.getX(), (float) cursorPoint.getY());
-                    //// TODO: 20-04-2021 make this work
-
-                    String nodeName = textFieldPointName.getText();
-                    mapData.addToUserPointList(node);
-                    dropDownPoints.getItems().add(nodeName);
-                    mapCanvas.repaint();
-                    textFieldPointName.setText("");
+                    addUserPoint(cursorPoint);
                     mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
                 }
             };
-            mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
+             mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
+    }
+
+    private void addUserPoint(Point2D point){
+        Node node = new Node(0, (float) point.getX(), (float) point.getY());
+        //String nodeName = textFieldPointName.getText();
+        // TODO: 06-05-2021 does the user want to name points?
+
+        mapData.addToUserPointList(node);
+        //if(nodeName.equals("")){
+            myPlacesListView.getItems().add("Point " + (myPlacesListView.getItems().size()+1));
+        //} else {
+                //myPlacesListView.getItems().add(nodeName);
+                //}
+        mapCanvas.repaint();
+        //textFieldPointName.setText("");
+
+    }
+
+    @FXML
+    public void deleteUserPoint(){
+        if(myPlacesListView.getSelectionModel().getSelectedItem() != null){
+            int i = myPlacesListView.getSelectionModel().getSelectedIndex();
+            myPlacesListView.getItems().remove(i);
+            mapData.getUserAddedPoints().remove(i);
+            mapCanvas.repaint();
         }
+
+    }
+
+    @FXML
+    public void setRightClickMenu(ContextMenuEvent actionEvent) {
+
+    }
+
+    @FXML
+    public void rightCLickAddUserPoint(ActionEvent actionEvent) {
+        Point2D point = mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        addUserPoint(point);
+    }
+
+    @FXML
+    public void rightCLickPointNavFrom(ActionEvent actionEvent) {
+        Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        updateNodesNavigation(true,point.getX(), point.getY());
+    }
+
+    @FXML
+    public void rightClickPointNavTo(ActionEvent actionEvent) {
+        Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        updateNodesNavigation(false,point.getX(), point.getY());
     }
 
     private enum State {

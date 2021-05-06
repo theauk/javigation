@@ -4,7 +4,7 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Relation;
 import bfst21.Osm_Elements.Way;
-import bfst21.exceptions.NoNavigationResultException;
+import bfst21.Exceptions.NoNavigationResultException;
 import bfst21.utils.MapMath;
 import bfst21.utils.VehicleType;
 import javafx.concurrent.Service;
