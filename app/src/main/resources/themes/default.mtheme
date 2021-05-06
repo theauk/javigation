@@ -5,7 +5,7 @@ name = "Default";
 
 #Background
 "background" = {iColor = [170, 211, 223]};
-"man_made" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 10};
+"man_made" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
 "asphalt" = {iColor = [238, 238, 238], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
 
 #Coastline
@@ -61,7 +61,7 @@ name = "Default";
 "park" = {iColor = [205, 247, 201], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
 "forest" = {iColor = [157, 202, 138]}, {filled = true}, {showAt = 10};
 "dark_green" = {iColor = [172, 210, 156], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
-"light_green" = {iColor = [223, 252, 226], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
+"light_green" = {iColor = [223, 252, 226], oColor = [0, 0, 0]}, {filled = true}, {showAt = 14};
 "wetland" = {iColor = [202, 252, 226], oColor = [0, 0, 0]}, {filled = true}, {showAt = 14};
 "farmland" = {iColor = [238, 240, 213], oColor = [0, 0, 0]}, {filled = true}, {showAt = 14};
 

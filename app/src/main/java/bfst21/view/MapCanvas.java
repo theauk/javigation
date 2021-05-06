@@ -69,7 +69,7 @@ public class MapCanvas extends Canvas {
         fillCoastLines(gc);
 
         int layers = mapData.getMapSegment().size();
-        for (int layer = 0; layer < layers - 1; layer++) {
+        for (int layer = 0; layer < layers - 1; layer++) { // -1 since toplayer is drawn below
             for (Element element : mapData.getMapSegment().get(layer)) {
                 drawElement(gc, element);
             }
@@ -86,6 +86,40 @@ public class MapCanvas extends Canvas {
         for (Node point : mapData.getUserAddedPoints()) {
             drawRectangleNode(gc, point);
         }
+        gc.restore();
+    }
+
+    public void repaintTest(Node selectedNode) { // TODO: 5/2/21 delete 
+        GraphicsContext gc = getGraphicsContext2D();
+        gc.save();
+        gc.setTransform(new Affine());
+
+        gc.setFill(theme.get("background").getColor().getInner());
+        gc.fillRect(0, 0, getWidth(), getHeight());
+
+        gc.setTransform(trans);
+        fillCoastLines(gc);
+
+        int layers = mapData.getMapSegment().size();
+        for (int layer = 0; layer < layers - 1; layer++) { // -1 since toplayer is drawn below
+            for (Element element : mapData.getMapSegment().get(layer)) {
+                drawElement(gc, element);
+            }
+        }
+        for (Element element : mapData.getMapSegment().get(mapData.getMapSegment().size() - 1)) { // toplayer is only text
+            drawText(gc, element);
+        }
+
+        for (Element route : mapData.getCurrentRoute()) {
+            if (theme.get(route.getType()).isNode()) drawRoundNode(gc, route);
+            else drawElement(gc, route);
+        }
+
+        for (Node point : mapData.getUserAddedPoints()) {
+            drawRectangleNode(gc, point);
+        }
+
+        drawRoundNode(gc, selectedNode);
         gc.restore();
     }
 
@@ -234,7 +268,7 @@ public class MapCanvas extends Canvas {
 
     public void updateMap() {
         setBounds();
-        mapData.searchInData(bounds, zoomLevel);
+        mapData.searchInRTree(bounds, zoomLevel);
         repaint();
     }
 
@@ -307,6 +341,29 @@ public class MapCanvas extends Canvas {
         zoom(true, levels);
     }
 
+    public void panToRoute(float[] boundingBoxRouteCoordinates) { // TODO: 5/1/21 fix
+        trans = new Affine();
+        zoomLevel = MIN_ZOOM_LEVEL;
+        setBounds();
+
+        double mapWidth = boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0];
+        double boundsWidth = bounds.getMaxX() - bounds.getMinX();          
+        double minXMap = boundingBoxRouteCoordinates[0];  
+
+        double mapHeight = boundingBoxRouteCoordinates[3] - boundingBoxRouteCoordinates[2];
+        double boundsHeight = bounds.getMaxY() - bounds.getMinY();
+        double minYMap = boundingBoxRouteCoordinates[2];
+
+        double dx = (minXMap - boundingBoxRouteCoordinates[0]);                           
+        double dy = (minYMap - boundingBoxRouteCoordinates[2]);
+
+        double zoom = getWidth() / mapWidth; 
+        int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        
+
+        pan(dx, dy);
+        //zoom(true, levels);
+    }
+
     public void centerOnPoint(double x, double y) {
         double boundsWidth = (bounds.getMaxX() - bounds.getMinX());
         double boundsHeight = (bounds.getMaxY() - bounds.getMinY());
@@ -318,11 +375,10 @@ public class MapCanvas extends Canvas {
         dy = dy * Math.sqrt(trans.determinant());
 
         pan(dx,dy);
-        pan(dx, dy);
     }
 
     public void rTreeDebugMode() {
-        mapData.searchInData(bounds, zoomLevel);
+        mapData.searchInRTree(bounds, zoomLevel);
         repaint();
     }
 

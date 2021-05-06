@@ -15,7 +15,7 @@ public class View {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view.fxml"));
         Scene scene = fxmlLoader.load();
         stage.setScene(scene);
-        stage.setTitle("Working Title...");
+        stage.setTitle("Javigation");
         stage.setMinWidth(WIDTH);
         stage.setMinHeight(HEIGHT);
 

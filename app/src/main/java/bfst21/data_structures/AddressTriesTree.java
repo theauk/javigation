@@ -2,23 +2,21 @@ package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Node;
 
-import java.util.*;
 import java.io.Serial;
 import java.io.Serializable;
-
+import java.util.*;
 
 public class AddressTriesTree implements Serializable {
     @Serial
     private static final long serialVersionUID = 5713923887785799744L;
 
-    private AddressTrieNode root;
-    private HashMap<Integer, String> citiesToPostCodes;
+    private final AddressTrieNode root;
+    private final Map<Integer, String> citiesToPostCodes;
 
     public AddressTriesTree() {
         root = new AddressTrieNode();
         citiesToPostCodes = new HashMap<>();
     }
-
 
     /**
      * @param node        -> contains the coordinates for the address.
@@ -34,15 +32,15 @@ public class AddressTriesTree implements Serializable {
         insert(root, node, city, streetname, postcode, houseNumber);
     }
 
-
     public void insert(AddressTrieNode root, Node node, String city, String streetname, int postcode, String houseNumber) {
-            streetname = streetname.toLowerCase();
-            citiesToPostCodes.put(postcode, city);
-            insert_address_with_streetname(root,0 , node, streetname, postcode, houseNumber);
-        }
+        streetname = streetname.toLowerCase();
+        city = city.toLowerCase();
+        houseNumber = houseNumber.toLowerCase();
+        citiesToPostCodes.put(postcode, city);
+        insert_address_with_streetname(root,0 , node, streetname, postcode, houseNumber);
+    }
 
     /**
-     *
      * @param trieNode -> when called for the first time, this would be the root.
      *                     afterwards in the recursive calls inside the method will call the method with the next node (a child), and proceed
      *                     to the bottom of the trie, where the addressNode will be added to the Arraylist in that last node's arraylist.
@@ -54,27 +52,19 @@ public class AddressTriesTree implements Serializable {
      * @param postcode -> the postcode of the node given by the .osm file.
      * @param houseNumber -> the house number given by the .osm file.
      */
-    private void insert_address_with_streetname(AddressTrieNode trieNode, int index, Node node, String streetname, int postcode, String houseNumber){
+    private void insert_address_with_streetname(AddressTrieNode trieNode, int index, Node node, String streetname, int postcode, String houseNumber) {
         if (index == streetname.length()) {
-                if(trieNode.isAddress()) trieNode.addHouseNumber(postcode, node, houseNumber);
-                else trieNode.setAddress(node, postcode, streetname, houseNumber, citiesToPostCodes);
-                }
-            else {
-                Character currentChar = streetname.charAt(index);
-                if (!trieNode.getChildren().containsKey(currentChar)) {
-                    AddressTrieNode new_child = new AddressTrieNode();
-                    trieNode.getChildren().put(currentChar, new_child);
-                }
-                insert_address_with_streetname(trieNode.getChildren().get(currentChar), index + 1 , node, streetname, postcode, houseNumber);
+            if(trieNode.isAddress()) trieNode.addHouseNumber(postcode, node, houseNumber);
+            else trieNode.setAddress(node, postcode, streetname, houseNumber, citiesToPostCodes);
+        }
+        else {
+            Character currentChar = streetname.charAt(index);
+            if (!trieNode.getChildren().containsKey(currentChar)) {
+                AddressTrieNode new_child = new AddressTrieNode();
+                trieNode.getChildren().put(currentChar, new_child);
             }
-    }
-
-    /**
-     *
-     * @return -> returns all the possible streetnames in the trie.
-     */
-    public ArrayList<AddressTrieNode> keys(){
-        return searchWithPrefix("");
+            insert_address_with_streetname(trieNode.getChildren().get(currentChar), index + 1 , node, streetname, postcode, houseNumber);
+        }
     }
 
     /**
@@ -82,10 +72,11 @@ public class AddressTriesTree implements Serializable {
      * @param prefix -> prefix to possible streetnames
      * @return -> a list (ArrayList) with the possible streetnames that matches the prefix with help from the help methods.
      */
-    public ArrayList<AddressTrieNode> searchWithPrefix(String prefix){
-        ArrayList<AddressTrieNode> queue = new ArrayList<>();
+    public List<AddressTrieNode> searchWithPrefix(String prefix) {
+        List<AddressTrieNode> queue = new ArrayList<>();
         prefix = prefix.toLowerCase();
-        collect(get(root, prefix,0),prefix,queue);
+        collect(get(root, prefix, 0), prefix, queue);
+        Collections.sort(queue);
         return queue;
     }
 
@@ -97,7 +88,7 @@ public class AddressTriesTree implements Serializable {
      * @param index -> starts at 0, but increases up to the length of the key - this is so the method can be called recursively
      * @return -> returns the trienode that matches the key.
      */
-    private AddressTrieNode get(AddressTrieNode trieNode, String key, int index){
+    private AddressTrieNode get(AddressTrieNode trieNode, String key, int index) {
         if(trieNode == null) return null;
         if(index == key.length()) {
             return trieNode;
@@ -113,14 +104,28 @@ public class AddressTriesTree implements Serializable {
      * @param prefix -> help method for searchWithPrefix -> adds streetnames to the list that begins with the given prefix
      * @param queue -> the list that searchWithPrefix with possible streetnames to the given prefix
      */
-    private void collect(AddressTrieNode trieNode, String prefix, ArrayList<AddressTrieNode> queue){
+    private void collect(AddressTrieNode trieNode, String prefix, List<AddressTrieNode> queue) {
         if(trieNode == null) return;
-            if(trieNode.isAddress()){
-                queue.add(trieNode);
-            }
+        if(trieNode.isAddress()) {
+            queue.add(trieNode);
+        }
 
         for (Map.Entry<Character, AddressTrieNode> child : trieNode.getChildren().entrySet()) {
             collect(child.getValue(), prefix + child.getKey(), queue);
         }
+    }
+
+    public List<Integer> getPostCodes() {
+        List<Integer> postCodes = new ArrayList<>(citiesToPostCodes.keySet());
+        Collections.sort(postCodes);
+
+        return postCodes;
+    }
+
+    public List<String> getCities() {
+        List<String> cities = new ArrayList<>(citiesToPostCodes.values());
+        Collections.sort(cities);
+
+        return cities;
     }
 }

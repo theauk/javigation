@@ -59,8 +59,8 @@
                     <fx:define>
                         <ToggleGroup fx:id="typeOfNearestRoad"/>
                     </fx:define>
-                    <RadioMenuItem fx:id="kdTreeNearestNode" text="Nearest Road: KD-Tree" selected="true" toggleGroup="$typeOfNearestRoad"/>
-                    <RadioMenuItem fx:id="rTreeNearestNode" text="Nearest Road: R-Tree" toggleGroup="$typeOfNearestRoad"/>
+                    <RadioMenuItem fx:id="kdTreeNearestNode" text="Nearest Road: KD-Tree" toggleGroup="$typeOfNearestRoad"/>
+                    <RadioMenuItem fx:id="rTreeNearestNode" text="Nearest Road: R-Tree" selected="true" toggleGroup="$typeOfNearestRoad"/>
                     <SeparatorMenuItem/>
                     <fx:define>
                         <ToggleGroup fx:id="typeOfNavAlgorithm"/>
@@ -75,12 +75,12 @@
         <center>
             <StackPane fx:id="centerPane">
                 <fx:define>
-                    <ContextMenu fx:id="rightClickMenu">
+                    <ContextMenu fx:id="rightClickMenu" >
                         <items>
-                            <MenuItem fx:id="addToYourPoints" text="Add to your points" onAction="#addUserPoint"/>
+                            <MenuItem fx:id="addToYourPoints" text="Add to your points" onAction="#rightCLickAddUserPoint"/>
                             <SeparatorMenuItem/>
-                            <MenuItem fx:id="routeFromHere" text="Route from here" onAction="#getPointNavFrom"/>
-                            <MenuItem fx:id="routeToHere" text="Route to here" onAction="#getPointNavTo"/>
+                            <MenuItem fx:id="routeFromHere" text="Route from here" onAction="#rightCLickPointNavFrom"/>
+                            <MenuItem fx:id="routeToHere" text="Route to here" onAction="#rightClickPointNavTo"/>
                         </items>
                     </ContextMenu>
                 </fx:define>
@@ -156,29 +156,8 @@
 
                 <AnchorPane id="navigationControl" visible="${navigationPane.selected}" pickOnBounds="false">
                     <VBox AnchorPane.leftAnchor="5" AnchorPane.topAnchor="5" spacing="5">
-                        <HBox>
-                            <TextField fx:id="textFieldFromNav" promptText="From" />
-                            <Button fx:id="chooseCorButtonFromNav" text="Choose on map" onAction="#getPointNavFrom"/>
-                        </HBox>
-                            <ScrollPane fx:id="ScrollpaneAutoCompleteFromNav" visible="false" >
-                                <VBox fx:id="autoCompleteFromNav" >
-                                </VBox>
-                            </ScrollPane>
-                        <HBox>
-                            <TextField fx:id="textFieldToNav" promptText="To" />
-                            <Button fx:id="chooseCorButtonToNav" text="Choose on map" onAction="#getPointNavTo"/>
-                        </HBox>
-                        <ScrollPane fx:id="ScrollpaneAutoCompleteToNav" visible="false" >
-                            <VBox fx:id="autoCompleteToNav" >
-                            </VBox>
-                        </ScrollPane>
 
-                        <Button fx:id="searchNav" text="Search" onAction="#searchNav"/>
-                      <Label fx:id="distanceAndTimeNav" visible="false"></Label>
-                        <Label fx:id="specialPathFeaturesNav" visible="false"></Label>
-                        <ScrollPane fx:id="directionsScrollPane" visible="false">
-                            <VBox fx:id="directionsBox"></VBox>
-                        </ScrollPane>
+
                         <VBox>
                             <HBox.margin>
                                 <Insets right="30.0"/>
@@ -214,15 +193,17 @@
                                 <children>
                                     <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
                                         <children>
-                                            <TextField prefHeight="27.0" prefWidth="113.0">
+                                            <AutoFillTextField fx:id="textFieldFromNav" promptText="From" prefHeight="27.0" prefWidth="113.0">
+
                                                 <HBox.margin>
                                                     <Insets />
                                                 </HBox.margin>
                                                 <padding>
                                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                 </padding>
-                                            </TextField>
-                                            <Button mnemonicParsing="false" text="Search" />
+                                            </AutoFillTextField>
+                                            <Button mnemonicParsing="false" text="Find route" fx:id="searchNav" onAction="#searchNav"/>
+
                                         </children>
                                         <padding>
                                             <Insets bottom="20.0" left="5.0" top="10.0" />
@@ -230,17 +211,18 @@
                                     </HBox>
                                     <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0" GridPane.rowIndex="1">
                                         <children>
-                                            <TextField prefHeight="22.0" prefWidth="113.0">
+                                            <AutoFillTextField fx:id="textFieldToNav" promptText="To" prefHeight="22.0" prefWidth="113.0">
                                                 <padding>
                                                     <Insets left="5.0" right="5.0" top="5.0" />
                                                 </padding>
-                                            </TextField>
+                                            </AutoFillTextField>
                                             <Button mnemonicParsing="false" text="Switch" />
                                         </children>
                                         <padding>
                                             <Insets left="5.0" right="5.0" top="5.0" />
                                         </padding>
                                     </HBox>
+
                                 </children>
                                 <padding>
                                     <Insets top="20.0" />
@@ -259,12 +241,15 @@
                                 </toggleGroup>
                             </RadioButton>
 
-                            <TextArea fx:id="routeTime" editable="false" layoutX="8.0" layoutY="200.0" prefHeight="90.0" prefWidth="182.0" />
-                            <ScrollPane layoutX="8.0" layoutY="308.0" prefHeight="309.0" prefWidth="194.0">
+                            <VBox fx:id="routeTime" layoutX="8.0" layoutY="200.0" prefHeight="90.0" prefWidth="182.0">
+                                <Label fx:id="distanceAndTimeNav" visible="false"></Label>
+                                <Label fx:id="specialPathFeaturesNav" visible="false"></Label>
+                            </VBox>
+                            <ScrollPane fx:id="directionsScrollPane" visible="false" layoutX="8.0" layoutY="308.0" prefHeight="309.0" prefWidth="194.0">
                                 <content>
                                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="311.0" prefWidth="204.0">
                                         <children>
-                                            <TextArea fx:id="directionsDisplay" editable="false" layoutX="2.0" layoutY="49.0" prefHeight="311.2" prefWidth="204.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                            <VBox fx:id="directionsBox"></VBox>
                                         </children>
                                     </AnchorPane>
                                 </content>

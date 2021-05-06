@@ -135,7 +135,6 @@ public class Way extends NodeHolder implements Serializable {
 
     @Override
     public void draw(GraphicsContext gc) {
-        //TODO Should check for one way.....
         super.draw(gc);
     }
 

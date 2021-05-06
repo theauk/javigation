@@ -1,21 +1,20 @@
 package bfst21;
 
 import bfst21.Osm_Elements.Node;
+import bfst21.Osm_Elements.Way;
 import bfst21.data_structures.AddressTrieNode;
+import bfst21.data_structures.RTree;
 import bfst21.data_structures.RouteNavigation;
 import bfst21.Exceptions.NoOSMInZipFileException;
 import bfst21.Exceptions.UnsupportedFileFormatException;
 import bfst21.file_io.Loader;
 import bfst21.file_io.Serializer;
+import bfst21.utils.AddressFilter;
 import bfst21.utils.CustomKeyCombination;
 import bfst21.utils.MapMath;
 import bfst21.utils.VehicleType;
-import bfst21.view.CanvasBounds;
-import bfst21.view.MapCanvas;
-import bfst21.view.Theme;
+import bfst21.view.*;
 import javafx.animation.FadeTransition;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,6 +23,12 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.input.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -42,10 +47,12 @@ public class Controller {
     private MapData mapData;
     private Creator creator;
     private RouteNavigation routeNavigation;
+    private AddressFilter addressFilter;
 
     private static final String BINARY_FILE = "/small.bmapdata";
 
     private Point2D lastMouse = new Point2D(0, 0);
+    private Point2D currentRightClick = new Point2D(0,0);
     private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.LEFT);
     private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.RIGHT);
     private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.LEFT);
@@ -57,8 +64,12 @@ public class Controller {
 
     private Node currentFromNode;
     private Node currentToNode;
-
-    private ArrayList<AddressTrieNode> currentAutoCompleteList;
+    private Way currentFromWay;
+    private Way currentToWay;
+    private int currentFromNodeIndexInWay;
+    private int currentToNodeIndexInWay;
+    private int[] nearestFromWaySegmentIndices;
+    private int[] nearestToWaySegmentIndices;
 
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
@@ -94,12 +105,8 @@ public class Controller {
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
 
-    @FXML private TextField textFieldFromNav;
-    @FXML private TextField textFieldToNav;
-    @FXML private VBox autoCompleteFromNav;
-    @FXML private ScrollPane ScrollpaneAutoCompleteToNav;
-    @FXML private VBox autoCompleteToNav;
-    @FXML private ScrollPane ScrollpaneAutoCompleteFromNav;
+    @FXML private AutoFillTextField textFieldFromNav;
+    @FXML private AutoFillTextField textFieldToNav;
 
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
@@ -114,9 +121,6 @@ public class Controller {
     @FXML private Button addPointButton;
 
     @FXML private ContextMenu rightClickMenu;
-    @FXML private MenuItem addToYourPoints;
-    @FXML private MenuItem routeFromHere;
-    @FXML private MenuItem routeToHere;
 
 
     @FXML private ToggleGroup optionNav;
@@ -125,6 +129,7 @@ public class Controller {
     public void init() {
         mapData = new MapData();
         routeNavigation = new RouteNavigation();
+        addressFilter = new AddressFilter();
         loadThemes();
         initView();
         openFile();
@@ -139,7 +144,9 @@ public class Controller {
         });
         disableMenus();
         CustomKeyCombination.setTarget(mapCanvas);
-        addListenerToSearchFields();
+        addListeners();
+        textFieldFromNav.setFilter(addressFilter);
+        textFieldToNav.setFilter(addressFilter);
     }
 
     private void initMapCanvas() {
@@ -148,7 +155,9 @@ public class Controller {
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
-        // TODO: 29-04-2021 textfields should remove text og user added points
+        textFieldToNav.setText("");
+        textFieldFromNav.setText("");
+        dropDownPoints.getItems().removeAll(dropDownPoints.getItems());
     }
 
     private void loadThemes() {
@@ -164,19 +173,14 @@ public class Controller {
         }
     }
 
-    private void addListenerToSearchFields() {
-        textFieldFromNav.textProperty().addListener(new ChangeListener<String>() {
+    private void addListeners() {
+
+        mapCanvas.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
             @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteFromNav, true);
-            }
-        });
-        textFieldToNav.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,
-                                String oldValue, String newValue) {
-                if (newValue.length() > 2) fillAutoCompleteText(autoCompleteToNav, false);
+            public void handle(ContextMenuEvent event) {
+                rightClickMenu.show(mapCanvas, event.getScreenX(), event.getScreenY());
+                currentRightClick = new Point2D(event.getX(), event.getY());
+                mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
             }
         });
 
@@ -383,9 +387,10 @@ public class Controller {
 
     private void loadSuccess() {
         mapData = creator.getValue();
-        routeNavigation.setNodeToWayMap(mapData.getNodeToHighWay());
+        routeNavigation.setNodeToHighwayMap(mapData.getNodeToHighWay());
         routeNavigation.setNodeToRestriction(mapData.getNodeToRestriction());
         routeNavigation.setWayToRestriction(mapData.getWayToRestriction());
+        addressFilter.setAddressTree(mapData.getAddressTree());
         taskSuccess();
         initMapCanvas();
         resetView();
@@ -522,26 +527,6 @@ public class Controller {
         return fileChooser;
     }
 
-    private void fillAutoCompleteText(VBox autoComplete, boolean fromNav) {
-        autoComplete.getChildren().removeAll(autoComplete.getChildren());
-        fillAutoCompleteText(fromNav);
-    }
-
-
-    private void fillAutoCompleteText(boolean fromNav){
-            if (fromNav) {
-                for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldFromNav.getText())) {
-                    labelForAutoComplete(addressNode, autoCompleteFromNav, textFieldFromNav, ScrollpaneAutoCompleteFromNav, fromNav);
-                    ScrollpaneAutoCompleteFromNav.setVisible(true);
-                }
-            } else {
-                for(AddressTrieNode addressNode : mapData.getAutoCompleteAdresses(textFieldToNav.getText())) {
-                    labelForAutoComplete(addressNode, autoCompleteToNav, textFieldToNav, ScrollpaneAutoCompleteToNav, fromNav);
-                    ScrollpaneAutoCompleteToNav.setVisible(true);
-                }
-            }
-    }
-
 
     private void labelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav) {
 
@@ -554,13 +539,11 @@ public class Controller {
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
 
                 fullAddressLabelForAutoComplete(addressNode, autoComplete, textField, scrollPane, fromNav, entry.getKey());
-
             });
         }
     }
 
     private void fullAddressLabelForAutoComplete(AddressTrieNode addressNode, VBox autoComplete, TextField textField, ScrollPane scrollPane, boolean fromNav, int postcode) {
-
         for (Map.Entry<String, Node> houseNumber : addressNode.getHouseNumbersOnStreet(postcode).entrySet()) {
             String addressWithHouseNumber = houseNumber.getKey();
             Node node = houseNumber.getValue();
@@ -568,10 +551,8 @@ public class Controller {
             autoComplete.getChildren().add(labelHouseNumber);
             labelHouseNumber.prefWidth(autoComplete.getWidth());
             labelHouseNumber.setOnMouseClicked((ActionEvent2) -> {
-                System.out.println("here");
                 textField.setText(addressWithHouseNumber);
-                if (fromNav) currentFromNode = node;
-                else currentToNode = node;
+                updateNodesNavigation(fromNav, node.getxMax(), node.getyMax());
                 autoComplete.getChildren().removeAll(autoComplete.getChildren());
                 scrollPane.setVisible(false);
             });
@@ -585,13 +566,14 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
+    // TODO: 05-05-2021 is this needed?
     @FXML
-    public void getPointNavFrom(ActionEvent actionEvent) { // TODO: 4/12/21 better way to do this to avoid two methods?
+    public void getPointNavFrom() {
         getPointNav(true);
     }
 
     @FXML
-    public void getPointNavTo(ActionEvent actionEvent) {
+    public void getPointNavTo() {
         getPointNav(false);
     }
 
@@ -599,22 +581,33 @@ public class Controller {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
             public void handle(MouseEvent e) {
-                Point2D cursorPoint = new Point2D(e.getX(), e.getY());
-                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
-                Node nearestRoadNode = mapData.getNearestRoadNode((float) coords.getX(), (float) coords.getY());
-
-                String names = mapData.getNodeHighWayNames(nearestRoadNode);
-                if (fromSelected) {
-                    textFieldFromNav.setText(names);
-                    currentFromNode = nearestRoadNode;
-                } else {
-                    textFieldToNav.setText(names);
-                    currentToNode = nearestRoadNode;
-                }
+                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY()); // TODO: 5/1/21 coordinates how?
+                updateNodesNavigation(fromSelected, coords.getX(), coords.getY());
                 mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
             }
         };
         mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
+    }
+
+    public void updateNodesNavigation(boolean fromSelected, double x, double y) {
+        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y);
+        Way nearestWay = entry.getWay();
+        int[] nearestWaySegmentIndices = entry.getSegmentIndices();
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestWay); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt???
+
+        if (fromSelected) {
+            textFieldFromNav.setText(nearestWay.getName());
+            currentFromWay = nearestWay;
+            nearestFromWaySegmentIndices = nearestWaySegmentIndices;
+            currentFromNode = nearestNodeOnNearestWay;
+            mapCanvas.repaintTest(currentFromNode); // TODO: 5/2/21 delete 
+        } else {
+            textFieldToNav.setText(nearestWay.getName());
+            currentToWay = nearestWay;
+            currentToNode = nearestNodeOnNearestWay;
+            nearestToWaySegmentIndices = nearestWaySegmentIndices;
+            mapCanvas.repaintTest(currentToNode); // TODO: 5/2/21 delete 
+        }
     }
 
     @FXML
@@ -645,7 +638,7 @@ public class Controller {
 
     @FXML
     public void getRoute() {
-        routeNavigation.setupRoute(currentFromNode, currentToNode, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
+        routeNavigation.setupRoute(currentFromNode, currentToNode, currentFromWay, currentToWay, nearestFromWaySegmentIndices, nearestToWaySegmentIndices, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
         routeNavigation.startRouting();
 
         routeNavigation.setOnSucceeded(e -> {
@@ -653,6 +646,7 @@ public class Controller {
             setDistanceAndTimeNav(routeNavigation.getTotalDistance(), routeNavigation.getTotalTime());
             setDirections(routeNavigation.getDirections());
             setSpecialPathFeatures(routeNavigation.getSpecialPathFeatures());
+            //mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
             mapCanvas.repaint();
         });
         routeNavigation.setOnFailed(e -> showDialogBox("No Route Found", routeNavigation.getException().getMessage()));
@@ -673,21 +667,11 @@ public class Controller {
         directionsScrollPane.setVisible(true);
     }
 
-    public void setDistanceAndTimeNav(double distance, double time) {
+    public void setDistanceAndTimeNav(double meters, double seconds) {
         distanceAndTimeNav.setVisible(true);
         String s = "Total distance: ";
-
-        if (distance < 1000) {
-            s += MapMath.round(distance, 0) + " m";
-        } else {
-            s += MapMath.round(distance / 1000f, 3) + " km";
-        }
-
-        if (time < 60) {
-            s += " , Total time: " + MapMath.round(time, 0) + " s";
-        } else {
-            s += " , Total time: " + MapMath.round(time / 60f, 3) + " min";
-        }
+        s += MapMath.formatDistance(meters, 2);
+        s += MapMath.formatTime(seconds, 2);
         distanceAndTimeNav.setText(s);
     }
 
@@ -708,43 +692,57 @@ public class Controller {
     public void moveToPoint(ActionEvent actionEvent) {
         int i = dropDownPoints.getSelectionModel().getSelectedIndex();
         Node node = mapData.getUserAddedPoints().get(i);
-        mapCanvas.centerOnPoint(node.getxMin(), node.getyMin());
+        mapCanvas.centerOnPoint(node.getxMax(), node.getyMax());
         mapCanvas.repaint();
     }
 
     @FXML
     public void addUserPoint(ActionEvent actionEvent) {
-        if (textFieldPointName.getText().equals(""))
-            showDialogBox("User added point error", "Please input name for your point");
-        else {
+
             EventHandler<MouseEvent> event = new EventHandler<>() {
                 @Override
                 public void handle(MouseEvent e) {
                     Point2D cursorPoint = mapCanvas.getTransCoords(e.getX(), e.getY());
-                    Node node = new Node((float) cursorPoint.getX(), (float) cursorPoint.getY());
-                    //// TODO: 20-04-2021 make this work
-
-                    String nodeName = textFieldPointName.getText();
-                    mapData.addToUserPointList(node);
-                    dropDownPoints.getItems().add(nodeName);
-                    mapCanvas.repaint();
-                    textFieldPointName.setText("");
+                    addUserPoint(cursorPoint);
                     mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
                 }
             };
             mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
         }
+
+    private void addUserPoint(Point2D point){
+        Node node = new Node(0, (float) point.getX(), (float) point.getY());
+        String nodeName = textFieldPointName.getText();
+
+        mapData.addToUserPointList(node);
+        if(nodeName.equals("")){dropDownPoints.getItems().add("Point " + (dropDownPoints.getItems().size()+1));}
+            else{dropDownPoints.getItems().add(nodeName);}
+        mapCanvas.repaint();
+        textFieldPointName.setText("");
+
     }
 
     @FXML
     public void setRightClickMenu(ContextMenuEvent actionEvent) {
-        mapCanvas.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
-            @Override
-            public void handle(ContextMenuEvent event) {
-                rightClickMenu.show(mapCanvas, event.getScreenX(), event.getScreenY());
-                mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
-            }
-        });
+
+    }
+
+    @FXML
+    public void rightCLickAddUserPoint(ActionEvent actionEvent) {
+        Point2D point = mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        addUserPoint(point);
+    }
+
+    @FXML
+    public void rightCLickPointNavFrom(ActionEvent actionEvent) {
+        Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        updateNodesNavigation(true,point.getX(), point.getY());
+    }
+
+    @FXML
+    public void rightClickPointNavTo(ActionEvent actionEvent) {
+        Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        updateNodesNavigation(false,point.getX(), point.getY());
     }
 
     private enum State {
