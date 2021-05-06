@@ -312,7 +312,7 @@ public class MapCanvas extends Canvas {
         zoomLevel = MIN_ZOOM_LEVEL;
         setBounds();
 
-        double mapWidth = boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0];
+        double mapWidth = boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]; // TODO: 5/6/21 prøv med distance formel 
         double boundsWidth = bounds.getMaxX() - bounds.getMinX();          
         double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);
 

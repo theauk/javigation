@@ -190,7 +190,7 @@ public class RouteNavigation extends Service<List<Element>> {
     }
 
     /**
-     * Get the total distance for the path.
+     * Gets the total distance for the path.
      * @return The total distance.
      */
     public double getTotalDistance() {

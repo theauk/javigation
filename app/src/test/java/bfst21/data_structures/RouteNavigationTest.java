@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 class RouteNavigationTest {
 
@@ -81,8 +82,14 @@ class RouteNavigationTest {
         routeNavigation.setupRoute(from, to, startWay, turnRightOntoWay, new int[]{0, 1}, new int[]{0, 1}, VehicleType.CAR, false, true);
         routeNavigation.testGetCurrentRoute();
 
-        String turnDirection = routeNavigation.getDirections().get(1);
-        assertEquals("Turn right onto Way 2", turnDirection);
+        String turnDirectionAStar = routeNavigation.getDirections().get(1);
+        assertEquals("Turn right onto Way 2", turnDirectionAStar);
+
+        routeNavigation.setupRoute(from, to, startWay, turnRightOntoWay, new int[]{0, 1}, new int[]{0, 1}, VehicleType.CAR, false, false);
+        routeNavigation.testGetCurrentRoute();
+
+        String turnDirectionDijkstra = routeNavigation.getDirections().get(1);
+        assertEquals("Turn right onto Way 2", turnDirectionDijkstra);
     }
 
     @Test
@@ -107,6 +114,12 @@ class RouteNavigationTest {
 
         String turnDirection = routeNavigation.getDirections().get(1);
         assertEquals("Turn left onto Way 2", turnDirection);
+
+        routeNavigation.setupRoute(from, to, startWay, turnLeftOntoWay, new int[]{0, 1}, new int[]{0, 1}, VehicleType.CAR, false, false);
+        routeNavigation.testGetCurrentRoute();
+
+        String turnDirectionDijkstra = routeNavigation.getDirections().get(1);
+        assertEquals("Turn left onto Way 2", turnDirectionDijkstra);
     }
 
     @Test
@@ -155,6 +168,34 @@ class RouteNavigationTest {
     }
 
     @Test
+    void continueOnSameWayTest() throws NoNavigationResultException {
+        Node from = createNode(12.1882954f, 55.4500809);
+        Node to = createNode(12.1879864f , 55.449707);
+        Node turnNode = createNode(12.1877728f, 55.4498749);
+
+        ArrayList<Node> nodesStartWay = new ArrayList<>();
+        nodesStartWay.add(turnNode);
+        nodesStartWay.add(createNode(12.1882954f , 55.4500809));
+        Way startWay = createWay(nodesStartWay, 1, "WayName", "unclassified");
+
+        ArrayList<Node> turnLeftOntoWayNodes = new ArrayList<>();
+        turnLeftOntoWayNodes.add(createNode(12.1879864f , 55.449707));
+        turnLeftOntoWayNodes.add(turnNode);
+        Way turnLeftOntoWay = createWay(turnLeftOntoWayNodes, 1, "WayName", "unclassified");
+
+        setTreeMaps();
+        routeNavigation.setupRoute(from, to, startWay, turnLeftOntoWay, new int[]{0, 1}, new int[]{0, 1}, VehicleType.CAR, false, true);
+        routeNavigation.testGetCurrentRoute();
+
+        assertEquals(1, routeNavigation.getDirections().size());
+    }
+
+    @Test
+    void takeFastestWayTest() {
+
+    }
+
+    @Test
     void ferrySpecialPathFeaturesTest() throws NoNavigationResultException {
         ArrayList<Node> nodes = new ArrayList<>();
         nodes.add(createNode(12.1934f, 55.4453));
@@ -166,4 +207,58 @@ class RouteNavigationTest {
         routeNavigation.testGetCurrentRoute();
         assertTrue(routeNavigation.getSpecialPathFeatures().contains("a ferry"));
     }
+
+    @Test
+    void getCoordinatesForPanToRouteTest() throws NoNavigationResultException {
+        Node from = createNode(12.18f, 55.445);
+        Node to = createNode(12.22f, 55.45);
+        ArrayList<Node> nodes = new ArrayList<>();
+        nodes.add(createNode(12.19f, 55.445));
+        nodes.add(createNode(12.20f, 55.437));
+        nodes.add(createNode(12.21f, 55.438));
+        Way w = createWay(nodes, 50, "WayName", "unclassified");
+
+        setTreeMaps();
+        routeNavigation.setupRoute(from, to, w, w, new int[]{0, 1}, new int[]{1, 2}, VehicleType.CAR, false, true);
+        routeNavigation.testGetCurrentRoute();
+
+        System.out.println(Arrays.toString(routeNavigation.getCoordinatesForPanToRoute()));
+        double yMin = MapMath.convertToScreen(55.445);
+        double yMax = MapMath.convertToScreen(55.438);
+
+        // y-min and max are inserted opposite due to the conversion to screen coordinates
+        assertArrayEquals(new float[]{12.19f, 12.21f, (float) yMin, (float) yMax}, routeNavigation.getCoordinatesForPanToRoute());
+    }
+
+    @Test
+    void onlyBikeOnBikeRoadsTest() {
+
+    }
+
+    @Test
+    void onlyWalkOnWalkingRoadsTest() {
+
+    }
+
+    @Test
+    void restrictionViaNodeTest() {
+
+    }
+
+    @Test
+    void restrictionViaWayTest() {
+
+    }
+
+    @Test
+    void roundaboutExitTest() {
+
+    }
+
+    @Test
+    void keepRightTest() {
+
+    }
+
+
 }
