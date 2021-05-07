@@ -126,9 +126,6 @@ public class Controller {
 
     @FXML private ContextMenu rightClickMenu;
 
-
-    @FXML private ToggleGroup optionNav;
-    @FXML private Button showleft;
     @FXML private Button directionsButton;
     @FXML private Button backButton;
     @FXML private AnchorPane address_myPlacesPane;
@@ -203,17 +200,17 @@ public class Controller {
         }));
 
 
-            directionsButton.setOnAction(e -> {
-                address_myPlacesPane.setVisible(false);
-                navigationLeftPane.setVisible(true);
-            });
+        directionsButton.setOnAction(e -> {
+            address_myPlacesPane.setVisible(false);
+            navigationLeftPane.setVisible(true);
+        });
 
 
 
-            backButton.setOnAction(e -> {
-                navigationLeftPane.setVisible(false);
-                address_myPlacesPane.setVisible(true);
-            });
+        backButton.setOnAction(e -> {
+            navigationLeftPane.setVisible(false);
+            address_myPlacesPane.setVisible(true);
+        });
 
 
     }

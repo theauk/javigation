@@ -27,7 +27,7 @@ public class RTreeHolder {
         this.returnListSize = returnListSize;
         zoomMap = MapCanvas.zoomMap;
 
-        while(rTreeList.size() <= MapCanvas.MAX_ZOOM_LEVEL){
+        while (rTreeList.size() <= MapCanvas.MAX_ZOOM_LEVEL) {
             rTreeList.add(new ArrayList<>());
         }
 
