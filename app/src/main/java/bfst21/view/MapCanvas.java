@@ -74,7 +74,7 @@ public class MapCanvas extends Canvas {
                 drawElement(gc, element);
             }
         }
-        for (Element element : mapData.getMapSegment().get(mapData.getMapSegment().size() - 1)) { // toplayer is only text
+        for (Element element : mapData.getMapSegment().get(mapData.getMapSegment().size() - 1)) {   //top layer is only text
             drawText(gc, element);
         }
 
@@ -118,7 +118,6 @@ public class MapCanvas extends Canvas {
         gc.setFill(themeElement.getColor().getInner());
         gc.fillText(text, element.getxMax(), element.getyMax());
     }
-
 
     private void drawRectangleNode(GraphicsContext gc, Node point) {
         Theme.ThemeElement themeElement = theme.get(point.getType());
@@ -188,33 +187,33 @@ public class MapCanvas extends Canvas {
 
     public void zoom(boolean zoomIn, Point2D center) {
         if (!isValidZoom(zoomIn)) return;
-
-        if (zoomIn && zoomLevel < MAX_ZOOM_LEVEL) zoomLevel++;
-        else if (!zoomIn && zoomLevel > MIN_ZOOM_LEVEL) zoomLevel--;
-        zoom(zoomIn ? ZOOM_FACTOR : (float) ZOOM_FACTOR / 4, center);
+        if (zoomIn) zoomLevel++;
+        else zoomLevel--;
+        zoom(zoomIn ? ZOOM_FACTOR : ZOOM_FACTOR / 4.0, center);
+        updateMap();
     }
 
     public void zoom(boolean zoomIn, int levels) {
-        if (!isValidZoom(zoomIn)) return;
+        if (!isValidZoom(zoomIn) || levels == 0) return;
         int levelsToZoom = levels;
 
         if ((zoomLevel + levelsToZoom) > MAX_ZOOM_LEVEL) {
             System.err.println("Warning: Trying to zoom in more than allowed! Setting to MAX zoom level.");
-            levelsToZoom = MAX_ZOOM_LEVEL - zoomLevel;
+            levelsToZoom = getLevelsToZoomForLevel(MAX_ZOOM_LEVEL);
             zoomLevel = MAX_ZOOM_LEVEL;
         } else if ((zoomLevel + levelsToZoom) < MIN_ZOOM_LEVEL) {
             System.err.println("Warning: Trying to zoom out more than allowed! Setting to MIN zoom level.");
-            levelsToZoom = MIN_ZOOM_LEVEL + zoomLevel;
+            levelsToZoom = getLevelsToZoomForLevel(MIN_ZOOM_LEVEL);
             zoomLevel = MIN_ZOOM_LEVEL;
         } else zoomLevel += levels;
 
-        double factor;
-        if (zoomIn) factor = ZOOM_FACTOR;
-        else factor = ZOOM_FACTOR / 4.0;
+        double factor = zoomIn ? ZOOM_FACTOR : ZOOM_FACTOR / 4.0;
 
         for (int i = 0; i < Math.abs(levelsToZoom); i++) {
             zoom(factor, new Point2D(getWidth() / 2, getHeight() / 2));
         }
+
+        updateMap();
     }
 
     private boolean isValidZoom(boolean zoomIn) {
@@ -223,7 +222,6 @@ public class MapCanvas extends Canvas {
 
     private void zoom(double factor, Point2D center) {
         trans.prependScale(factor, factor, center);
-        updateMap();
         calculateRatio();
     }
 
@@ -239,10 +237,25 @@ public class MapCanvas extends Canvas {
     }
 
     public void reset() {
-        trans = new Affine();
-        zoomLevel = MIN_ZOOM_LEVEL;
-        setBounds();
-        resetView();
+        double mapWidth = Math.abs(mapData.getMinX() - mapData.getMaxX());                       //Calculate the width of the loaded map's bounding box
+        double boundsWidth = bounds.getWidth();                                                  //Calculate the width of the view's bounding box
+        double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);                      //Calculate the new x-coordinate of the map's bounding box centered in the view's.
+
+        double mapHeight = Math.abs(mapData.getMinY() - mapData.getMaxY());
+        double boundsHeight = bounds.getHeight();
+        double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
+
+        double dx = (minXMap - mapData.getMinX()) * Math.sqrt(trans.determinant());              //Calculate the difference between the two bounding boxes min x-coordinate
+        double dy = (minYMap - mapData.getMinY()) * Math.sqrt(trans.determinant());
+
+        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map
+        int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        //Calculate amount of levels to zoom in
+
+        int levelToZoomTo = getLevelsToZoomForLevel(levels + 1);    //Get the amount of levels to be added/subtracted to reach the defined zoom level.
+
+        pan(dx, dy);
+        if(levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
+        else updateMap();
     }
 
     public CanvasBounds getBounds() {
@@ -251,12 +264,8 @@ public class MapCanvas extends Canvas {
 
     public void setBounds() {
         Point2D startCoords = getTransCoords(0, 0);
-        bounds.setMinX((float) startCoords.getX());
-        bounds.setMinY((float) startCoords.getY());
-
         Point2D endCoords = getTransCoords(getWidth(), getHeight());
-        bounds.setMaxX((float) endCoords.getX());
-        bounds.setMaxY((float) endCoords.getY());
+        bounds.setBounds((float) startCoords.getX(), (float) startCoords.getY(), (float) endCoords.getX(), (float) endCoords.getY());
     }
 
     public Point2D getTransCoords(double x, double y) {
@@ -288,37 +297,19 @@ public class MapCanvas extends Canvas {
         return ratio;
     }
 
-    private void resetView() {
-        double mapWidth = mapData.getMaxX() - mapData.getMinX();             //Calculate the width of the loaded map's bounding box
-        double boundsWidth = bounds.getMaxX() - bounds.getMinX();            //Calculate the width of the view's bounding box
-        double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);  //Calculate the new x-coordinate of the map's bounding box centered in the view's.
-
-        double mapHeight = mapData.getMaxY() - mapData.getMinY();
-        double boundsHeight = bounds.getMaxY() - bounds.getMinY();
-        double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
-
-        double dx = (minXMap - mapData.getMinX());                           //Calculate the difference between the two bounding boxes min x-coordinate
-        double dy = (minYMap - mapData.getMinY());
-
-        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map
-        int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        //Calculate amount of levels to zoom in
-
-        pan(dx, dy);
-        zoom(true, levels);
+    private byte getLevelsToZoomForLevel(int level) {
+        if(level > MAX_ZOOM_LEVEL || level < MIN_ZOOM_LEVEL || zoomLevel == level) return 0;
+        return (byte) (level - zoomLevel);
     }
 
     public void centerOnPoint(double x, double y) {
-        double boundsWidth = (bounds.getMaxX() - bounds.getMinX());
-        double boundsHeight = (bounds.getMaxY() - bounds.getMinY());
-        Point2D center = new Point2D(bounds.getMaxX() - boundsWidth / 2, bounds.getMaxY() - boundsHeight / 2); // center koordinates
+        Point2D centerPoint = bounds.getCenter();
 
-        double dx = center.getX() - x;
-        double dy = center.getY() - y;
-        dx = dx * Math.sqrt(trans.determinant());
-        dy = dy * Math.sqrt(trans.determinant());
+        double dx = (centerPoint.getX() - x) * Math.sqrt(trans.determinant());
+        double dy = (centerPoint.getY() - y) * Math.sqrt(trans.determinant());
 
-        pan(dx,dy);
         pan(dx, dy);
+        updateMap();
     }
 
     public void rTreeDebugMode() {

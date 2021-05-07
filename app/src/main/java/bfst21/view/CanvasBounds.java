@@ -1,5 +1,9 @@
 package bfst21.view;
 
+import bfst21.utils.MapMath;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Point2D;
+
 public class CanvasBounds
 {
     private float minX;
@@ -7,43 +11,38 @@ public class CanvasBounds
     private float maxX;
     private float maxY;
 
-    public float getMinX()
-    {
+    public void setBounds(float minX, float minY, float maxX, float maxY) {
+        this.minX = minX;
+        this.minY = minY;
+        this.maxX = maxX;
+        this.maxY = maxY;
+    }
+
+    public double getWidth() {
+        return Math.abs(minX - maxX);
+    }
+
+    public double getHeight() {
+        return Math.abs(minY - maxY);
+    }
+
+    public Point2D getCenter() {
+        return new Point2D((minX + maxX) / 2, (minY + maxY) / 2);
+    }
+
+    public float getMinX() {
         return minX;
     }
 
-    public void setMinX(float minX)
-    {
-        this.minX = minX;
-    }
-
-    public float getMinY()
-    {
+    public float getMinY() {
         return minY;
     }
 
-    public void setMinY(float minY)
-    {
-        this.minY = minY;
-    }
-
-    public float getMaxX()
-    {
+    public float getMaxX() {
         return maxX;
     }
 
-    public void setMaxX(float maxX)
-    {
-        this.maxX = maxX;
-    }
-
-    public float getMaxY()
-    {
+    public float getMaxY() {
         return maxY;
-    }
-
-    public void setMaxY(float maxY)
-    {
-        this.maxY = maxY;
     }
 }
