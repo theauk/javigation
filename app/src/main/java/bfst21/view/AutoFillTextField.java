@@ -18,6 +18,7 @@ public class AutoFillTextField extends TextField {
 
     private final ContextMenu popup;
     private final int maxEntries;
+    private boolean suggest;
 
     /**
      * Creates an AutoFillTextField with the specified number of max suggestions
@@ -28,19 +29,24 @@ public class AutoFillTextField extends TextField {
     public AutoFillTextField(@NamedArg("maxEntries") int maxEntries) {
         popup = new ContextMenu();
         this.maxEntries = maxEntries;
+        suggest = true;
         setListeners();
     }
 
     /**
-     * Shows a list of possible suggestions as a ContextMenu right under the TextField.
+     * Shows a list of possible suggestions as a ContextMenu right under the TextField if {@link AutoFillTextField#suggest} is true.
      *
      * @param suggestions a list of Strings containing the suggestions to show.
      */
     public void suggest(List<String> suggestions) {
-        if (!suggestions.isEmpty()) {
-            addToPopup(suggestions);
-            if (!popup.isShowing()) popup.show(this, Side.BOTTOM, 0, 0);
-        } else popup.hide();
+        popup.getItems().clear();
+
+        if (suggest) {
+            if (!suggestions.isEmpty()) {
+                addToPopup(suggestions);
+                if (!popup.isShowing()) popup.show(this, Side.BOTTOM, 0, 0);
+            } else popup.hide();
+        }
     }
 
     /**
@@ -86,5 +92,14 @@ public class AutoFillTextField extends TextField {
 
         popup.getItems().clear();
         popup.getItems().addAll(menuItems);
+    }
+
+    /**
+     * Sets whether to show the suggestions popup or not.
+     *
+     * @param suggest true to show suggestions in popup else false.
+     */
+    public void setSuggest(boolean suggest) {
+        this.suggest = suggest;
     }
 }
