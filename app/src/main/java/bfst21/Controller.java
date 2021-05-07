@@ -533,10 +533,14 @@ public class Controller {
 
                 String names = mapData.getNodeHighWayNames(nearestRoadNode);
                 if (fromSelected) {
+                    textFieldFromNav.setSuggest(false);
                     textFieldFromNav.setText(names);
                     currentFromNode = nearestRoadNode;
+                    textFieldFromNav.setSuggest(true);
                 } else {
+                    textFieldToNav.setSuggest(false);
                     textFieldToNav.setText(names);
+                    textFieldToNav.setSuggest(true);
                     currentToNode = nearestRoadNode;
                 }
                 mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
