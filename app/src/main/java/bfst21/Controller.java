@@ -19,6 +19,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
@@ -30,9 +31,11 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.*;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -112,11 +115,12 @@ public class Controller {
     @FXML private RadioButton radioButtonShortestNav;
     @FXML private Label distanceAndTimeNav;
     @FXML private RadioMenuItem aStarNav;
-    @FXML private VBox directionsBox;
-    @FXML private ScrollPane directionsScrollPane;
+
     @FXML private Label specialPathFeaturesNav;
 
     @FXML private ListView<String> myPlacesListView;
+
+    @FXML private ListView<ListCell<String>> directionsList;
 
     @FXML private ContextMenu rightClickMenu;
 
@@ -652,17 +656,18 @@ public class Controller {
     }
 
     public void setDirections(ArrayList<String> directions) {
-        directionsBox.getChildren().removeAll(directionsBox.getChildren());
+        directionsList.getItems().removeAll(directionsList.getItems());
         int order = 1;
         for (String s : directions) {
-            Label l = new Label(order + ". " + s);
-            directionsBox.getChildren().add(l);
-            directionsBox.getChildren().add(new Label(""));
+            ListCell<String> l = new ListCell<>();
+            if(order % 2 == 0) l.setStyle("-fx-background-color: rgb(249, 249, 249)");
+            l.setText(order + ". " + s);
+            l.setEditable(false);
+            l.setWrapText(true);
+            l.setMaxWidth(directionsList.getWidth());
+            directionsList.getItems().add(l);
             order++;
         }
-        directionsScrollPane.setMinSize(160, 200);
-        directionsScrollPane.setPrefSize(160, 200);
-        directionsScrollPane.setVisible(true);
     }
 
     public void setDistanceAndTimeNav(double meters, double seconds) {
