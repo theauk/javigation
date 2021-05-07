@@ -14,34 +14,6 @@ public final class MapMath {
     private MapMath() { }
 
     /**
-     * Calculates the cross product between the two vectors from p1 to p2 na dp2 to p3.
-     *
-     * @param p1 the start point.
-     * @param p2 the via point.
-     * @param p3 the end point.
-     * @return the cross product of the two vectors V1 = (p2 - p1) and V2 = (p3 - p2).
-     */
-    public static double crossProduct(Point2D p1, Point2D p2, Point2D p3) {
-        Point2D v1 = new Point2D((p2.getX() - p1.getX()), (p2.getY() - p1.getY()));
-        Point2D v2 = new Point2D((p3.getX() - p2.getX()), (p3.getY() - p2.getY()));
-        return v1.getX() * v2.getX() - v1.getY() * v2.getX();
-    }
-
-    /**
-     * Calculates the dot product between the two vectors from p1 to p2 and p2 to p3.
-     *
-     * @param p1 the start point.
-     * @param p2 the via point.
-     * @param p3 the end point.
-     * @return the dot product of the two vectors V1 = (p2 - p1) and V2 = (p3 - p2).
-     */
-    public static double dotProduct(Point2D p1, Point2D p2, Point2D p3) {
-        Point2D v1 = new Point2D((p2.getX() - p1.getX()), (p2.getY() - p1.getY()));
-        Point2D v2 = new Point2D((p3.getX() - p2.getX()), (p3.getY() - p2.getY()));
-        return v1.getX() * v2.getX() + v1.getY() * v2.getY();
-    }
-
-    /**
      * Calculates the angle between p1 and p3 through p2 in degrees ranging from -180 to 180.
      *
      * @param p1 the start point.
@@ -162,15 +134,6 @@ public final class MapMath {
      */
     public static double convertToGeo(double yCoordinate) {
         return -yCoordinate * 0.56f;
-    }
-
-    /**
-     * Converts a screen coordinate to a geo-coordinate.
-     * @param yCoordinate The coordinate as a screen coordinate.
-     * @return
-     */
-    public static double convertToScreen(double yCoordinate) {
-        return yCoordinate / -0.56f;
     }
 
     /**
