@@ -20,7 +20,7 @@ public class AddressFilter {
 
     private AddressTriesTree addressTree;
     private List<String> suggestions;
-    private Node matchedAddress;
+    private Address matchedAddress;
 
     private final String addressRegex = "^ *(?<street>[A-Za-zÆØÅæøå0-9 \\-.]+?),? *(?<number>\\d{1,3}[a-zæøå]?)?,? *(?<postCode>\\d{1,4})?(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)? *$";
     private final Pattern pattern = Pattern.compile(addressRegex);
@@ -70,7 +70,8 @@ public class AddressFilter {
         makeSuggestions(searchResult, houseNumber, postCode, city);
 
         if(isMatch(searchResult.get(0), houseNumber, postCode, city)) {
-            matchedAddress = searchResult.get(0).findNode(houseNumber, postCode);
+            AddressTrieNode result = searchResult.get(0);
+            matchedAddress = new Address(result.getStreetName(), houseNumber, postCode, city, result.findNode(houseNumber, postCode));
         }
     }
 
@@ -184,7 +185,7 @@ public class AddressFilter {
         return suggestions;
     }
 
-    public Node getMatchedAddress() {
+    public Address getMatchedAddress() {
         return matchedAddress;
     }
 }
