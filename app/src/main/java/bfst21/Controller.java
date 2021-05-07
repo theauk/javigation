@@ -127,6 +127,7 @@ public class Controller {
     @FXML private ToggleGroup optionNav;
     @FXML private Button showleft;
     @FXML private Button directionsButton;
+    @FXML private Button backButton;
     @FXML private AnchorPane address_myPlacesPane;
     @FXML private AnchorPane navigationLeftPane;
 
@@ -754,6 +755,14 @@ public class Controller {
         directionsButton.setOnAction(e -> {
             address_myPlacesPane.setVisible(false);
             navigationLeftPane.setVisible(true);
+        });
+    }
+
+    @FXML
+    public void setBackButton(){
+        backButton.setOnAction(e -> {
+            navigationLeftPane.setVisible(false);
+            address_myPlacesPane.setVisible(true);
         });
     }
 
