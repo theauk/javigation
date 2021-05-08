@@ -55,7 +55,7 @@ name = "Default";
 "rail" = {iColor = [213, 216, 219]}, {showAt = 12};
 "light_rail" = {iColor = [213, 216, 219]}, {showAt = 12};
 "subway" = {iColor = [213, 216, 219]}, {showAt = 12};
-"ferry" = {iColor = [114, 155, 239]}, {style = "dotted"}, {showAt = 10};
+"ferry" = {iColor = [114, 155, 239]}, {style = "dotted"}, {showAt = 13};
 
 #Nature
 "park" = {iColor = [205, 247, 201], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};

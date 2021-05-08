@@ -52,6 +52,7 @@ name = "Dark Mode";
 "rail" = {iColor = [213, 216, 219]}, {showAt = 12};
 "light_rail" = {iColor = [213, 216, 219]}, {showAt = 12};
 "subway" = {iColor = [213, 216, 219]}, {showAt = 12};
+"ferry" = {iColor = [114, 155, 239]}, {style = "dotted"}, {showAt = 13};
 
 #Nature
 "park" = {iColor = [40, 68, 53]}, {filled = true};
