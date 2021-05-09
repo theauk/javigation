@@ -3,6 +3,7 @@ package bfst21.view;
 import bfst21.Controller;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class View {
         Scene scene = fxmlLoader.load();
         stage.setScene(scene);
         stage.setTitle("Javigation");
+        stage.getIcons().add(new Image("icons/logo/logoSmall.png"));
         stage.setMinWidth(WIDTH);
         stage.setMinHeight(HEIGHT);
 
