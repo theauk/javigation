@@ -16,7 +16,8 @@ name = "Default";
 "navigation" = {iColor = [102, 157, 246], oColor = [29, 106, 212]}, {iWidth = 6, oWidth = 8}, {showAt = 0};
 "start_route_note" = {iColor = [255, 92, 92], oColor = [158, 0, 0]}, {iWidth = 7, oWidth = 4}, {node = true}, {showAt = 0};
 "end_route_note" = {iColor = [120, 120, 255], oColor = [0, 0, 158]}, {iWidth = 7, oWidth = 4}, {node = true}, {showAt = 0};
-"user_added" = {iColor = [247, 216, 62], oColor = [219, 191, 53]}, {iWidth = 10, oWidth = 4}, {node = true}, {showAt = 0};
+"user_added" = {iColor = [247, 216, 62], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true}, {showAt = 0};
+"address" = {iColor = [40, 201, 34], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true}, {showAt = 0};
 
 #Text
 "city" = {iColor = [0, 0, 0]}, {iWidth = 12, oWidth = 15}, {text = true}, {showAt = 5};

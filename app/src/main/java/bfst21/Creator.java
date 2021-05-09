@@ -227,7 +227,7 @@ public class Creator extends Task<MapData> {
 
                                     if(isAddress()){
                                         addressTree.put(node, city, streetName, postcode, houseNumber);
-                                        node.setLayer(4);
+                                        node.setType("address", 4);
                                         nullifyAddress();
                                     } else {
                                         if (node.hasType())

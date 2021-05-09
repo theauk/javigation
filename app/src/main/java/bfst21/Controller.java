@@ -2,7 +2,6 @@ package bfst21;
 
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
-import bfst21.data_structures.AddressTrieNode;
 import bfst21.data_structures.RTree;
 import bfst21.data_structures.RouteNavigation;
 import bfst21.exceptions.NoOSMInZipFileException;
@@ -22,7 +21,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
@@ -31,15 +29,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -192,6 +186,8 @@ public class Controller {
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
             currentFromNode = fromAddressFilter.getMatchedAddress();
         }));
+        
+        //// TODO: 09-05-2021 Hvor skal søge resultatrerne tilføjes? og hvor skal de fjernes? i forhold til at tegnes 
 
         textFieldToNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);

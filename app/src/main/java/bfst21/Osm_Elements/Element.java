@@ -15,7 +15,9 @@ public abstract class Element implements Spatializable, Serializable {
     protected String type;
     protected int layer;
 
+    public Element(){
 
+    }
     public Element(long id) {
         this.id = id;
         layer = 4; //default value;
