@@ -190,7 +190,7 @@ class RouteNavigationTest {
     }
 
     @Test
-    void ferrySpecialPathFeaturesTest() throws NoNavigationResultException {
+    void ferrySpecialPathFeaturesTest() throws NoNavigationResultException { // TODO: 5/9/21 add extra way to hit the while loop with ferry 
         ArrayList<Node> nodes = new ArrayList<>();
         nodes.add(createNode(12.1934f, 55.4453));
         nodes.add(createNode(12.2024f, 55.4378));
@@ -290,37 +290,42 @@ class RouteNavigationTest {
         createWay(nodesFastWay, 100, "Fast Way", "unclassified");
 
         setTreeMaps();
+
+        // A*
         routeNavigation.setupRoute(from, to, slowWay, slowWay, new int[]{0, 1}, new int[]{1, 2}, VehicleType.CAR, true, true);
         routeNavigation.testGetCurrentRoute();
+        assertFalse(routeNavigation.getDirections().get(0).contains("Slow Way"));
+        assertTrue(routeNavigation.getDirections().get(0).contains("Fast Way"));
 
+        // Dijkstra
+        routeNavigation.setupRoute(from, to, slowWay, slowWay, new int[]{0, 1}, new int[]{1, 2}, VehicleType.CAR, true, false);
+        routeNavigation.testGetCurrentRoute();
         assertFalse(routeNavigation.getDirections().get(0).contains("Slow Way"));
         assertTrue(routeNavigation.getDirections().get(0).contains("Fast Way"));
     }
 
     @Test
-    void restrictionViaNodeTest() {
-
-    }
-
-    @Test
-    void restrictionViaWayTest() {
-
-    }
-
-    @Test
-    void roundaboutExitTest() {
+    void roundaboutExitTest() throws NoNavigationResultException { // TODO: 5/9/21 fix by looking at real coordinates 
         // exit nodes
-        Node exitNode1 = createNode(13f, 55.4);
+        Node exitNode1 = createNode(14f, 55.4);
         Node exitNode2 = createNode(15f, 55.5);
-        Node exitNode3 = createNode(15f, 55.5);
+        Node exitNode3 = createNode(16f, 55.5);
 
         // exit ways
         ArrayList<Node> exit1WayNodes = new ArrayList<>();
+        exit1WayNodes.add(createNode(14f, 55.5));
         exit1WayNodes.add(exitNode1);
-        exit1WayNodes.add(createNode(15f, 55.5));
         Way exit1Way = createWay(exit1WayNodes, 30, "Exit 1", "unclassified");
 
-        // TODO: 5/8/21 exit way 2 + 3, ændrer koordinater, add start og slut koordinat. Tænk også oneway i en anden test 
+        ArrayList<Node> exit2WayNodes = new ArrayList<>();
+        exit2WayNodes.add(createNode(15f, 55.5));
+        exit2WayNodes.add(exitNode2);
+        Way exit2Way = createWay(exit2WayNodes, 30, "Exit 2", "unclassified");
+
+        ArrayList<Node> exit3WayNodes = new ArrayList<>();
+        exit3WayNodes.add(createNode(16f, 55.5));
+        exit3WayNodes.add(exitNode3);
+        Way exit3Way = createWay(exit3WayNodes, 30, "Exit 3", "unclassified");
 
         // ways in roundabout
         ArrayList<Node> wayFrom1To2Nodes = new ArrayList<>();
@@ -338,13 +343,51 @@ class RouteNavigationTest {
         wayFrom3To1Nodes.add(exitNode1);
         Way way3To1 = createWay(wayFrom3To1Nodes, 30, "Way 3 to 1", "roundabout");
 
+        setTreeMaps();
+        routeNavigation.setupRoute(createNode(14f, 55.5), createNode(15f, 55.5), exit1Way, exit2Way, new int[]{0, 1}, new int[]{1, 2}, VehicleType.CAR, true, true);
+        routeNavigation.testGetCurrentRoute();
+
+        for (String s : routeNavigation.getDirections()) {
+            System.out.println(s);
+        }
+    }
+
+    @Test
+    void keepRightTest() throws NoNavigationResultException {
+        Node linkNode = createNode(12.1879863f , 55.449706);
+
+        ArrayList<Node> wayBeforeExitNodes = new ArrayList<>();
+        wayBeforeExitNodes.add(createNode(12.1879864f , 55.449707));
+        wayBeforeExitNodes.add(linkNode);
+        Way wayBeforeExit = createWay(wayBeforeExitNodes, 130, "Motorway", "motorway");
+
+        Node linkNodeAfterExit = createNode(12.1879862f , 55.449705);
+        ArrayList<Node> exitWayNodes = new ArrayList<>();
+        exitWayNodes.add(linkNode);
+        exitWayNodes.add(linkNodeAfterExit);
+        Way exitWay = createWay(exitWayNodes, 130, "Exit 13", "motorway_link");
+
+        ArrayList<Node> wayAfterExitNodes = new ArrayList<>();
+        wayAfterExitNodes.add(linkNodeAfterExit);
+        wayAfterExitNodes.add(createNode(12.1879859f , 55.449707));
+        Way wayAfterExit = createWay(wayAfterExitNodes, 130, "Way after exit", "motorway_link");
+
+        setTreeMaps();
+        routeNavigation.setupRoute(createNode(12.1879865f , 55.449707), createNode(12.187984f , 55.449707), wayBeforeExit, wayAfterExit, new int[]{0, 1}, new int[]{1, 2}, VehicleType.CAR, true, true);
+        routeNavigation.testGetCurrentRoute();
+
+        String keepRightDirection = routeNavigation.getDirections().get(1);
+        assertTrue(keepRightDirection.contains("Keep right and take Exit 13"));
+    }
+
+    @Test
+    void restrictionViaNodeTest() {
 
     }
 
     @Test
-    void keepRightTest() {
+    void restrictionViaWayTest() {
 
     }
-
 
 }

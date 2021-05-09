@@ -501,7 +501,7 @@ public class Controller {
     }
 
     private void setLabels(Point2D point) {
-        //System.out.println(point.getX() + " " + point.getY());
+        System.out.println(point.getX() + " " + point.getY());
         Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
         Point2D geoCoords = MapMath.convertToGeoCoords(mapCanvas.getTransCoords(point.getX(), point.getY()));
         setCoordsLabel((float) coords.getX(), (float) coords.getY());
