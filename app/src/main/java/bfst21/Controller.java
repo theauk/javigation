@@ -2,7 +2,6 @@ package bfst21;
 
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
-import bfst21.data_structures.AddressTrieNode;
 import bfst21.data_structures.RTree;
 import bfst21.data_structures.RouteNavigation;
 import bfst21.exceptions.NoOSMInZipFileException;
@@ -22,24 +21,15 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -112,6 +102,7 @@ public class Controller {
 
     @FXML private AutoFillTextField textFieldFromNav;
     @FXML private AutoFillTextField textFieldToNav;
+    @FXML private AutoFillTextField addressSearchTextField;
 
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
@@ -127,6 +118,7 @@ public class Controller {
     @FXML private ContextMenu rightClickMenu;
 
     @FXML private Button directionsButton;
+    @FXML private Button switchButton;
     @FXML private Button backButton;
     @FXML private AnchorPane address_myPlacesPane;
     @FXML private AnchorPane navigationLeftPane;
@@ -149,7 +141,6 @@ public class Controller {
             if (viaZoomSlider) zoom(newValue.intValue() - oldValue.intValue());
         });
         disableMenus();
-        CustomKeyCombination.setTarget(mapCanvas);
         addListeners();
     }
 
@@ -159,8 +150,9 @@ public class Controller {
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
-        textFieldToNav.setText("");
-        textFieldFromNav.setText("");
+        textFieldToNav.clear();
+        textFieldFromNav.clear();
+        addressSearchTextField.clear();
         myPlacesListView.getItems().removeAll(myPlacesListView.getItems());
     }
 
@@ -178,41 +170,56 @@ public class Controller {
     }
 
     private void addListeners() {
-        mapCanvas.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
-            @Override
-            public void handle(ContextMenuEvent event) {
-                rightClickMenu.show(mapCanvas, event.getScreenX(), event.getScreenY());
-                currentRightClick = new Point2D(event.getX(), event.getY());
-                mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
-            }
+        CustomKeyCombination.setTarget(mapCanvas);
+
+        mapCanvas.setOnContextMenuRequested(e -> {
+            rightClickMenu.show(mapCanvas, e.getScreenX(), e.getScreenY());
+            currentRightClick = new Point2D(e.getX(), e.getY());
         });
-        //Route navigation text fields
+
         textFieldFromNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
-            currentFromNode = fromAddressFilter.getMatchedAddress();
+            //currentFromNode = fromAddressFilter.getMatchedAddress();
         }));
 
         textFieldToNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             textFieldToNav.suggest(toAddressFilter.getSuggestions());
-            currentToNode = toAddressFilter.getMatchedAddress();
+            //currentToNode = toAddressFilter.getMatchedAddress();
         }));
 
+        addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
+            toAddressFilter.search(newValue);
+            addressSearchTextField.suggest(toAddressFilter.getSuggestions());
+        }));
 
         directionsButton.setOnAction(e -> {
+            textFieldToNav.setSuggest(false);
+            textFieldToNav.setText(addressSearchTextField.getText());
             address_myPlacesPane.setVisible(false);
             navigationLeftPane.setVisible(true);
+            textFieldToNav.setSuggest(true);
         });
-
-
 
         backButton.setOnAction(e -> {
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
+            textFieldToNav.clear();
+            textFieldFromNav.clear();
         });
 
+        switchButton.setOnAction(e -> {
+            String from = textFieldFromNav.getText();
+            String to = textFieldToNav.getText();
 
+            textFieldFromNav.setSuggest(false);
+            textFieldToNav.setSuggest(false);
+            textFieldFromNav.setText(to);
+            textFieldToNav.setText(from);
+            textFieldFromNav.setSuggest(true);
+            textFieldToNav.setSuggest(true);
+        });
     }
 
     private void removeChildren(){
@@ -520,7 +527,7 @@ public class Controller {
     }
 
     private void setCoordsLabel(float x, float y) {
-        coordsLabel.setText("Coordinates: (" + MapMath.round(x, 1) + ", " + MapMath.round(y, 1) + ")");
+        coordsLabel.setText("Coordinates: (" + MapMath.round(x, 7) + ", " + MapMath.round(y, 7) + ")");
     }
 
     private void setGeoCoordsLabel(float x, float y) {
