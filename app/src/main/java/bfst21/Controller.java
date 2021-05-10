@@ -118,6 +118,7 @@ public class Controller {
     @FXML private ContextMenu rightClickMenu;
 
     @FXML private Button directionsButton;
+    @FXML private Button switchButton;
     @FXML private Button backButton;
     @FXML private AnchorPane address_myPlacesPane;
     @FXML private AnchorPane navigationLeftPane;
@@ -198,10 +199,37 @@ public class Controller {
             navigationLeftPane.setVisible(true);
         });
 
+        switchButton.setOnAction(e -> {
+            switchDirections();
+        });
+
         backButton.setOnAction(e -> {
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
         });
+    }
+
+    private void switchDirections() {
+        textFieldFromNav.setSuggest(false);
+        textFieldToNav.setSuggest(false);
+        
+        String currentFromTextCopy = textFieldFromNav.getText();
+        Way currentFromWayCopy = currentFromWay;
+        int[] currentNearestFromWaySegmentIndicesCopy = nearestFromWaySegmentIndices;
+        Node currentFromNodeCopy = currentFromNode;
+
+        textFieldFromNav.setText(textFieldToNav.getText());
+        currentFromWay = currentToWay;
+        nearestFromWaySegmentIndices = nearestToWaySegmentIndices;
+        currentFromNode = currentToNode;
+
+        textFieldToNav.setText(currentFromTextCopy);
+        currentToWay = currentFromWayCopy;
+        nearestToWaySegmentIndices = currentNearestFromWaySegmentIndicesCopy;
+        currentToNode = currentFromNodeCopy;
+
+        textFieldFromNav.setSuggest(true);
+        textFieldToNav.setSuggest(true);
     }
 
     private void removeChildren(){
@@ -501,7 +529,7 @@ public class Controller {
     }
 
     private void setLabels(Point2D point) {
-        System.out.println(point.getX() + " " + point.getY());
+        //System.out.println(point.getX() + " " + point.getY()); // TODO: 5/10/21 delete 
         Point2D coords = mapCanvas.getTransCoords(point.getX(), point.getY());
         Point2D geoCoords = MapMath.convertToGeoCoords(mapCanvas.getTransCoords(point.getX(), point.getY()));
         setCoordsLabel((float) coords.getX(), (float) coords.getY());
