@@ -2,7 +2,6 @@ package bfst21;
 
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
-import bfst21.data_structures.AddressTrieNode;
 import bfst21.data_structures.RTree;
 import bfst21.data_structures.RouteNavigation;
 import bfst21.exceptions.NoOSMInZipFileException;
@@ -22,7 +21,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
@@ -31,15 +29,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.input.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -115,7 +109,8 @@ public class Controller {
 
     @FXML private RadioButton radioButtonFastestNav;
     @FXML private RadioButton radioButtonShortestNav;
-    @FXML private Label distanceAndTimeNav;
+    @FXML private Label distanceNav;
+    @FXML private Label timeNav;
     @FXML private RadioMenuItem aStarNav;
 
     @FXML private Label specialPathFeaturesNav;
@@ -645,7 +640,8 @@ public class Controller {
 
         routeNavigation.setOnSucceeded(e -> {
             mapData.setCurrentRoute(routeNavigation.getValue());
-            setDistanceAndTimeNav(routeNavigation.getTotalDistance(), routeNavigation.getTotalTime());
+            setDistanceNav(routeNavigation.getTotalDistance());
+            setTimeNav(routeNavigation.getTotalTime());
             setDirections(routeNavigation.getDirections());
             setSpecialPathFeatures(routeNavigation.getSpecialPathFeatures());
             mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
@@ -672,16 +668,21 @@ public class Controller {
         }
     }
 
-    public void setDistanceAndTimeNav(double meters, double seconds) {
-        distanceAndTimeNav.setVisible(true);
+    public void setDistanceNav(double meters) {
+        distanceNav.setVisible(true);
         String s = "Total distance: ";
         s += MapMath.formatDistance(meters, 2);
-        s += MapMath.formatTime(seconds, 2);
-        distanceAndTimeNav.setText(s);
+        distanceNav.setText(s);
     }
 
     public void hideDistanceAndTimeNav() {
-        distanceAndTimeNav.setVisible(false);
+        distanceNav.setVisible(false);
+    }
+
+    public void setTimeNav(double seconds){
+        timeNav.setVisible(true);
+        String s = MapMath.formatTime(seconds,2);
+        timeNav.setText(s);
     }
 
     public void setSpecialPathFeatures(HashSet<String> specialPathFeatures) {
