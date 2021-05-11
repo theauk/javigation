@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import bfst21.utils.VehicleType?>
 <?import bfst21.view.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
-<?import bfst21.utils.VehicleType?>
 <?import javafx.scene.text.Font?>
 <Scene xmlns="https://javafx.com/javafx"
        xmlns:fx="http://javafx.com/fxml"
@@ -100,8 +100,7 @@
                 </Pane>
 
                 <AnchorPane id="uiControl" visible="${showUIItem.selected}" pickOnBounds="false">
-                    <VBox alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20"
-                          pickOnBounds="false">
+                    <VBox alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20" pickOnBounds="false">
                         <Button fx:id="zoomInButton" text="+" onAction="#zoom"/>
                         <Slider fx:id="zoomSlider" pickOnBounds="false" orientation="VERTICAL">
                             <min>
@@ -114,19 +113,18 @@
                         <Button fx:id="zoomOutButton" text="-" prefWidth="${zoomInButton.width}" onAction="#zoom"/>
                     </VBox>
 
-                    <Label id="copyRight" text="&#169;2021 Group 10" AnchorPane.bottomAnchor="0"
-                           AnchorPane.rightAnchor="0" mouseTransparent="true">
-                        <padding>
-                            <Insets right="5" left="5"/>
-                        </padding>
-                    </Label>
+                    <HBox id="bottomBarPane" AnchorPane.bottomAnchor="0" AnchorPane.rightAnchor="0" mouseTransparent="true">
+                        <Label fx:id="nearestRoadLabel" text="Nearest Road: N/A" prefWidth="230" maxWidth="230" minWidth="50"/>
+                        <Separator orientation="VERTICAL"/>
+                        <Label text="&#169;2021 Group 10"/>
+                    </HBox>
+
                     <VBox id="informationPane" visible="${informationBoard.selected}" minWidth="270" minHeight="150"
                           maxWidth="270" maxHeight="150" spacing="5" AnchorPane.topAnchor="5" AnchorPane.rightAnchor="5"
                           mouseTransparent="true">
                         <padding>
                             <Insets top="5" bottom="5" left="5" right="5"/>
                         </padding>
-                        <Label fx:id="nearestRoadLabel" text="Nearest Road: N/A"/>
                         <Label fx:id="coordsLabel" text="Coordinates: (0.0, 0.0)"/>
                         <Label fx:id="geoCoordsLabel" text="Geo-coordinates: (0.0, 0.0)"/>
                         <Separator/>
@@ -177,14 +175,11 @@
                                 <children>
                                     <HBox fx:id="searchForAddressHBox" prefHeight="66.0" prefWidth="182.0" spacing="5.0" GridPane.rowIndex="1">
                                         <children>
-                                            <TextField prefHeight="33.0" prefWidth="119.0" promptText="Search">
-                                                <HBox.margin>
-                                                    <Insets />
-                                                </HBox.margin>
+                                            <AutoFillTextField fx:id="addressSearchTextField" prefHeight="33.0" prefWidth="119.0" promptText="Search" maxEntries="10">
                                                 <padding>
                                                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                                 </padding>
-                                            </TextField>
+                                            </AutoFillTextField>
                                             <Button fx:id="searchForAddress" mnemonicParsing="false" prefHeight="32.0" prefWidth="59.0"/>
                                             <Button fx:id="directionsButton"  mnemonicParsing="false" prefHeight="32.0" prefWidth="59.0"/>
                                         </children>

@@ -20,9 +20,21 @@
     -fx-cursor: hand;
 }
 
-#copyRight {
-    -fx-font-size: 10px;
+#bottomBarPane {
     -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+#bottomBarPane .label {
+    -fx-font-size: 10px;
+    -fx-padding: 0 5 0 5;
+}
+
+#bottomBarPane .separator .line {
+    -fx-border-width: 0;
+}
+
+#bottomBarPane .separator:vertical {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
 }
 
 #scalePane {

@@ -3,6 +3,8 @@ package bfst21.data_structures;
 import bfst21.Osm_Elements.Element;
 import bfst21.view.MapCanvas;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +12,10 @@ import java.util.Map;
 /**
  * Sorts elements into different R-trees depending on their type.
  */
-public class RTreeHolder {
+public class RTreeHolder implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 4579015712304488555L;
+
     private Map<String, RTree> rTreeMap;
     private ArrayList<ArrayList<RTree>> rTreeList;
     private int returnListSize;

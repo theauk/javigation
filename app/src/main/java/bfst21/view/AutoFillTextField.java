@@ -34,6 +34,13 @@ public class AutoFillTextField extends TextField {
     }
 
     /**
+     * Creates an AutoFillTextField with a default number of max suggestions per call to the {@link AutoFillTextField#suggest(List)} method.
+     */
+    public AutoFillTextField() {
+        this(1);
+    }
+
+    /**
      * Shows a list of possible suggestions as a ContextMenu right under the TextField if {@link AutoFillTextField#suggest} is true.
      *
      * @param suggestions a list of Strings containing the suggestions to show.

@@ -22,7 +22,7 @@ public class AddressFilter {
     private List<String> suggestions;
     private Address matchedAddress;
 
-    private final String addressRegex = "^ *(?<street>[A-Za-zÆØÅæøå0-9 \\-.]+?),? *(?<number>\\d{1,3}[a-zæøå]?)?,? *(?<postCode>\\d{1,4})?(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)? *$";
+    private final String addressRegex = "^ *(?<street>.+?),? *(?: (?<number>\\d+[a-zæøå]?)?,? *(?: (?<postCode>\\d{1,4})?(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)?)?)? *$";
     private final Pattern pattern = Pattern.compile(addressRegex);
     private Matcher matcher;
 
