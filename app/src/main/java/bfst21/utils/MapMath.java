@@ -318,8 +318,8 @@ public final class MapMath {
      */
     public static String formatTime(double seconds, int digits) {
         String s = "";
-        if (seconds < 60) s += " , Total time: " + round(seconds, digits) + " s";
-        else s += " , Total time: " + round(seconds / 60f, digits) + " min";
+        if (seconds < 60) s += "Total time: " + round(seconds, digits) + " s";
+        else s += "Total time: " + round(seconds / 60f, digits) + " min";
         return s;
     }
 
