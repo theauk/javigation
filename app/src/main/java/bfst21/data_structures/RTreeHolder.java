@@ -12,17 +12,13 @@ import java.util.Map;
  */
 public class RTreeHolder {
     private Map<String, RTree> rTreeMap;
-    private HashMap<String, Integer> print;
     private ArrayList<ArrayList<RTree>> rTreeList;
     private int returnListSize;
     private Map<String, Byte> zoomMap;
     private RTree closetRoadRTree;
-    private int[] lengths; // TODO: 5/7/21 delete?
 
     public RTreeHolder(int minimumChildren, int maximumChildren, int numberOfCoordinates, int returnListSize) {
         rTreeList = new ArrayList<>();
-        print = new HashMap<>();
-        lengths = new int[MapCanvas.MAX_ZOOM_LEVEL];
         rTreeMap = new HashMap<>();
         this.returnListSize = returnListSize;
         zoomMap = MapCanvas.zoomMap;
@@ -34,7 +30,6 @@ public class RTreeHolder {
         for (String type : zoomMap.keySet()) {
             RTree rTree = new RTree(minimumChildren, maximumChildren, numberOfCoordinates);
             rTreeMap.put(type, rTree);
-            print.put(type, 0);
             rTreeList.get(zoomMap.get(type)).add(rTree);
         }
     }
@@ -47,9 +42,6 @@ public class RTreeHolder {
         String type = element.getType();
         if (zoomMap.get(type) != null) {
             rTreeMap.get(type).insert(element);
-            int i = print.get(type);
-            i++;
-            print.put(type, i);
         }
     }
 
@@ -98,11 +90,4 @@ public class RTreeHolder {
         }
         return results;
     }
-
-    public void print() { // TODO: 5/7/21 delete?
-        for (Map.Entry<String, Integer> entry : print.entrySet()) {
-            System.out.println("Rtree " + entry.getKey() + ", " + entry.getValue());
-        }
-    }
-
 }

@@ -187,6 +187,8 @@ public class Controller {
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
             currentFromNode = fromAddressFilter.getMatchedAddress();
         }));
+        
+        //// TODO: 09-05-2021 Hvor skal søge resultatrerne tilføjes? og hvor skal de fjernes? i forhold til at tegnes 
 
         textFieldToNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
@@ -205,6 +207,7 @@ public class Controller {
         backButton.setOnAction(e -> {
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
+            mapData.resetCurrentRoute();
         });
 
 
@@ -556,17 +559,6 @@ public class Controller {
     private void setRTreeDebug() {
         mapData.setRTreeDebug(rTreeDebug.isSelected());
         mapCanvas.rTreeDebugMode();
-    }
-
-    // TODO: 05-05-2021 is this needed?
-    @FXML
-    public void getPointNavFrom() {
-        getPointNav(true);
-    }
-
-    @FXML
-    public void getPointNavTo() {
-        getPointNav(false);
     }
 
     public void getPointNav(boolean fromSelected) {

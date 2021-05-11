@@ -30,8 +30,6 @@ public class Creator extends Task<MapData> {
     private final boolean[] touched = new boolean[3];
     private final boolean binary;
     private MapData mapData;
-    private HashSet<String> nodesNotCreateKeys;
-    private HashSet<String> nodesNotCreateValues;
     private String city, streetName, houseNumber, name;
     private Integer postcode;
     private int bottomLayer, layerTwo, layerThree, layerFour, topLayer;
@@ -49,8 +47,6 @@ public class Creator extends Task<MapData> {
         progressInputStream = new ProgressInputStream(inputStream);
         progressInputStream.addInputStreamListener(totalBytes -> updateProgress(totalBytes, fileSize));
         this.binary = binary;
-        nodesNotCreateKeys = new HashSet<>();
-        nodesNotCreateValues = new HashSet<>();
         bottomLayer = 0;
         layerTwo = 1;
         layerThree = 2;
@@ -61,7 +57,6 @@ public class Creator extends Task<MapData> {
         coastLines.setType("coastlines");
         elementToText = new HashMap<>();
 
-        setupNodesNotCreate();
         setUpTypeToLayer();
     }
 
@@ -159,8 +154,6 @@ public class Creator extends Task<MapData> {
                                 var v = reader.getAttributeValue(null, "v");
 
                                 if (node != null) {
-                                    // TODO: 09-04-2021 out commented node deletion
-                                    //if(checkNodesNotCreate(k,v)) node = null;
                                     checkMotorWayExitNode(k, v);
                                     checkAddressNode(k, v, node);
                                     break;
@@ -234,7 +227,7 @@ public class Creator extends Task<MapData> {
 
                                     if(isAddress()){
                                         addressTree.put(node, city, streetName, postcode, houseNumber);
-                                        node.setLayer(4);
+                                        node.setType("address", 4);
                                         nullifyAddress();
                                     } else {
                                         if (node.hasType())
@@ -382,7 +375,6 @@ public class Creator extends Task<MapData> {
                     break;
                 }
                 if (v.equals("coastline")) {
-                    //way.setType((v),typeToLayer.get(v)); // TODO: 5/1/21 ????
                     coastLines.addWay(way);
                     break;
                 }
@@ -676,81 +668,6 @@ public class Creator extends Task<MapData> {
         if (v.equals("pedestrian") || v.equals("footway") || v.equals("cycleway") || v.equals("steps") || v.equals("path"))
             return true;
         else return false;
-    }
-
-    private void setupNodesNotCreate() { // TODO: 4/3/21 Make it delete the nodes + do not creating ways / relations with those tags either
-        nodesNotCreateKeys.add("aerialway");
-        nodesNotCreateKeys.add("aeroway");
-        nodesNotCreateKeys.add("amenity");
-        nodesNotCreateKeys.add("barrier");
-        nodesNotCreateKeys.add("boundary");
-        nodesNotCreateKeys.add("craft");
-        nodesNotCreateKeys.add("emergency");
-        nodesNotCreateKeys.add("geological");
-        nodesNotCreateKeys.add("healthcare");
-        nodesNotCreateKeys.add("historic");
-        nodesNotCreateKeys.add("military");
-        nodesNotCreateKeys.add("office");
-        nodesNotCreateKeys.add("power");
-        nodesNotCreateKeys.add("shop");
-        nodesNotCreateKeys.add("sport");
-        nodesNotCreateKeys.add("telecom");
-        nodesNotCreateKeys.add("tourism");
-
-        nodesNotCreateKeys.add("comment");
-        nodesNotCreateKeys.add("email");
-        nodesNotCreateKeys.add("fax");
-        nodesNotCreateKeys.add("fixme");
-        nodesNotCreateKeys.add("image");
-        nodesNotCreateKeys.add("note");
-        nodesNotCreateKeys.add("phone");
-        nodesNotCreateKeys.add("source_ref");
-        nodesNotCreateKeys.add("todo");
-        nodesNotCreateKeys.add("url");
-        nodesNotCreateKeys.add("website");
-        nodesNotCreateKeys.add("wikipedia");
-
-        nodesNotCreateValues.add("emergency_access_point");
-        nodesNotCreateValues.add("give_way");
-        nodesNotCreateValues.add("milestone");
-        nodesNotCreateValues.add("speed_camera");
-        nodesNotCreateValues.add("street_lamp");
-        nodesNotCreateValues.add("stop");
-        nodesNotCreateValues.add("depot");
-
-        nodesNotCreateValues.add("adult_gaming_centre");
-        nodesNotCreateValues.add("amusement_arcade");
-        nodesNotCreateValues.add("bandstand");
-        nodesNotCreateValues.add("beach_resort");
-        nodesNotCreateValues.add("bird_hide");
-        nodesNotCreateValues.add("common");
-        nodesNotCreateValues.add("dance");
-        nodesNotCreateValues.add("disc_golf_course");
-        nodesNotCreateValues.add("escape_game");
-        nodesNotCreateValues.add("firepit");
-        nodesNotCreateValues.add("fishing");
-        nodesNotCreateValues.add("fitness_centre");
-        nodesNotCreateValues.add("fitness_station");
-        nodesNotCreateValues.add("hackerspace");
-        nodesNotCreateValues.add("miniature_golf");
-        nodesNotCreateValues.add("picnic_table");
-        nodesNotCreateValues.add("summer_camp");
-        nodesNotCreateValues.add("tree_row");
-        nodesNotCreateValues.add("tree");
-        nodesNotCreateValues.add("peak");
-
-        nodesNotCreateValues.add("canoe");
-        nodesNotCreateValues.add("detour");
-        nodesNotCreateValues.add("hiking");
-        nodesNotCreateValues.add("horse");
-        nodesNotCreateValues.add("inline_skates");
-        nodesNotCreateValues.add("mtb");
-        nodesNotCreateValues.add("piste");
-        nodesNotCreateValues.add("running");
-    }
-
-    private boolean checkNodesNotCreate(String k, String v) {
-        return nodesNotCreateKeys.contains(k) || nodesNotCreateValues.contains(v);
     }
 
     /**

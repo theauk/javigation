@@ -31,6 +31,7 @@ public class MapData implements Serializable {
     private ElementToElementsTreeMap<Node, Way> nodeToHighWay;
     private ElementToElementsTreeMap<Way, Relation> wayToRestriction;
     private transient List<Element> currentRoute;
+    private transient List<Node> searchResults;
 
     private transient List<Node> userAddedPoints;
     private Relation coastlines;
@@ -59,6 +60,7 @@ public class MapData implements Serializable {
         this.wayToRestriction = wayToRestriction;
         currentRoute = new ArrayList<>();
         userAddedPoints = new ArrayList<>();
+        searchResults = new ArrayList<>();
         buildKDTrees();
     }
 
@@ -212,8 +214,7 @@ public class MapData implements Serializable {
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        currentRoute = new ArrayList<>();
-        userAddedPoints = new ArrayList<>();
+        resetAllUserInput();
     }
 
     /**
@@ -230,6 +231,45 @@ public class MapData implements Serializable {
      */
     public void setCurrentRoute(List<Element> currentRoute) {
         this.currentRoute = currentRoute;
+    }
+
+    /**
+     * Deletes the current route
+     */
+    public void resetCurrentRoute(){
+        currentRoute = new ArrayList<>();
+    }
+
+    /**
+     * Resets search results shown on map.
+     */
+    public void resetCurrentSearchResults(){
+        searchResults = new ArrayList<>();
+    }
+
+    /**
+     * Resets all user input to be shown on map.
+     */
+    public void resetAllUserInput(){
+        resetCurrentRoute();
+        resetCurrentSearchResults();
+        userAddedPoints = new ArrayList<>();
+    }
+
+    /**
+     * Search result from user input to show on map
+     * @param node node to add
+     */
+    public void addUserSearchResult(Node node){
+        searchResults.add(node);
+    }
+
+    /**
+     * Search results from user input
+     * @return List of nodes to be drawn
+     */
+    public List<Node> getUserSearchResults(){
+        return searchResults;
     }
 
     /**
