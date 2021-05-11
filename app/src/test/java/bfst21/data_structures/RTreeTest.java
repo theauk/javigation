@@ -73,7 +73,9 @@ class RTreeTest {
         for (int i = -10; i < 0; i++) {
             for (int j = -10; j < 0; j++) {
                 Node node = new Node(0, i, j);
-                rTree.insert(node);
+                Way way = new Way();
+                way.addNode(node);
+                rTree.insert(way);
             }
         }
         rTree.insert(w1);
@@ -85,9 +87,9 @@ class RTreeTest {
     }
 
     @Test
-    void getNearestRoad() { // TODO: 5/9/21 fix Osm_Elements.Node cannot be cast to class bfst21.Osm_Elements.Way
-        //RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax(), null);
-        //assertEquals("w2", w.getWay().getName());
+    void getNearestRoad() {
+        RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax(), null);
+        assertEquals("w2", w.getWay().getName());
     }
 
     @Test
