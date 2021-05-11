@@ -327,8 +327,8 @@ public class MapCanvas extends Canvas {
         double boundsHeight = bounds.getHeight();
         double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
 
-        double dx = (minXMap - boundingBoxRouteCoordinates[0]) * Math.sqrt(trans.determinant());
-        double dy = (minYMap - boundingBoxRouteCoordinates[2]) * Math.sqrt(trans.determinant());
+        double dx = Math.abs((minXMap - boundingBoxRouteCoordinates[0])) * Math.sqrt(trans.determinant());
+        double dy = Math.abs((minYMap - boundingBoxRouteCoordinates[2])) * Math.sqrt(trans.determinant());
 
         double zoom = getWidth() / mapWidth; 
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
