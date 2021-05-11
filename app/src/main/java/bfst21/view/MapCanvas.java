@@ -325,6 +325,7 @@ public class MapCanvas extends Canvas {
         double zoom = getWidth() / mapWidth; 
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
 
+        System.out.println("DX: " + dx + " DY: " + dy);
         pan(dx, dy);
         zoom(true, levels);
     }

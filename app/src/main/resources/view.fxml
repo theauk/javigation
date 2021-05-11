@@ -77,9 +77,9 @@
                 <fx:define>
                     <ContextMenu fx:id="rightClickMenu" >
                         <items>
-                            <MenuItem fx:id="addToYourPoints" text="Add to your points" onAction="#rightCLickAddUserPoint"/>
+                            <MenuItem fx:id="addToYourPoints" text="Add to your points" onAction="#rightClickAddUserPoint"/>
                             <SeparatorMenuItem/>
-                            <MenuItem fx:id="routeFromHere" text="Route from here" onAction="#rightCLickPointNavFrom"/>
+                            <MenuItem fx:id="routeFromHere" text="Route from here" onAction="#rightClickPointNavFrom"/>
                             <MenuItem fx:id="routeToHere" text="Route to here" onAction="#rightClickPointNavTo"/>
                         </items>
                     </ContextMenu>

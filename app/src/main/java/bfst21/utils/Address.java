@@ -36,4 +36,8 @@ public class Address {
     public Node getNode() {
         return node;
     }
+
+    public String getFullAddress() {
+        return street + " " + houseNumber + ", " + postCode + " " + city;
+    }
 }

@@ -580,7 +580,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The current distance and time on different lines.
      */
     private String getCurrentDistanceAndTimeText() {
-        return "\n" + currentDistanceDescription + " m " + "\n" + currentTimeDescription + " s";
+        return "\n" + MapMath.formatDistance(currentDistanceDescription, 2) + "\n" + MapMath.formatTime(currentTimeDescription, 2);
     }
 
     /**

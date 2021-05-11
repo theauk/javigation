@@ -4,13 +4,10 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import bfst21.utils.MapMath;
-import bfst21.view.MapCanvas;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
 import java.util.PriorityQueue;
 
 public class RTree implements Serializable {
@@ -70,9 +67,10 @@ public class RTree implements Serializable {
 
     /**
      * Search for elements in the R-tree based on search coordinates.
+     *
      * @param searchCoordinates The coordinates to search for elements within where the minimum coordinate is followed by maximum for each dimension.
-     * @param node The current Node to check.
-     * @param results List with elements that are within the search coordinates.
+     * @param node              The current Node to check.
+     * @param results           List with elements that are within the search coordinates.
      */
     private void search(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
         if (node.isLeaf()) {
@@ -96,9 +94,10 @@ public class RTree implements Serializable {
     /**
      * Search for elements in the R-tree based on search coordinates and add elements which visualize the r-tree. Separate method from
      * search to avoid extra checks in the original method.
+     *
      * @param searchCoordinates The coordinates to search for elements within where the minimum coordinate is followed by maximum for each dimension.
-     * @param node The current Node to check.
-     * @param results List with elements that are within the search coordinates.
+     * @param node              The current Node to check.
+     * @param results           List with elements that are within the search coordinates.
      */
     private void searchDebug(float[] searchCoordinates, RTreeNode node, ArrayList<ArrayList<Element>> results) {
         if (node.isLeaf()) {
@@ -123,6 +122,7 @@ public class RTree implements Serializable {
 
     /**
      * Determine if two coordinate bounding boxes intersect.
+     *
      * @param coordinates1 The first coordinate set with minimum followed by maximum for each dimension.
      * @param coordinates2 The second coordinate set with minimum followed by maximum for each dimension.
      * @return True if the bounding boxes intersect. False if not.
@@ -140,7 +140,8 @@ public class RTree implements Serializable {
 
     /**
      * Check if the minimum coordinate from the first element and the maximum coordinate for the second element of a certain dimension do not intersect.
-     * @param minCoordinateFirstElement The first element's minimum coordinate for the current dimension.
+     *
+     * @param minCoordinateFirstElement  The first element's minimum coordinate for the current dimension.
      * @param maxCoordinateSecondElement The second element's minimum coordinate for the current dimension.
      * @return True if the coordinates do not intersect. False if they intersect.
      */
@@ -150,9 +151,10 @@ public class RTree implements Serializable {
 
     /**
      * Creates a Way for the debug visualization mode.
-     * @param firstCoordinate The first coordinate for the start of the way.
+     *
+     * @param firstCoordinate  The first coordinate for the start of the way.
      * @param secondCoordinate The second coordinate for the start of the way.
-     * @param thirdCoordinate The first coordinate for the end of the way.
+     * @param thirdCoordinate  The first coordinate for the end of the way.
      * @param fourthCoordinate The second coordinate for the end of the way.
      * @return A Way with two Nodes.
      */
@@ -165,6 +167,7 @@ public class RTree implements Serializable {
 
     /**
      * Creates a rectangle which acts as pseudo canvas bounds when using the debug mode.
+     *
      * @param searchCoordinates The coordinates for the rectangle.
      * @return A list with four ways which make up the rectangle.
      */
@@ -296,13 +299,13 @@ public class RTree implements Serializable {
         }
         node.updateCoordinate(newCoordinates);
     }
-        /**
-         * Splits a node's children by first shuffling the children ArrayList and then inserting them into two new nodes.
-         * The method reuses the old node by removing its children and inserting the new ones. The other children are inserted into a new node.
-         *
-         * @param node The RTreeNode that needs to be split.
-         * @return An array with the two new RTree nodes.
-         */
+    /**
+     * Splits a node's children by first shuffling the children ArrayList and then inserting them into two new nodes.
+     * The method reuses the old node by removing its children and inserting the new ones. The other children are inserted into a new node.
+     *
+     * @param node The RTreeNode that needs to be split.
+     * @return An array with the two new RTree nodes.
+     */
     //private RTreeNode[] splitNodeShuffle(RTreeNode node) {
     //
     //    RTreeNode newNode = new RTreeNode(createNewCoordinateArray(), node.isLeaf(), minimumChildren, maximumChildren, node.getParent());
@@ -335,12 +338,12 @@ public class RTree implements Serializable {
     //}
 
     /**
-    ' * Splits a node by finding the two children nodes who if put together would create the biggest MMB.
-    ' * Then the rest of the elements are distributed based on which assignment would lead to the smallest MMB increase.
-    ' *
-    ' * @param node The RTreeNode to split.
-    ' * @return An array with the two new RTree nodes.
-    ' */
+     ' * Splits a node by finding the two children nodes who if put together would create the biggest MMB.
+     ' * Then the rest of the elements are distributed based on which assignment would lead to the smallest MMB increase.
+     ' *
+     ' * @param node The RTreeNode to split.
+     ' * @return An array with the two new RTree nodes.
+     ' */
     //private RTreeNode[] splitNodeQuadraticCost(RTreeNode node) {
     //    ArrayList<RTreeNode> elementsToSplit = new ArrayList<>(node.getChildren());
     //    int[] seeds = pickSeedsQuadratic(elementsToSplit);
@@ -618,19 +621,19 @@ public class RTree implements Serializable {
         return getArea(newCoordinates);
     }
 
-   // /**
-   //  * Finds the area difference between two MMB.
-   //  *
-   //  * @param firstCoordinates  The first coordinates.
-   //  * @param secondCoordinates The second coordinates.
-   //  * @return The area difference as a float.
-   //  */
-   // private float findAreaDifference(float[] firstCoordinates, float[] secondCoordinates) {
-   //     float areaWithBoth = getNewBoundingBoxArea(firstCoordinates, secondCoordinates);
-   //     float areaElement1 = getArea(firstCoordinates);
-   //     float areaElement2 = getArea(secondCoordinates);
-   //     return areaWithBoth - areaElement1 - areaElement2;
-   // }
+    // /**
+    //  * Finds the area difference between two MMB.
+    //  *
+    //  * @param firstCoordinates  The first coordinates.
+    //  * @param secondCoordinates The second coordinates.
+    //  * @return The area difference as a float.
+    //  */
+    // private float findAreaDifference(float[] firstCoordinates, float[] secondCoordinates) {
+    //     float areaWithBoth = getNewBoundingBoxArea(firstCoordinates, secondCoordinates);
+    //     float areaElement1 = getArea(firstCoordinates);
+    //     float areaElement2 = getArea(secondCoordinates);
+    //     return areaWithBoth - areaElement1 - areaElement2;
+    // }
 
     /**
      * Gets the nearest way from a point.
@@ -642,14 +645,57 @@ public class RTree implements Serializable {
      */
     public NearestRoadPriorityQueueEntry getNearestRoad(float x, float y, String addressWayName) { // TODO: 5/4/21 hvis vi kun kigger i ways kan jeg komme af med instance of
         PriorityQueue<NearestRoadPriorityQueueEntry> pq = new PriorityQueue<>();
-        pq.add(new NearestRoadPriorityQueueEntry(true, false, root, null, null, null, 0));
+        pq.add(new NearestRoadPriorityQueueEntry(true, root, null, null, null, 0));
 
         while (!pq.isEmpty()) {
             NearestRoadPriorityQueueEntry entry = pq.poll();
-            if (!entry.isRTreeNode || entry.isBoundingRectangle) {
+            if (!entry.isRTreeNode) {
                 // check if the distance to the first pq entry's actual element is smaller than the next pq entry's distance
-                if (entry.isBoundingRectangle && !pq.isEmpty() && MapMath.shortestDistanceToElement(x, y, entry.segment) > pq.peek().distance) {
-                    pq.add(new NearestRoadPriorityQueueEntry(false, false, null, entry.originalWay, entry.segment, entry.segmentIndices, MapMath.shortestDistanceToElement(x, y, entry.segment)));
+                if (!pq.isEmpty() && MapMath.shortestDistanceToElement(x, y, entry.segment) > pq.peek().distance) {
+                    pq.add(new NearestRoadPriorityQueueEntry(false, null, entry.originalWay, entry.segment, entry.segmentIndices, MapMath.shortestDistanceToElement(x, y, entry.segment)));
+                } else {
+                    return entry;
+                }
+            } else if (entry.rTreeNode.isLeaf()) {
+                for (RTreeNode n : entry.rTreeNode.getChildren()) {
+                    for (Element e : n.getElementEntries()) {
+                        Way w = (Way) e;
+                        if (isValidWay(w, addressWayName)) {
+                            for (int i = 0; i < w.getNodes().size() - 1; i++) {
+                                Way segment = createWaySegment(w, i);
+                                NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
+                                pq.add(newEntry);
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (RTreeNode node : entry.rTreeNode.getChildren()) {
+                    pq.add(new NearestRoadPriorityQueueEntry(true, node, null, null, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
+                }
+            }
+        }
+        return null; // TODO: 5/4/21 handle
+    }
+
+    /**
+     * Gets the nearest way from a point.
+     * Adapted from Hjaltason, Gísli, and Hanan Samet. “Distance Browsing in Spatial Databases.” ACM transactions on database systems 24.2 (1999): 265–318. Web.
+     *
+     * @param x The point's x-coordinate.
+     * @param y The points y-coordinate.
+     * @return An priority queue entry containing the nearest way.
+     */
+    public NearestRoadPriorityQueueEntry getNearestRoadOld(float x, float y, String addressWayName) { // TODO: 5/4/21 hvis vi kun kigger i ways kan jeg komme af med instance of
+        PriorityQueue<NearestRoadPriorityQueueEntry> pq = new PriorityQueue<>();
+        pq.add(new NearestRoadPriorityQueueEntry(true, root, null, null, null, 0));
+
+        while (!pq.isEmpty()) {
+            NearestRoadPriorityQueueEntry entry = pq.poll();
+            if (!entry.isRTreeNode) {
+                // check if the distance to the first pq entry's actual element is smaller than the next pq entry's distance
+                if (!pq.isEmpty() && MapMath.shortestDistanceToElement(x, y, entry.segment) > pq.peek().distance) {
+                    pq.add(new NearestRoadPriorityQueueEntry(false, null, entry.originalWay, entry.segment, entry.segmentIndices, MapMath.shortestDistanceToElement(x, y, entry.segment)));
                 } else {
                     return entry;
                 }
@@ -661,7 +707,7 @@ public class RTree implements Serializable {
                             if (isValidWay(w, addressWayName)) {
                                 for (int i = 0; i < w.getNodes().size() - 1; i++) {
                                     Way segment = createWaySegment(w, i);
-                                    NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, true, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
+                                    NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
                                     pq.add(newEntry);
                                 }
                             }
@@ -670,7 +716,7 @@ public class RTree implements Serializable {
                 }
             } else {
                 for (RTreeNode node : entry.rTreeNode.getChildren()) {
-                    pq.add(new NearestRoadPriorityQueueEntry(true, false, node, null, null, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
+                    pq.add(new NearestRoadPriorityQueueEntry(true, node, null, null, null, minDistMBB(x, y, entry.rTreeNode.getCoordinates())));
                 }
             }
         }
@@ -688,13 +734,14 @@ public class RTree implements Serializable {
     private boolean isValidWay(Way w, String addressWayName) {
         if (w.isHighWay() && w.hasName()) {
             // right part necessary to ensure that address nodes are matched with the way searched for even if another way is nearer
-            return addressWayName == null || w.getName().toLowerCase().equals(addressWayName);
+            return true;
         }
         return false;
     }
 
     /**
      * Creates a way segment between two nodes in a way.
+     *
      * @param w The way to split into a segment.
      * @return The way segment.
      */
@@ -709,8 +756,9 @@ public class RTree implements Serializable {
 
     /**
      * Find the minimum distance between a point and a bounding box.
-     * @param queryX The point's x-coordinate.
-     * @param queryY The point's y-coordinate.
+     *
+     * @param queryX      The point's x-coordinate.
+     * @param queryY      The point's y-coordinate.
      * @param coordinates The coordinates of the bounding box.
      * @return The minimum distance.
      */
@@ -728,16 +776,14 @@ public class RTree implements Serializable {
         private static final long serialVersionUID = 1904335497921633398L;
 
         private boolean isRTreeNode;
-        private boolean isBoundingRectangle;
         private RTreeNode rTreeNode;
         private Way originalWay;
         private Way segment;
         private double distance;
         private int[] segmentIndices; // TODO: 5/1/21 kan nok nøjes med største indeks til højre da venstre hvis ikke bliver brugt 
 
-        public NearestRoadPriorityQueueEntry(boolean isRTreeNode, boolean isBoundingRectangle, RTreeNode rTreeNode, Way originalWay, Way segment, int[] segmentIndices, double distance) {
+        public NearestRoadPriorityQueueEntry(boolean isRTreeNode, RTreeNode rTreeNode, Way originalWay, Way segment, int[] segmentIndices, double distance) {
             this.isRTreeNode = isRTreeNode;
-            this.isBoundingRectangle = isBoundingRectangle;
             this.rTreeNode = rTreeNode;
             this.originalWay = originalWay;
             this.segment = segment;

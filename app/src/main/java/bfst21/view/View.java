@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class View {
-    public static final int WIDTH = 640;
+    public static final int WIDTH = 1040;
     public static final int HEIGHT = WIDTH / 4 * 3; //Ratio 4:3
 
     public View(Stage stage) throws IOException {

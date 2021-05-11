@@ -8,10 +8,7 @@ import bfst21.exceptions.NoOSMInZipFileException;
 import bfst21.exceptions.UnsupportedFileFormatException;
 import bfst21.file_io.Loader;
 import bfst21.file_io.Serializer;
-import bfst21.utils.AddressFilter;
-import bfst21.utils.CustomKeyCombination;
-import bfst21.utils.MapMath;
-import bfst21.utils.VehicleType;
+import bfst21.utils.*;
 import bfst21.view.AutoFillTextField;
 import bfst21.view.CanvasBounds;
 import bfst21.view.MapCanvas;
@@ -50,7 +47,7 @@ public class Controller {
     private AddressFilter fromAddressFilter;
     private AddressFilter toAddressFilter;
 
-    private static final String BINARY_FILE = "/small.bmapdata";
+    private static final String BINARY_FILE = "/small.bmapdata"; // TODO: 5/8/21 edit
 
     private Point2D lastMouse = new Point2D(0, 0);
     private Point2D currentRightClick = new Point2D(0,0);
@@ -122,6 +119,7 @@ public class Controller {
     @FXML private ContextMenu rightClickMenu;
 
     @FXML private Button directionsButton;
+    @FXML private Button switchButton;
     @FXML private Button backButton;
     @FXML private AnchorPane address_myPlacesPane;
     @FXML private AnchorPane navigationLeftPane;
@@ -181,36 +179,38 @@ public class Controller {
                 mapCanvas.removeEventHandler(ContextMenuEvent.CONTEXT_MENU_REQUESTED, this);
             }
         });
+
         //Route navigation text fields
         textFieldFromNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
-            currentFromNode = fromAddressFilter.getMatchedAddress();
+            Address address = fromAddressFilter.getMatchedAddress();
+            if (address != null) updateNodesNavigation(true, address.getNode().getxMax(), address.getNode().getyMax(), address.getFullAddress(), address.getStreet()); // TODO: 5/7/21 fix
         }));
-        
-        //// TODO: 09-05-2021 Hvor skal søge resultatrerne tilføjes? og hvor skal de fjernes? i forhold til at tegnes 
+
+        //// TODO: 09-05-2021 Hvor skal søge resultatrerne tilføjes? og hvor skal de fjernes? i forhold til at tegnes
 
         textFieldToNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             textFieldToNav.suggest(toAddressFilter.getSuggestions());
-            currentToNode = toAddressFilter.getMatchedAddress();
+            Address address = toAddressFilter.getMatchedAddress();
+            if (address != null) updateNodesNavigation(false, address.getNode().getxMax(), address.getNode().getyMax(), address.getFullAddress(), address.getStreet()); // TODO: 5/7/21 fix
         }));
-
 
         directionsButton.setOnAction(e -> {
             address_myPlacesPane.setVisible(false);
             navigationLeftPane.setVisible(true);
         });
 
-
+        switchButton.setOnAction(e -> {
+            switchDirections();
+        });
 
         backButton.setOnAction(e -> {
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
             mapData.resetCurrentRoute();
         });
-
-
     }
 
     private void removeChildren(){
@@ -565,7 +565,7 @@ public class Controller {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
             public void handle(MouseEvent e) {
-                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY()); // TODO: 5/1/21 coordinates how?
+                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
                 updateNodesNavigation(fromSelected, coords.getX(), coords.getY(), null, null);
                 mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
             }
@@ -578,7 +578,7 @@ public class Controller {
         Way nearestWay = entry.getWay();
         Way nearestSegment = entry.getSegment();
         int[] nearestWaySegmentIndices = entry.getSegmentIndices();
-        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestSegment); // TODO: 5/1/21 hvorfor kommer X og Y ud omvendt???
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestSegment);
 
         if (fromSelected) {
             textFieldFromNav.setSuggest(false);
@@ -597,6 +597,29 @@ public class Controller {
             nearestToWaySegmentIndices = nearestWaySegmentIndices;
             textFieldToNav.setSuggest(true);
         }
+    }
+
+    private void switchDirections() {
+        textFieldFromNav.setSuggest(false);
+        textFieldToNav.setSuggest(false);
+
+        String currentFromTextCopy = textFieldFromNav.getText();
+        Way currentFromWayCopy = currentFromWay;
+        int[] currentNearestFromWaySegmentIndicesCopy = nearestFromWaySegmentIndices;
+        Node currentFromNodeCopy = currentFromNode;
+
+        textFieldFromNav.setText(textFieldToNav.getText());
+        currentFromWay = currentToWay;
+        nearestFromWaySegmentIndices = nearestToWaySegmentIndices;
+        currentFromNode = currentToNode;
+
+        textFieldToNav.setText(currentFromTextCopy);
+        currentToWay = currentFromWayCopy;
+        nearestToWaySegmentIndices = currentNearestFromWaySegmentIndicesCopy;
+        currentToNode = currentFromNodeCopy;
+
+        textFieldFromNav.setSuggest(true);
+        textFieldToNav.setSuggest(true);
     }
 
     @FXML
@@ -673,7 +696,8 @@ public class Controller {
 
     public void setTimeNav(double seconds){
         timeNav.setVisible(true);
-        String s = MapMath.formatTime(seconds,2);
+        String s = "Total time: ";
+        s += MapMath.formatTime(seconds,2);
         timeNav.setText(s);
     }
 
@@ -741,20 +765,28 @@ public class Controller {
     }
 
     @FXML
-    public void rightCLickAddUserPoint(ActionEvent actionEvent) {
+    public void rightClickAddUserPoint(ActionEvent actionEvent) {
         Point2D point = mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
         addUserPoint(point);
     }
 
     @FXML
-    public void rightCLickPointNavFrom(ActionEvent actionEvent) {
+    public void rightClickPointNavFrom(ActionEvent actionEvent) {
         Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        if (!navigationLeftPane.isVisible()) {
+            navigationLeftPane.setVisible(true);
+            address_myPlacesPane.setVisible(false);
+        }
         updateNodesNavigation(true, point.getX(), point.getY(), null, null); // TODO: 5/6/21 null kan ændres for at skrive anden tekst i felterne
     }
 
     @FXML
     public void rightClickPointNavTo(ActionEvent actionEvent) {
         Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        if (!navigationLeftPane.isVisible()) {
+            navigationLeftPane.setVisible(true);
+            address_myPlacesPane.setVisible(false);
+        }
         updateNodesNavigation(false, point.getX(), point.getY(), null, null);
     }
 
