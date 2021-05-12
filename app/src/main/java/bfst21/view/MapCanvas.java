@@ -230,7 +230,6 @@ public class MapCanvas extends Canvas {
 
     private void zoom(double factor, Point2D center) {
         trans.prependScale(factor, factor, center);
-        calculateRatio();
     }
 
     public void pan(double dx, double dy) {
@@ -241,6 +240,7 @@ public class MapCanvas extends Canvas {
     public void updateMap() {
         setBounds();
         mapData.searchInRTree(bounds, zoomLevel);
+        calculateRatio();
         repaint();
     }
 
