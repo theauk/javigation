@@ -22,7 +22,7 @@ public class AddressFilter {
     private List<String> suggestions;
     private Address matchedAddress;
 
-    private final String addressRegex = "^ *(?<street>.+?),? *(?: (?<number>\\d+[a-zæøå]?)?,? *(?: (?<postCode>\\d{1,4})?(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)?)?)? *$";
+    private final String addressRegex = "^ *(?<street>.+?) *,? *(?: (?<number>\\d+[A-Za-zÆØÅæøå]?)? *,? *(?: (?<postCode>\\d{1,4})? *(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)?)?)? *$";
     private final Pattern pattern = Pattern.compile(addressRegex);
     private Matcher matcher;
 
@@ -47,7 +47,7 @@ public class AddressFilter {
         int postCode = 0;
         String city = "";
 
-        matcher = pattern.matcher(prefix);
+        matcher = pattern.matcher(prefix.toLowerCase());
         if(matcher.matches()) {
             if(matches("street")) street = matcher.group("street");
             if(matches("number")) houseNumber = matcher.group("number");
