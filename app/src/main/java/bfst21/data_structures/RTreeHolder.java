@@ -1,6 +1,7 @@
 package bfst21.data_structures;
 
 import bfst21.Osm_Elements.Element;
+import bfst21.utils.VehicleType;
 import bfst21.view.MapCanvas;
 
 import java.io.Serial;
@@ -94,8 +95,8 @@ public class RTreeHolder implements Serializable {
      *                       Otherwise, null if searching for closet road to the cursor.
      * @return The closest NearestRoadPriorityQueueEntry.
      */
-    public RTree.NearestRoadPriorityQueueEntry getNearestRoad(float x, float y, String addressWayName) {
-        return closetRoadRTree.getNearestRoad(x, y, addressWayName);
+    public RTree.NearestRoadPriorityQueueEntry getNearestRoad(float x, float y, String addressWayName, VehicleType vehicleType) {
+        return closetRoadRTree.getNearestRoad(x, y, addressWayName, vehicleType);
     }
 
     /**

@@ -64,6 +64,8 @@ public class Controller {
     private Way currentToWay;
     private int[] nearestFromWaySegmentIndices;
     private int[] nearestToWaySegmentIndices;
+    private Node currentNavPointTo;
+    private Node currentNavPointFrom;
 
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
@@ -209,7 +211,10 @@ public class Controller {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
             Address address = fromAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesNavigation(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+            if (address != null) {
+                updateNodesWithoutVehicleType(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+
+            }
         }));
 
 
@@ -217,7 +222,7 @@ public class Controller {
             toAddressFilter.search(newValue);
             textFieldToNav.suggest(toAddressFilter.getSuggestions());
             Address address = toAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesNavigation(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+            if (address != null) updateNodesWithoutVehicleType(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet()); // TODO: 5/7/21 fix
         }));
 
         addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
@@ -253,6 +258,8 @@ public class Controller {
             address_myPlacesPane.setVisible(true);
             textFieldToNav.clear();
             textFieldFromNav.clear();
+            currentNavPointFrom = null;
+            currentNavPointTo = null;
             mapData.resetCurrentRoute();
             mapData.resetCurrentSearchResult();
         });
@@ -619,8 +626,19 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
-    public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay) {
-        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y, addressWay);
+
+    public void updateNodesWithVehicleType(boolean fromSelected, double x, double y, String fullAddress, String addressWay ){
+        updateNodesNavigation(fromSelected, x, y, fullAddress, addressWay, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData());
+
+    }
+
+    public void updateNodesWithoutVehicleType(boolean fromSelected, double x, double y, String fullAddress, String addressWay ){
+        updateNodesNavigation(fromSelected, x, y, fullAddress, addressWay, null);
+
+    }
+
+    public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay, VehicleType vehicleType) {
+        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y, addressWay,vehicleType);
         Way nearestWay = entry.getWay();
         Way nearestSegment = entry.getSegment();
         int[] nearestWaySegmentIndices = entry.getSegmentIndices();
@@ -628,6 +646,7 @@ public class Controller {
 
         if (fromSelected) {
             textFieldFromNav.setSuggest(false);
+            currentNavPointFrom = new Node(0, (float) x, (float) y);
             if (addressWay == null) textFieldFromNav.setText(nearestWay.getName());
             currentFromWay = nearestWay;
             nearestFromWaySegmentIndices = nearestWaySegmentIndices;
@@ -635,6 +654,7 @@ public class Controller {
             textFieldFromNav.setSuggest(true);
         } else {
             textFieldToNav.setSuggest(false);
+            currentNavPointTo = new Node(0, (float) x, (float) y);
             if (addressWay == null) textFieldToNav.setText(nearestWay.getName());
             currentToWay = nearestWay;
             currentToNode = nearestNodeOnNearestWay;
@@ -677,6 +697,18 @@ public class Controller {
         } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
             showDialogBox("Navigation Error", "Please select either fastest or shortest");
         } else {
+                if(toAddressFilter.getMatchedAddress() != null){
+                    Address address= toAddressFilter.getMatchedAddress();
+                    updateNodesWithVehicleType(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+                } else {
+                    updateNodesWithVehicleType(false, currentNavPointTo.getxMax(), currentNavPointTo.getyMax(), null, null);
+                }
+                if(fromAddressFilter.getMatchedAddress() != null){
+                    Address address= fromAddressFilter.getMatchedAddress();
+                    updateNodesWithVehicleType(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+                } else {
+                    updateNodesWithVehicleType(true, currentNavPointFrom.getxMax(), currentNavPointFrom.getyMax(), null, null);
+                }
             getRoute();
         }
     }
@@ -843,7 +875,7 @@ public class Controller {
             navigationLeftPane.setVisible(true);
             address_myPlacesPane.setVisible(false);
         }
-        updateNodesNavigation(true, point.getX(), point.getY(), null, null);
+        updateNodesWithoutVehicleType(true, point.getX(), point.getY(), null, null); // TODO: 5/6/21 null kan ændres for at skrive anden tekst i felterne
     }
 
     /**
@@ -857,7 +889,7 @@ public class Controller {
             navigationLeftPane.setVisible(true);
             address_myPlacesPane.setVisible(false);
         }
-        updateNodesNavigation(false, point.getX(), point.getY(), null, null);
+        updateNodesWithoutVehicleType(false, point.getX(), point.getY(), null, null);
     }
 
     public void toggleLeftPanel() {

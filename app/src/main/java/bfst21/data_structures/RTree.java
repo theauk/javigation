@@ -4,6 +4,7 @@ import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
 import bfst21.Osm_Elements.Way;
 import bfst21.utils.MapMath;
+import bfst21.utils.VehicleType;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -643,7 +644,7 @@ public class RTree implements Serializable {
      * @param y The points y-coordinate.
      * @return An priority queue entry containing the nearest way.
      */
-    public NearestRoadPriorityQueueEntry getNearestRoad(float x, float y, String addressWayName) {
+    public NearestRoadPriorityQueueEntry getNearestRoad(float x, float y, String addressWayName, VehicleType vehicleType) { // TODO: 5/4/21 hvis vi kun kigger i ways kan jeg komme af med instance of
         PriorityQueue<NearestRoadPriorityQueueEntry> pq = new PriorityQueue<>();
         pq.add(new NearestRoadPriorityQueueEntry(true, root, null, null, null, 0));
 
@@ -660,7 +661,7 @@ public class RTree implements Serializable {
                 for (RTreeNode n : entry.rTreeNode.getChildren()) {
                     for (Element e : n.getElementEntries()) {
                         Way w = (Way) e;
-                        if (isValidWay(w, addressWayName)) {
+                        if (isValidWay(w, addressWayName, vehicleType)) {
                             for (int i = 0; i < w.getNodes().size() - 1; i++) {
                                 Way segment = createWaySegment(w, i);
                                 NearestRoadPriorityQueueEntry newEntry = new NearestRoadPriorityQueueEntry(false, null, w, segment, new int[]{i, i + 1}, minDistMBB(x, y, segment.getCoordinates()));
@@ -675,7 +676,7 @@ public class RTree implements Serializable {
                 }
             }
         }
-        return null;
+        return null; // TODO: 5/4/21 handle
     }
 
     /**
@@ -686,11 +687,27 @@ public class RTree implements Serializable {
      * @param addressWayName The street name if searching for an address way. Otherwise, null.
      * @return True, if the way should be added to the pq. Otherwise, false
      */
-    private boolean isValidWay(Way w, String addressWayName) {
-        if (w.isHighWay() && w.hasName()) {
-            // right part necessary to ensure that address nodes are matched with the way searched for even if another way is nearer
-            return true;
+    private boolean isValidWay(Way w, String addressWayName, VehicleType vehicleType) {
+        if(vehicleType != null){
+            if (vehicleType == VehicleType.CAR){
+                if(w.isDriveable()) return true;
+                else return false;
+            }
+            if (vehicleType == VehicleType.BIKE){
+                if(w.isCycleable()) return true;
+                else return false;
+            }
+            if (vehicleType == VehicleType.WALK){
+                if(w.isWalkable()) return true;
+                else return false;
+            }
+        } else{
+            if (w.isHighWay() && w.hasName()) {
+                // right part necessary to ensure that address nodes are matched with the way searched for even if another way is nearer
+                return true;
+            }
         }
+
         return false;
     }
 
