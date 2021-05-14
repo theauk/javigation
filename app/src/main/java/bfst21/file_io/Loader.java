@@ -19,6 +19,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+/**
+ * A class containing static methods for file loading.
+ * Features include:
+ * <ul>
+ *     <li>Loading map files the program supports (.osm, .zip and .bmapdata).</li>
+ *     <li>Loading and creating {@link Theme}s from a .mtheme file.</li>
+ *     <li>Loading resources and determining their file size.</li>
+ *     <li>Returning lists with file entries from a specific folder.</li>
+ * </ul>
+ */
 public class Loader {
     public static InputStream load(String file) throws IOException, NoOSMInZipFileException, UnsupportedFileFormatException {
         if (file.endsWith(".osm") || file.endsWith(".bmapdata")) return loadFile(file);
@@ -46,14 +56,34 @@ public class Loader {
         throw new NoOSMInZipFileException(file);
     }
 
+    /**
+     * Loads a file coming from outside the users computer.
+     *
+     * @param file the path to the file to be loaded.
+     * @return a {@link FileInputStream} for the specified file.
+     * @throws IOException if the file could not be found.
+     */
     private static FileInputStream loadFile(String file) throws IOException {
         return new FileInputStream(file);
     }
 
+    /**
+     * Loads a resource file from the resources folder within the programs environment.
+     *
+     * @param file the resource file to be loaded.
+     * @return a {@link InputStream} for the specified resource file.
+     */
     public static InputStream loadResource(String file) {
         return Loader.class.getResourceAsStream(file);
     }
 
+    /**
+     * Returns the file size in bytes of a specific resource file located in the resources folder.
+     *
+     * @param file the file to get the size from.
+     * @return the size of the file in bytes.
+     * @throws IOException if the file could not be found.
+     */
     public static long getResourceFileSize(String file) throws IOException {
         return Loader.class.getResource(file).openConnection().getContentLengthLong();
     }
@@ -83,6 +113,12 @@ public class Loader {
         throw new NoOSMInZipFileException(file);
     }
 
+    /**
+     * Loads a theme file from the resources folder and constructs and returns a {@link Theme}.
+     *
+     * @param file the theme file to be loaded.
+     * @return a theme created from the file or an empty theme if not found.
+     */
     public static Theme loadTheme(String file) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
             Theme theme = new Theme();
@@ -103,7 +139,7 @@ public class Loader {
             e.printStackTrace();
         }
 
-        return null;
+        return new Theme();
     }
 
     /**

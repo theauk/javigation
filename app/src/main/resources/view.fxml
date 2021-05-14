@@ -148,7 +148,7 @@
                     </HBox>
                 </AnchorPane>
 
-                <VBox fx:id="loaderPane" alignment="CENTER" style="-fx-background-color: rgb(180, 180, 180);">
+                <VBox fx:id="loaderPane" alignment="CENTER">
                     <ProgressIndicator fx:id="loadingBar" progress="0"/>
                     <Label fx:id="statusLabel" text="Waiting"/>
                 </VBox>

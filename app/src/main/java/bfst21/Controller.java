@@ -47,10 +47,10 @@ public class Controller {
 
     private Point2D lastMouse = new Point2D(0, 0);
     private Point2D currentRightClick = new Point2D(0,0);
-    private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.LEFT);
-    private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.RIGHT);
-    private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.LEFT);
-    private final CustomKeyCombination downRightCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.RIGHT);
+    private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.W, KeyCode.A);
+    private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.W, KeyCode.D);
+    private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.S, KeyCode.A);
+    private final CustomKeyCombination downRightCombination = new CustomKeyCombination(KeyCode.S, KeyCode.D);
     private boolean viaZoomSlider = true;
     private boolean dragged;
 
@@ -211,10 +211,7 @@ public class Controller {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
             Address address = fromAddressFilter.getMatchedAddress();
-            if (address != null) {
-                updateNodesWithoutVehicleType(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
-
-            }
+            if (address != null) updateNodesWithoutVehicleType(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
         }));
 
 
@@ -228,19 +225,10 @@ public class Controller {
         addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             addressSearchTextField.suggest(toAddressFilter.getSuggestions());
-            if(toAddressFilter.getMatchedAddress() != null){
-                Node match = toAddressFilter.getMatchedAddress().getNode();
-                mapData.addUserSearchResult(match);
-                mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
-                mapCanvas.repaint();
-            }
         }));
 
-        searchForAddress.setOnAction(e -> {
-            if(toAddressFilter.getMatchedAddress() != null) {
-                mapCanvas.centerOnPoint(toAddressFilter.getMatchedAddress().getNode().getxMax(), toAddressFilter.getMatchedAddress().getNode().getyMax());
-            }
-        });
+        addressSearchTextField.setOnAction(e -> addSearchResult());
+        searchForAddress.setOnAction(e -> addSearchResult());
 
         directionsButton.setOnAction(e -> {
             mapData.resetCurrentSearchResult();
@@ -256,12 +244,16 @@ public class Controller {
         backButton.setOnAction(e -> {
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
-            textFieldToNav.clear();
             textFieldFromNav.clear();
             currentNavPointFrom = null;
             currentNavPointTo = null;
+            textFieldToNav.clear();
+            directionsList.getItems().clear();
+            timeNav.setVisible(false);
+            distanceNav.setVisible(false);
             mapData.resetCurrentRoute();
             mapData.resetCurrentSearchResult();
+            mapCanvas.repaint();
         });
 
         myPlacesListView.setOnMouseClicked(e -> {
@@ -271,6 +263,18 @@ public class Controller {
         myPlacesListView.setOnKeyPressed(e -> {
             if(e.getCode() == KeyCode.ENTER && myPlacesListView.getItems().size() > 0) moveToPoint(myPlacesListView.getSelectionModel().getSelectedIndex());
         });
+    }
+
+    private void addSearchResult() {
+        mapData.resetCurrentSearchResult();
+        if(toAddressFilter.getMatchedAddress() != null){
+            Node match = toAddressFilter.getMatchedAddress().getNode();
+            mapData.addUserSearchResult(match);
+            mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
+        } else {
+            createAlert(Alert.AlertType.WARNING, "No Address Found", "No Address Found!", "Please check if you've written the correct address.").showAndWait();
+            mapCanvas.repaint();
+        }
     }
 
     /**
@@ -366,10 +370,10 @@ public class Controller {
         else if (upRightCombination.match(e)) mapCanvas.pan(-acceleration, acceleration);
         else if (downLeftCombination.match(e)) mapCanvas.pan(acceleration, -acceleration);
         else if (downRightCombination.match(e)) mapCanvas.pan(-acceleration, -acceleration);
-        else if (e.getCode().equals(KeyCode.UP)) mapCanvas.pan(0, acceleration);
-        else if (e.getCode().equals(KeyCode.DOWN)) mapCanvas.pan(0, -acceleration);
-        else if (e.getCode().equals(KeyCode.LEFT)) mapCanvas.pan(acceleration, 0);
-        else if (e.getCode().equals(KeyCode.RIGHT)) mapCanvas.pan(-acceleration, 0);
+        else if (e.getCode().equals(KeyCode.W)) mapCanvas.pan(0, acceleration);
+        else if (e.getCode().equals(KeyCode.S)) mapCanvas.pan(0, -acceleration);
+        else if (e.getCode().equals(KeyCode.A)) mapCanvas.pan(acceleration, 0);
+        else if (e.getCode().equals(KeyCode.D)) mapCanvas.pan(-acceleration, 0);
     }
 
     @FXML
@@ -634,7 +638,6 @@ public class Controller {
 
     public void updateNodesWithoutVehicleType(boolean fromSelected, double x, double y, String fullAddress, String addressWay ){
         updateNodesNavigation(fromSelected, x, y, fullAddress, addressWay, null);
-
     }
 
     public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay, VehicleType vehicleType) {
@@ -751,7 +754,14 @@ public class Controller {
             mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
             mapCanvas.repaint();
         });
-        routeNavigation.setOnFailed(e -> showDialogBox("No Route Found", "Could not find a route between the two points"));
+        routeNavigation.setOnFailed(e -> {
+            mapData.resetCurrentRoute();
+            directionsList.getItems().clear();
+            distanceNav.setVisible(false);
+            timeNav.setVisible(false);
+            mapCanvas.repaint();
+            showDialogBox("No Route Found", "Could not find a route between the two points");
+        });
         mapCanvas.repaint();
     }
 

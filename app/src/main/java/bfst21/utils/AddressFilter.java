@@ -72,7 +72,7 @@ public class AddressFilter {
         AddressTrieNode result = searchResult.get(0);
         if (isMatch(result, houseNumber, postCode, city)) {
             matchedAddress = new Address(result.getStreetName(), houseNumber, postCode, city, result.findNode(houseNumber, postCode));
-        }
+        } else matchedAddress = null;
     }
 
     /**

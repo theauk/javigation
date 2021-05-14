@@ -57,6 +57,10 @@
     -fx-background-color: rgba(255, 255, 255, 0.4);
 }
 
+#loaderPane {
+    -fx-background-color: rgb(200, 200, 200);
+}
+
 #directionsButton{
     -fx-graphic: url("icons/directions_from_figma_little.png");
 }
