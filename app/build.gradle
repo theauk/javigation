@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.google.guava:guava:29.0-jre'
     testCompileOnly 'junit:junit:4.12'
 
-    // taken from https://github.itu.dk/hjda/JavaFXTemplate in order to make it work on all OS'es
+    // taken from https://github.itu.dk/hjda/JavaFXTemplate in order to make it work on all OS'es - TA Hjalte sent the link in discord
     String javaFxVersion = '15'
 
     implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'win'
