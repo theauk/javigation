@@ -165,7 +165,7 @@ public class MapData implements Serializable {
      * @return The name of the nearest road.
      */
     public String getNearestRoadKDTree(float x, float y) {
-        String names = "";
+        String names;
         try {
             Node node = kdTree.getNearestNode(x, y);
             names = getNodeHighWayNames(node);
@@ -307,15 +307,10 @@ public class MapData implements Serializable {
     }
 
     /**
-     * Gets addresses from the address trie which match a given prefix.
+     * Gets the address trie tree.
      *
-     * @param prefix The prefix to search for.
-     * @return A list of AddressTrieNode that have addresses which match the prefix.
+     * @return The address trie tree.
      */
-    public List<AddressTrieNode> getAutoCompleteAddresses(String prefix) {
-        return addressTree.searchWithPrefix(prefix);
-    }
-
     public AddressTriesTree getAddressTree() {
         return addressTree;
     }
@@ -358,8 +353,6 @@ public class MapData implements Serializable {
 
     /**
      * Sets the minimum x-coordinate for the loaded map.
-     *
-     * @return The minimum x-coordinate.
      */
     public void setMinX(float minX) {
         this.minX = minX;
@@ -377,7 +370,6 @@ public class MapData implements Serializable {
     /**
      * Gets the minimum y-coordinate for the loaded map.
      *
-     * @return The minimum y-coordinate.
      */
     public void setMinY(float minY) {
         this.minY = minY;
@@ -395,7 +387,6 @@ public class MapData implements Serializable {
     /**
      * Gets the maximum x-coordinate for the loaded map.
      *
-     * @return The maximum x-coordinate.
      */
     public void setMaxX(float maxX) {
         this.maxX = maxX;
@@ -413,7 +404,6 @@ public class MapData implements Serializable {
     /**
      * Gets the maximum y-coordinate for the loaded map.
      *
-     * @return The maximum y-coordinate.
      */
     public void setMaxY(float maxY) {
         this.maxY = maxY;
