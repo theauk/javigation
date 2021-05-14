@@ -126,8 +126,8 @@ public class Controller {
     @FXML private Button directionsButton;
     @FXML private Button switchButton;
     @FXML private Button backButton;
-    @FXML private AnchorPane address_myPlacesPane;
-    @FXML private AnchorPane navigationLeftPane;
+    @FXML private VBox address_myPlacesPane;
+    @FXML private VBox navigationLeftPane;
 
     public void init() {
         mapData = new MapData();
