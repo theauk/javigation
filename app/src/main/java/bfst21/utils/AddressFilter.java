@@ -196,4 +196,8 @@ public class AddressFilter {
     public Address getMatchedAddress() {
         return matchedAddress;
     }
+
+    public void resetAddress() {
+        matchedAddress = null;
+    }
 }
