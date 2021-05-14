@@ -119,6 +119,7 @@ public class Controller {
     @FXML private ContextMenu rightClickMenu;
 
     @FXML private Button directionsButton;
+    @FXML private Button searchForAddress;
     @FXML private Button switchButton;
     @FXML private Button backButton;
     @FXML private VBox address_myPlacesPane;
@@ -223,10 +224,18 @@ public class Controller {
             toAddressFilter.search(newValue);
             addressSearchTextField.suggest(toAddressFilter.getSuggestions());
             if(toAddressFilter.getMatchedAddress() != null){
-                mapData.addUserSearchResult(toAddressFilter.getMatchedAddress().getNode());
+                Node match = toAddressFilter.getMatchedAddress().getNode();
+                mapData.addUserSearchResult(match);
+                mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
                 mapCanvas.repaint();
             }
         }));
+
+        searchForAddress.setOnAction(e -> {
+            if(toAddressFilter.getMatchedAddress() != null) {
+                mapCanvas.centerOnPoint(toAddressFilter.getMatchedAddress().getNode().getxMax(), toAddressFilter.getMatchedAddress().getNode().getyMax());
+            }
+        });
 
         directionsButton.setOnAction(e -> {
             mapData.resetCurrentSearchResult();
@@ -237,9 +246,7 @@ public class Controller {
             textFieldToNav.setSuggest(true);
         });
 
-        switchButton.setOnAction(e -> {
-            switchDirections();
-        });
+        switchButton.setOnAction(e -> switchDirections());
 
         backButton.setOnAction(e -> {
             navigationLeftPane.setVisible(false);
@@ -594,7 +601,7 @@ public class Controller {
 
         if (option.equals("open")) {
             fileChooser.setTitle("Open File");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All OSM Files", "*.osm", "*zip", "*.bmapdata"));
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All OSM Files", "*.osm", "*.zip", "*.bmapdata"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("OSM File", "*.osm"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zipped OSM File", "*zip"));
         } else if (option.equals("save")) {

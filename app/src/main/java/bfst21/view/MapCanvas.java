@@ -9,6 +9,7 @@ import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -35,7 +36,7 @@ public class MapCanvas extends Canvas {
 
     public MapCanvas() {
         trans = new Affine();
-        ratio = new SimpleStringProperty("- - - ");
+        ratio = new SimpleStringProperty("- - -");
         bounds = new CanvasBounds();
     }
 
@@ -95,6 +96,7 @@ public class MapCanvas extends Canvas {
         if(mapData.getUserSearchResult() != null){
             drawRectangleNode(gc, mapData.getUserSearchResult());
         }
+
         gc.restore();
     }
 
@@ -257,7 +259,9 @@ public class MapCanvas extends Canvas {
         double dx = (minXMap - mapData.getMinX()) * Math.sqrt(trans.determinant());              //Calculate the difference between the two bounding boxes min x-coordinate
         double dy = (minYMap - mapData.getMinY()) * Math.sqrt(trans.determinant());
 
-        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map
+        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map;
+        if(mapHeight > mapWidth) zoom = getHeight() / (mapData.getMaxY() - mapData.getMinY());
+
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        //Calculate amount of levels to zoom in
 
         pan(dx, dy);
@@ -315,10 +319,6 @@ public class MapCanvas extends Canvas {
     }
 
     public void panToRoute(float[] boundingBoxRouteCoordinates) {
-        //TODO: 07-05-2021 boundingBoxRouteCoordinates giver forkerte koordinater.
-        // Den giver ikke rigtige bounding box koordinater for den firkant der omslutter ruten. Kig især på y-koordinatet.
-        // Nogle gange er man heldig at ruten er lige og den giver de rigtige koordinater.
-        System.out.println(Arrays.toString(boundingBoxRouteCoordinates));
         double mapWidth = Math.abs(boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]);
         double boundsWidth = bounds.getWidth();
         double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);
@@ -327,15 +327,15 @@ public class MapCanvas extends Canvas {
         double boundsHeight = bounds.getHeight();
         double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
 
-        double dx = Math.abs((minXMap - boundingBoxRouteCoordinates[0])) * Math.sqrt(trans.determinant());
-        double dy = Math.abs((minYMap - boundingBoxRouteCoordinates[2])) * Math.sqrt(trans.determinant());
+        double dx = (minXMap - boundingBoxRouteCoordinates[0]) * Math.sqrt(trans.determinant());
+        double dy = (minYMap - boundingBoxRouteCoordinates[2]) * Math.sqrt(trans.determinant());
 
-        double zoom = getWidth() / mapWidth; 
+        double zoom = getWidth() / mapWidth;
+        if(mapHeight > mapWidth) zoom = getHeight() / mapHeight;
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
 
-        System.out.println("DX: " + dx + " DY: " + dy);
         pan(dx, dy);
-        zoomToLevel(levels);
+        zoomToLevel(levels + 1);
     }
 
     public void centerOnPoint(double x, double y) {
