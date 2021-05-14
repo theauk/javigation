@@ -223,19 +223,10 @@ public class Controller {
         addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             addressSearchTextField.suggest(toAddressFilter.getSuggestions());
-            if(toAddressFilter.getMatchedAddress() != null){
-                Node match = toAddressFilter.getMatchedAddress().getNode();
-                mapData.addUserSearchResult(match);
-                mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
-                mapCanvas.repaint();
-            }
         }));
 
-        searchForAddress.setOnAction(e -> {
-            if(toAddressFilter.getMatchedAddress() != null) {
-                mapCanvas.centerOnPoint(toAddressFilter.getMatchedAddress().getNode().getxMax(), toAddressFilter.getMatchedAddress().getNode().getyMax());
-            }
-        });
+        addressSearchTextField.setOnAction(e -> addSearchResult());
+        searchForAddress.setOnAction(e -> addSearchResult());
 
         directionsButton.setOnAction(e -> {
             mapData.resetCurrentSearchResult();
@@ -268,6 +259,15 @@ public class Controller {
 
     private void removeChildren(){
         // TODO: 28-04-2021 Remove search when under 2 charachters
+    }
+
+    private void addSearchResult() {
+        mapData.resetCurrentSearchResult();
+        if(toAddressFilter.getMatchedAddress() != null){
+            Node match = toAddressFilter.getMatchedAddress().getNode();
+            mapData.addUserSearchResult(match);
+            mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
+        } else mapCanvas.repaint();
     }
 
     /**
