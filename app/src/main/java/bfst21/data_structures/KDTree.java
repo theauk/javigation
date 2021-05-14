@@ -87,8 +87,11 @@ public class KDTree<Value extends Element> implements Serializable {
             root = medNode;
         }
 
-        medNode.leftChild = buildTree(nodes.subList(0, med), dim + numDim);              // builds the left subtree return the child to this node.
-        medNode.rightChild = buildTree(nodes.subList(med + 1, nodes.size()), dim + numDim); // builds the right subtree return the child to this node.
+
+        // builds the left subtree return the child to this node.
+        medNode.leftChild = buildTree(nodes.subList(0, med), dim + numDim);
+        // builds the right subtree return the child to this node.
+        medNode.rightChild = buildTree(nodes.subList(med + 1, nodes.size()), dim + numDim);
 
         return medNode;
     }
@@ -162,7 +165,8 @@ public class KDTree<Value extends Element> implements Serializable {
             isCoordinateLessThan = y < currentNode.node.getyMax();
         }
 
-        if (isCoordinateLessThan) { // searches the most promising side first then checks if it is worth checking the other side.
+        // searches the most promising side first then checks if it is worth checking the other side.
+        if (isCoordinateLessThan) {
             currentNearest = getNearestNode(x, y, currentNode.leftChild, currentNearest);
             if (possibleCloserNode(getDistance(currentNearest, x, y), currentNode, x, y)) {
                 currentNearest = getNearestNode(x, y, currentNode.rightChild, currentNearest);
