@@ -35,6 +35,7 @@
                     <SeparatorMenuItem/>
                     <RadioMenuItem fx:id="showUIItem" text="Show UI" selected="true" accelerator="CTRL + T"/>
                     <RadioMenuItem fx:id="navigationPane" text="Show Navigation Pane" selected="true"/>
+                    <RadioMenuItem fx:id="leftscrollPane" text="show leftside"/>
 
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">

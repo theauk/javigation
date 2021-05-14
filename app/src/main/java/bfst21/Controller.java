@@ -162,6 +162,10 @@ public class Controller {
         textFieldFromNav.clear();
         addressSearchTextField.clear();
         myPlacesListView.getItems().removeAll(myPlacesListView.getItems());
+        directionsList.getItems().removeAll(directionsList.getItems());
+        specialPathFeaturesNav.setText("");
+        distanceNav.setText("");
+        timeNav.setText("");
     }
 
     /**
