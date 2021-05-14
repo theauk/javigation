@@ -676,8 +676,60 @@ public class Controller {
         }
     }
 
+    private void setCurrentFromNode(float x, float y, String street) {
+        VehicleType vehicleType = (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData();
+        RTree.NearestRoadPriorityQueueEntry entry = getNearestRoadEntry(x, y, street, vehicleType);
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, entry.getSegment());
+        currentFromWay = entry.getWay();
+        nearestFromWaySegmentIndices = entry.getSegmentIndices();
+        currentFromNode = nearestNodeOnNearestWay;
+    }
+
+    private void setCurrentToNode(float x, float y, String street) {
+        VehicleType vehicleType = (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData();
+        RTree.NearestRoadPriorityQueueEntry entry = getNearestRoadEntry(x, y, street, vehicleType);
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, entry.getSegment());
+        currentToWay = entry.getWay();
+        nearestToWaySegmentIndices = entry.getSegmentIndices();
+        currentToNode = nearestNodeOnNearestWay;
+    }
+
+    private void resetNavigation(){
+        currentToNode = null;
+        currentFromNode = null;
+        nearestFromWaySegmentIndices = null;
+        nearestToWaySegmentIndices = null;
+        clickedNodeFrom = null;
+        clickedNodeTo = null;
+        fromAddressFilter.resetAddress();
+        toAddressFilter.resetAddress();
+    }
+
     private void showDialogBox(String title, String contentText) {
         createAlert(Alert.AlertType.INFORMATION, title, null, contentText).showAndWait();
+    }
+
+    private void switchDirections() {
+        textFieldFromNav.setSuggest(false);
+        textFieldToNav.setSuggest(false);
+
+        String currentFromTextCopy = textFieldFromNav.getText();
+        Way currentFromWayCopy = currentFromWay;
+        int[] currentNearestFromWaySegmentIndicesCopy = nearestFromWaySegmentIndices;
+        Node currentFromNodeCopy = currentFromNode;
+
+        textFieldFromNav.setText(textFieldToNav.getText());
+        currentFromWay = currentToWay;
+        nearestFromWaySegmentIndices = nearestToWaySegmentIndices;
+        currentFromNode = currentToNode;
+
+        textFieldToNav.setText(currentFromTextCopy);
+        currentToWay = currentFromWayCopy;
+        nearestToWaySegmentIndices = currentNearestFromWaySegmentIndicesCopy;
+        currentToNode = currentFromNodeCopy;
+
+        textFieldFromNav.setSuggest(true);
+        textFieldToNav.setSuggest(true);
     }
 
     /**

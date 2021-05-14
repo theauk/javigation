@@ -339,7 +339,7 @@ public class RouteNavigation extends Service<List<Element>> {
             }
             if (!adjacentNodes.isEmpty()) {
                 for (Node n : adjacentNodes) {
-                    if (!isThereARestriction(wayBefore.get(currentFrom), currentFrom, w)) {
+                    if (vehicleType == VehicleType.WALK || !isThereARestriction(wayBefore.get(currentFrom), currentFrom, w)) {
                         if (aStar) {
                             checkDistanceAStar(currentFrom, n, w);
                         } else {
