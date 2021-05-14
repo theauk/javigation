@@ -220,6 +220,9 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
         return this.streetname.compareTo(o.streetname);
     }
 
+    /**
+     * Innerclass for AddressTrieNode, used to map a housenumber on a given street to specific location with a node.
+     */
     private class HouseNumberNode implements Comparable<HouseNumberNode>, Serializable {
         @Serial
         private static final long serialVersionUID = -2565597371430349023L;
