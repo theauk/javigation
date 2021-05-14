@@ -326,9 +326,9 @@ public class RouteNavigation extends Service<List<Element>> {
                 }
             } else if (vehicleType == VehicleType.BIKE) {
                 if (w.isCycleable()) {
-                    if (!w.isOneWayForBikes()) {
+                    //if (!w.isOneWayForBikes()) {
                         getPreviousNode(adjacentNodes, w, currentFrom);
-                    }
+                    //}
                     getNextNode(adjacentNodes, w, currentFrom);
                 }
             } else if (vehicleType == VehicleType.WALK) {

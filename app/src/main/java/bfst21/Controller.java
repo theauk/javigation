@@ -64,8 +64,8 @@ public class Controller {
     private Way currentToWay;
     private int[] nearestFromWaySegmentIndices;
     private int[] nearestToWaySegmentIndices;
-    private Node currentNavPointTo;
-    private Node currentNavPointFrom;
+    private Node clickedNodeTo;
+    private Node clickedNodeFrom;
 
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
@@ -210,16 +210,11 @@ public class Controller {
         textFieldFromNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
-            Address address = fromAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesWithoutVehicleType(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
         }));
-
 
         textFieldToNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             textFieldToNav.suggest(toAddressFilter.getSuggestions());
-            Address address = toAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesWithoutVehicleType(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
         }));
 
         addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
@@ -245,14 +240,13 @@ public class Controller {
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
             textFieldFromNav.clear();
-            currentNavPointFrom = null;
-            currentNavPointTo = null;
             textFieldToNav.clear();
             directionsList.getItems().clear();
             timeNav.setVisible(false);
             distanceNav.setVisible(false);
             mapData.resetCurrentRoute();
             mapData.resetCurrentSearchResult();
+            resetNavigation();
             mapCanvas.repaint();
         });
 
@@ -630,89 +624,55 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
-
-    public void updateNodesWithVehicleType(boolean fromSelected, double x, double y, String fullAddress, String addressWay ){
-        updateNodesNavigation(fromSelected, x, y, fullAddress, addressWay, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData());
-
+    private RTree.NearestRoadPriorityQueueEntry getNearestRoadEntry(float x, float y, String addressWay, VehicleType vehicleType) {
+        return mapData.getNearestRoadRTreePQEntry(x, y, addressWay, vehicleType);
     }
-
-    public void updateNodesWithoutVehicleType(boolean fromSelected, double x, double y, String fullAddress, String addressWay ){
-        updateNodesNavigation(fromSelected, x, y, fullAddress, addressWay, null);
-    }
-
-    public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay, VehicleType vehicleType) {
-        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y, addressWay,vehicleType);
-        Way nearestWay = entry.getWay();
-        Way nearestSegment = entry.getSegment();
-        int[] nearestWaySegmentIndices = entry.getSegmentIndices();
-        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestSegment);
-
-        if (fromSelected) {
-            textFieldFromNav.setSuggest(false);
-            currentNavPointFrom = new Node(0, (float) x, (float) y);
-            if (addressWay == null) textFieldFromNav.setText(nearestWay.getName());
-            currentFromWay = nearestWay;
-            nearestFromWaySegmentIndices = nearestWaySegmentIndices;
-            currentFromNode = nearestNodeOnNearestWay;
-            textFieldFromNav.setSuggest(true);
-        } else {
-            textFieldToNav.setSuggest(false);
-            currentNavPointTo = new Node(0, (float) x, (float) y);
-            if (addressWay == null) textFieldToNav.setText(nearestWay.getName());
-            currentToWay = nearestWay;
-            currentToNode = nearestNodeOnNearestWay;
-            nearestToWaySegmentIndices = nearestWaySegmentIndices;
-            textFieldToNav.setSuggest(true);
-        }
-    }
-
-    private void switchDirections() {
-        textFieldFromNav.setSuggest(false);
+    // Finds the cosmetic nearest road in order to write it in the textfield
+    private void setClosestToWay(Node node) {
         textFieldToNav.setSuggest(false);
-
-        String currentFromTextCopy = textFieldFromNav.getText();
-        Way currentFromWayCopy = currentFromWay;
-        int[] currentNearestFromWaySegmentIndicesCopy = nearestFromWaySegmentIndices;
-        Node currentFromNodeCopy = currentFromNode;
-
-        textFieldFromNav.setText(textFieldToNav.getText());
-        currentFromWay = currentToWay;
-        nearestFromWaySegmentIndices = nearestToWaySegmentIndices;
-        currentFromNode = currentToNode;
-
-        textFieldToNav.setText(currentFromTextCopy);
-        currentToWay = currentFromWayCopy;
-        nearestToWaySegmentIndices = currentNearestFromWaySegmentIndicesCopy;
-        currentToNode = currentFromNodeCopy;
-
-        textFieldFromNav.setSuggest(true);
+        Way nearestWay = getNearestRoadEntry(node.getxMax(), node.getyMax(), null, null).getWay();
+        textFieldToNav.setText(nearestWay.getName());
         textFieldToNav.setSuggest(true);
+    }
+    // same as above - just for the FromNav field
+    private void setClosestFromWay(Node node) {
+        textFieldFromNav.setSuggest(false);
+        Way nearestWay = getNearestRoadEntry(node.getxMax(), node.getyMax(), null, null).getWay();
+        textFieldFromNav.setText(nearestWay.getName());
+        textFieldFromNav.setSuggest(true);
     }
 
     @FXML
     public void searchNav() {
-        if (currentToNode == null || currentFromNode == null) {
-            showDialogBox("Navigation Error", "Please enter both from and to");
-        } else if (currentFromNode == currentToNode) {
-            showDialogBox("Navigation Error", "From and to are the same entries");
-        } else if (vehicleNavGroup.getSelectedToggle() == null) {
+        if (vehicleNavGroup.getSelectedToggle() == null) {
             showDialogBox("Navigation Error", "Please select a vehicle type");
         } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
             showDialogBox("Navigation Error", "Please select either fastest or shortest");
         } else {
-                if(toAddressFilter.getMatchedAddress() != null){
-                    Address address= toAddressFilter.getMatchedAddress();
-                    updateNodesWithVehicleType(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+                // TO
+                if (toAddressFilter.getMatchedAddress() != null) {
+                    Address address = toAddressFilter.getMatchedAddress();
+                    setCurrentToNode(address.getNode().getxMax(), address.getNode().getyMax(), address.getStreet());
+                } else if(clickedNodeTo != null){
+                    setCurrentToNode(clickedNodeTo.getxMax(), clickedNodeTo.getyMax(), null);
                 } else {
-                    updateNodesWithVehicleType(false, currentNavPointTo.getxMax(), currentNavPointTo.getyMax(), null, null);
+                    showDialogBox("Navigation Error", "Please select where to go from");
                 }
-                if(fromAddressFilter.getMatchedAddress() != null){
-                    Address address= fromAddressFilter.getMatchedAddress();
-                    updateNodesWithVehicleType(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
+                // FROM
+                if (fromAddressFilter.getMatchedAddress() != null) {
+                    Address address = fromAddressFilter.getMatchedAddress();
+                    setCurrentFromNode(address.getNode().getxMax(), address.getNode().getyMax(), address.getStreet());
+                } else if (clickedNodeFrom != null) {
+                    setCurrentFromNode(clickedNodeFrom.getxMax(), clickedNodeFrom.getyMax(), null);
                 } else {
-                    updateNodesWithVehicleType(true, currentNavPointFrom.getxMax(), currentNavPointFrom.getyMax(), null, null);
+                    showDialogBox("Navigation Error", "Please select where to go to");
                 }
-            getRoute();
+
+             if (currentFromNode == currentToNode) {
+                showDialogBox("Navigation Error", "From and to are the same entries");
+             } else {
+                 getRoute();
+             }
         }
     }
 
@@ -881,11 +841,13 @@ public class Controller {
     @FXML
     public void rightClickPointNavFrom() {
         Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        clickedNodeFrom = new Node(0, (float) point.getX(), (float) point.getY());
+        fromAddressFilter.resetAddress();
         if (!navigationLeftPane.isVisible()) {
             navigationLeftPane.setVisible(true);
             address_myPlacesPane.setVisible(false);
         }
-        updateNodesWithoutVehicleType(true, point.getX(), point.getY(), null, null);
+        setClosestFromWay(clickedNodeFrom);
     }
 
     /**
@@ -895,11 +857,13 @@ public class Controller {
     @FXML
     public void rightClickPointNavTo() {
         Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        clickedNodeTo = new Node(0, (float) point.getX(), (float) point.getY());
+        toAddressFilter.resetAddress();
         if (!navigationLeftPane.isVisible()) {
             navigationLeftPane.setVisible(true);
             address_myPlacesPane.setVisible(false);
         }
-        updateNodesWithoutVehicleType(false, point.getX(), point.getY(), null, null);
+        setClosestToWay(clickedNodeTo);
     }
 
     public void toggleLeftPanel() {
