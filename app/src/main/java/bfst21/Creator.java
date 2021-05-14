@@ -318,8 +318,11 @@ public class Creator extends Task<MapData> {
             case "name":
                 relation.setName(v);
                 break;
-            case "bridge":
-                // TODO: 5/1/21 ???
+            case "man_made":
+                if(v.equals("bridge")) {
+                    relation.setType((k), typeToLayer.get(k));
+                    relation.setIsMultiPolygon();
+                }
             case "building":
                 relation.setType((k), typeToLayer.get(k));
                 break;
