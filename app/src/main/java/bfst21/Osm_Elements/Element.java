@@ -5,6 +5,9 @@ import javafx.scene.canvas.GraphicsContext;
 import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * Abstract class for the type elements that the map divides into.
+ */
 public abstract class Element implements Spatializable, Serializable {
     @Serial private static final long serialVersionUID = -5832865119529036880L;
 

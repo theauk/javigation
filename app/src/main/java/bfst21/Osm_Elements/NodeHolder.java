@@ -7,6 +7,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstract class for Relations and ways, as they hold several nodes.
+ */
 public abstract class NodeHolder extends Element implements Serializable {
     @Serial
     private static final long serialVersionUID = 4506251123911227447L;

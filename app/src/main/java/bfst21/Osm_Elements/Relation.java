@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Relation class can represent a multipolygon or a single line, made up of ways and/or nodes.
+ */
 public class Relation extends NodeHolder implements Serializable {
     @Serial private static final long serialVersionUID = 4812917960463994060L;
 
