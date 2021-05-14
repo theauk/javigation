@@ -533,10 +533,6 @@ public class Creator extends Task<MapData> {
                     way.setMaxSpeed(distance / duration);
                 }
                 break;
-
-            case "toll":
-                /*if (v.equals("yes")) way.setType(way.getType() + "_toll"); // TODO: 4/29/21 fix problem is I cannot change type as it wont draw them then
-                break;*/
         }
     }
 

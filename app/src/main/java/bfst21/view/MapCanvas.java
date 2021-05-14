@@ -15,6 +15,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
@@ -317,7 +318,8 @@ public class MapCanvas extends Canvas {
         //TODO: 07-05-2021 boundingBoxRouteCoordinates giver forkerte koordinater.
         // Den giver ikke rigtige bounding box koordinater for den firkant der omslutter ruten. Kig især på y-koordinatet.
         // Nogle gange er man heldig at ruten er lige og den giver de rigtige koordinater.
-        double mapWidth = Math.abs(boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]); // TODO: 5/6/21 prøv med distance formel
+        System.out.println(Arrays.toString(boundingBoxRouteCoordinates));
+        double mapWidth = Math.abs(boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]);
         double boundsWidth = bounds.getWidth();
         double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);
 
@@ -325,15 +327,15 @@ public class MapCanvas extends Canvas {
         double boundsHeight = bounds.getHeight();
         double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
 
-        double dx = (minXMap - boundingBoxRouteCoordinates[0]) * Math.sqrt(trans.determinant());
-        double dy = (minYMap - boundingBoxRouteCoordinates[2]) * Math.sqrt(trans.determinant());
+        double dx = Math.abs((minXMap - boundingBoxRouteCoordinates[0])) * Math.sqrt(trans.determinant());
+        double dy = Math.abs((minYMap - boundingBoxRouteCoordinates[2])) * Math.sqrt(trans.determinant());
 
         double zoom = getWidth() / mapWidth; 
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
 
         System.out.println("DX: " + dx + " DY: " + dy);
         pan(dx, dy);
-        zoomToLevel(levels + 1);
+        zoomToLevel(levels);
     }
 
     public void centerOnPoint(double x, double y) {

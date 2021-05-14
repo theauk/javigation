@@ -645,21 +645,17 @@ public class RouteNavigation extends Service<List<Element>> {
     private String getDirection(double angle, Way wayBeforeTo, String wayBeforeToName) {
         String type = wayBeforeTo.getType();
 
-        if (type.contains("_toll")) specialPathFeatures.add("toll"); // TODO: 4/29/21 fix
-
         if (type.equals("ferry")) {
             return "FERRY";
+        } else if (type.equals("roundabout")) {
+            return "ROUNDABOUT";
         } else if (angle > 0) {
-            if (type.equals("roundabout")) return "ROUNDABOUT";
-            else if (type.equals("primary_link") || type.equals("motorway_link")) return "KEEP_RIGHT";
+            if (type.equals("primary_link") || type.equals("motorway_link")) return "KEEP_RIGHT";
             else return "Turn right onto " + wayBeforeToName;
         } else if (angle < 0) {
             return "Turn left onto " + wayBeforeToName;
-        } else if (angle == 0) {
-            System.out.println("Angle is 0...."); // TODO: 5/4/21 delete
-            return "";
         } else {
-            throw new RuntimeException("getDirection Error"); // TODO: 4/29/21 ???
+            return "Continue on " + wayBeforeToName;
         }
     }
 
