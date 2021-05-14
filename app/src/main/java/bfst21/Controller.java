@@ -619,18 +619,6 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
-    public void getPointNav(boolean fromSelected) {
-        EventHandler<MouseEvent> event = new EventHandler<>() {
-            @Override
-            public void handle(MouseEvent e) {
-                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
-                updateNodesNavigation(fromSelected, coords.getX(), coords.getY(), null, null);
-                mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-            }
-        };
-        mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
-    }
-
     public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay) {
         RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y, addressWay);
         Way nearestWay = entry.getWay();
@@ -704,7 +692,7 @@ public class Controller {
      * @param header the header for the text
      * @param text The text that is the content of the alert
      * @param buttons The buttons such as "Confirm" and "cancel"
-     * @return
+     * @return An alert with the given information.
      */
     private Alert createAlert(Alert.AlertType alertType, String title, String header, String text, ButtonType... buttons) {
         Alert alert = new Alert(alertType, text, buttons);
@@ -845,8 +833,8 @@ public class Controller {
     }
 
     /**
-     * Finds the streetname closest to where the user opened the context menu and updates the "from" AutoTextField
-     * with the streetname
+     * Finds the street name closest to where the user opened the context menu and updates the "from" AutoTextField
+     * with the street name
      */
     @FXML
     public void rightClickPointNavFrom() {
