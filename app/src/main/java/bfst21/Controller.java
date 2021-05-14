@@ -47,10 +47,10 @@ public class Controller {
 
     private Point2D lastMouse = new Point2D(0, 0);
     private Point2D currentRightClick = new Point2D(0,0);
-    private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.LEFT);
-    private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.RIGHT);
-    private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.LEFT);
-    private final CustomKeyCombination downRightCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.RIGHT);
+    private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.W, KeyCode.A);
+    private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.W, KeyCode.D);
+    private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.S, KeyCode.A);
+    private final CustomKeyCombination downRightCombination = new CustomKeyCombination(KeyCode.S, KeyCode.D);
     private boolean viaZoomSlider = true;
     private boolean dragged;
 
@@ -246,6 +246,7 @@ public class Controller {
             textFieldFromNav.clear();
             mapData.resetCurrentRoute();
             mapData.resetCurrentSearchResult();
+            mapCanvas.repaint();
         });
 
         myPlacesListView.setOnMouseClicked(e -> {
@@ -267,7 +268,10 @@ public class Controller {
             Node match = toAddressFilter.getMatchedAddress().getNode();
             mapData.addUserSearchResult(match);
             mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
-        } else mapCanvas.repaint();
+        } else {
+            createAlert(Alert.AlertType.WARNING, "No Address Found", "No Address Found!", "Please check if you've written the correct address.").showAndWait();
+            mapCanvas.repaint();
+        }
     }
 
     /**
@@ -363,10 +367,10 @@ public class Controller {
         else if (upRightCombination.match(e)) mapCanvas.pan(-acceleration, acceleration);
         else if (downLeftCombination.match(e)) mapCanvas.pan(acceleration, -acceleration);
         else if (downRightCombination.match(e)) mapCanvas.pan(-acceleration, -acceleration);
-        else if (e.getCode().equals(KeyCode.UP)) mapCanvas.pan(0, acceleration);
-        else if (e.getCode().equals(KeyCode.DOWN)) mapCanvas.pan(0, -acceleration);
-        else if (e.getCode().equals(KeyCode.LEFT)) mapCanvas.pan(acceleration, 0);
-        else if (e.getCode().equals(KeyCode.RIGHT)) mapCanvas.pan(-acceleration, 0);
+        else if (e.getCode().equals(KeyCode.W)) mapCanvas.pan(0, acceleration);
+        else if (e.getCode().equals(KeyCode.S)) mapCanvas.pan(0, -acceleration);
+        else if (e.getCode().equals(KeyCode.A)) mapCanvas.pan(acceleration, 0);
+        else if (e.getCode().equals(KeyCode.D)) mapCanvas.pan(-acceleration, 0);
     }
 
     @FXML
