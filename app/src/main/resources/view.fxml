@@ -162,14 +162,6 @@
                     <VBox fx:id="address_myPlacesPane" spacing="18.0" visible="false" prefWidth="325"
                           managed="${address_myPlacesPane.visible}">
                         <children>
-                            <Label text="Search for an address">
-                                <font>
-                                    <Font name="System Bold" size="14.0"/>
-                                </font>
-                                <VBox.margin>
-                                    <Insets left="5.0"/>
-                                </VBox.margin>
-                            </Label>
                             <HBox fx:id="searchForAddressHBox" spacing="5.0">
                                 <children>
                                     <AutoFillTextField fx:id="addressSearchTextField" promptText="Search"
@@ -233,7 +225,7 @@
                                     <Insets/>
                                 </VBox.margin>
                                 <padding>
-                                    <Insets right="25.0"/>
+                                    <Insets right="30.0" />
                                 </padding>
                             </HBox>
                                     <GridPane hgap="6.0" vgap="12.0">
