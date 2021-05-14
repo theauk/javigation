@@ -18,10 +18,10 @@ name = "Dark Mode";
 "address" = {iColor = [40, 201, 34], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true};
 
 #Text
-"city" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 15}, {text = true};
-"town" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 13}, {text = true};
-"village" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 10}, {text = true};
-"hamlet" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 10}, {text = true};
+"city" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 20}, {text = true};
+"town" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 20}, {text = true};
+"village" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 17}, {text = true};
+"hamlet" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 17}, {text = true};
 
 #Roads
 "motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3};
