@@ -24,7 +24,7 @@ public class AddressTriesTree implements Serializable {
      * @param streetName   the name of the street which the address belongs to.
      * @param postcode     The digit number that tells in what part of the country the address is located.
      *                    in Denmark it's how far they are from Copenhagen and are a 4-digit number
-     * @param houseNumber the housenumber that the address has.
+     * @param houseNumber the houseNumber that the address has.
      *
      */
     public void put(Node node, String streetName, String houseNumber, int postcode, String city) {
@@ -32,13 +32,13 @@ public class AddressTriesTree implements Serializable {
     }
 
     /**
-     * Sets streetname, housenumber (some has letters in the housenumber) and the city to lowercase before
+     * Sets streetName, houseNumber (some has letters in the houseNumber) and the city to lowercase before
      * calling the insert method <br>
      * Puts the post and city into a Hashmap as well to make it easier to search
      *
      * @param root the root of the TrieTree
      * @param node the node which is getting inserted
-     * @param streetName the streetname the given node has from the .osm file
+     * @param streetName the street name the given node has from the .osm file
      * @param houseNumber the house number the given node has from the .osm file
      * @param postcode the postcode the given node has from the .osm file
      * @param city the city the given node has from the .osm file
@@ -54,7 +54,7 @@ public class AddressTriesTree implements Serializable {
     /**
      * This method is inspired by the method 'insert' from this post: https://stackoverflow.com/a/55470115 <br>
      * @param trieNode Root, otherwise a child.
-     * @param index counts how many times the method has been called - stops when index is the same length as streetname
+     * @param index counts how many times the method has been called - stops when index is the same length as streetName
      * @param node the node that contains the coordinates for the address
      * @param streetName the name of the street given by the .osm file.
      * @param postcode the postcode of the node given by the .osm file.
