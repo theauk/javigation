@@ -167,20 +167,23 @@
         <left>
             <VBox BorderPane.alignment="CENTER">
                 <children>
-                    <VBox fx:id="address_myPlacesPane" spacing="13.0" visible="true"
+                    <VBox fx:id="address_myPlacesPane" spacing="18.0" visible="true"
                           managed="${address_myPlacesPane.visible}">
                         <children>
                             <Label text="Search for an address">
                                 <font>
                                     <Font name="System Bold" size="14.0"/>
                                 </font>
+                                <VBox.margin>
+                                    <Insets left="5.0"/>
+                                </VBox.margin>
                             </Label>
                             <HBox fx:id="searchForAddressHBox" spacing="5.0">
                                 <children>
                                     <AutoFillTextField fx:id="addressSearchTextField" promptText="Search"
                                                        maxEntries="10" prefHeight="32.0">
                                         <HBox.margin>
-                                            <Insets/>
+                                            <Insets left="5.0" right="5.0"/>
                                         </HBox.margin>
                                     </AutoFillTextField>
                                     <Button fx:id="searchForAddress" mnemonicParsing="false" prefHeight="32.0"
@@ -197,7 +200,7 @@
 
                             <Label text="My places">
                                 <VBox.margin>
-                                    <Insets/>
+                                    <Insets left="5.0"/>
                                 </VBox.margin>
                                 <font>
                                     <Font name="System Bold" size="14.0"/>
@@ -211,17 +214,17 @@
                                             onAction="#deleteUserPoint"/>
                                 </children>
                                 <VBox.margin>
-                                    <Insets/>
+                                    <Insets left="5.0"/>
                                 </VBox.margin>
                             </HBox>
                             <ListView fx:id="myPlacesListView" maxHeight="Infinity">
                                 <VBox.margin>
-                                    <Insets bottom="7.0" top="5.0"/>
+                                    <Insets left="5.0" right="5.0"/>
                                 </VBox.margin>
                             </ListView>
                         </children>
                         <padding>
-                            <Insets left="15.0" right="15.0" top="20.0"/>
+                            <Insets bottom="14.0" left="15.0" right="15.0" top="35.0"/>
                         </padding>
                     </VBox>
 
@@ -247,9 +250,9 @@
                                             <ColumnConstraints hgrow="SOMETIMES" maxWidth="95.0" minWidth="10.0"/>
                                         </columnConstraints>
                                         <rowConstraints>
-                                            <RowConstraints minHeight="32.0" vgrow="SOMETIMES" />
-                                            <RowConstraints minHeight="32.0" vgrow="SOMETIMES" />
-                                            <RowConstraints minHeight="32.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="35.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="35.0" vgrow="SOMETIMES" />
+                                            <RowConstraints minHeight="35.0" vgrow="SOMETIMES" />
                                         </rowConstraints>
                                         <children>
                                             <HBox spacing="18.0">
@@ -283,7 +286,7 @@
                                                     <Insets bottom="5.0" />
                                                 </GridPane.margin>
                                             </HBox>
-                                            <AutoFillTextField fx:id="textFieldToNav" promptText="To" maxEntries="10" prefHeight="33.0" GridPane.rowIndex="1">
+                                            <AutoFillTextField fx:id="textFieldToNav" promptText="To" maxEntries="10" minHeight="35.0" GridPane.rowIndex="1">
                                                 <GridPane.margin>
                                                     <Insets bottom="5.0" top="5.0" />
                                                 </GridPane.margin>
@@ -293,7 +296,7 @@
                                                     <Insets bottom="5.0" top="5.0" />
                                                 </GridPane.margin>
                                             </Button>
-                                            <AutoFillTextField fx:id="textFieldFromNav" promptText="From" maxEntries="10" prefHeight="33.0" GridPane.rowIndex="2">
+                                            <AutoFillTextField fx:id="textFieldFromNav" promptText="From" maxEntries="10" minHeight="35.0" GridPane.rowIndex="2">
                                                 <GridPane.margin>
                                                     <Insets bottom="5.0" top="5.0" />
                                                 </GridPane.margin>
