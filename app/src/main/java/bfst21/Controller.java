@@ -254,6 +254,14 @@ public class Controller {
             mapData.resetCurrentRoute();
             mapData.resetCurrentSearchResult();
         });
+
+        myPlacesListView.setOnMouseClicked(e -> {
+            if(e.getClickCount() == 2 && myPlacesListView.getItems().size() > 0) moveToPoint(myPlacesListView.getSelectionModel().getSelectedIndex());
+        });
+        
+        myPlacesListView.setOnKeyPressed(e -> {
+            if(e.getCode() == KeyCode.ENTER && myPlacesListView.getItems().size() > 0) moveToPoint(myPlacesListView.getSelectionModel().getSelectedIndex());
+        });
     }
 
     private void removeChildren(){
@@ -756,17 +764,12 @@ public class Controller {
         specialPathFeaturesNav.setVisible(true);
     }
 
-    @FXML
-    public void moveToPoint(MouseEvent actionEvent) {
-        int i = myPlacesListView.getSelectionModel().getSelectedIndex();
-        Node node = mapData.getUserAddedPoints().get(i);
+    public void moveToPoint(int index) {
+        Node node = mapData.getUserAddedPoints().get(index);
         mapCanvas.centerOnPoint(node.getxMax(), node.getyMax());
-        mapCanvas.repaint();
     }
 
-    @FXML
-    public void addUserPoint(ActionEvent actionEvent) {
-
+    public void addUserPoint() {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
             public void handle(MouseEvent e) {
