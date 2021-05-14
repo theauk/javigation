@@ -688,23 +688,19 @@ public class RTree implements Serializable {
      * @return True, if the way should be added to the pq. Otherwise, false
      */
     private boolean isValidWay(Way w, String addressWayName, VehicleType vehicleType) {
-        if(vehicleType != null){
-            if (vehicleType == VehicleType.CAR){
-                if(w.isDriveable()) return true;
-                else return false;
-            }
-            if (vehicleType == VehicleType.BIKE){
-                if(w.isCycleable()) return true;
-                else return false;
-            }
-            if (vehicleType == VehicleType.WALK){
-                if(w.isWalkable()) return true;
-                else return false;
-            }
-        } else{
-            if (w.isHighWay() && w.hasName()) {
-                // right part necessary to ensure that address nodes are matched with the way searched for even if another way is nearer
-                return true;
+
+        if (vehicleType != null) {
+            if (vehicleType == VehicleType.CAR) {
+                if (addressWayName != null) {
+                    return w.getName().toLowerCase().equals(addressWayName);
+                }
+                return w.isDriveable();
+            } else if (vehicleType == VehicleType.BIKE) {
+                return w.isCycleable();
+            } else if (vehicleType == VehicleType.WALK) {
+                return w.isWalkable();
+            } else { // if not valid type
+                return false;
             }
         }
 
