@@ -62,34 +62,34 @@
 }
 
 #directionsButton{
-    -fx-graphic: url("icons/directions_from_figma_little.png");
+    -fx-graphic: url("../icons/directions_from_figma_little.png");
 }
 
 #searchForAddress{
-    -fx-graphic: url("icons/search_icon.png");
+    -fx-graphic: url("../icons/search_icon.png");
 }
 
 #backButton{
     -fx-background-color: rgba(220, 20, 60, 100);
-    -fx-graphic: url("icons/back_icon.png");
+    -fx-graphic: url("../icons/back_icon.png");
 }
 
 #searchNav{
-    -fx-graphic: url("icons/directions_from_figma_2.png");
+    -fx-graphic: url("../icons/directions_from_figma_2.png");
 }
 
 #switchButton{
-    -fx-graphic: url("icons/switch_icon.png");
+    -fx-graphic: url("../icons/switch_icon.png");
 }
 
 #carNavToggleButton{
-    -fx-graphic: url("icons/car_vroom_icon_bigger.png");
+    -fx-graphic: url("../icons/car_vroom_icon_bigger.png");
 }
 
 #bikeNavToggleButton{
-    -fx-graphic: url("icons/bike_icon_bigger.png");
+    -fx-graphic: url("../icons/bike_icon_bigger.png");
 }
 
 #WalkNavToggleButton{
-    -fx-graphic: url("icons/walk_icon_bigger.png");
+    -fx-graphic: url("../icons/walk_icon_bigger.png");
 }

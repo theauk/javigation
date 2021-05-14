@@ -13,7 +13,7 @@ public class View {
     public static final int HEIGHT = WIDTH / 4 * 3; //Ratio 4:3
 
     public View(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view/view.fxml"));
         Scene scene = fxmlLoader.load();
         stage.setScene(scene);
         stage.setTitle("Javigation");
