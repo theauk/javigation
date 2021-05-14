@@ -95,7 +95,7 @@
                     />
                 </Pane>
 
-                <AnchorPane id="uiControl" visible="${informationBoard.selected}" pickOnBounds="false">
+                <AnchorPane id="uiControl"  pickOnBounds="false">
                     <VBox alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20" pickOnBounds="false">
                         <Button fx:id="zoomInButton" text="+" onAction="#zoom"/>
                         <Slider fx:id="zoomSlider" pickOnBounds="false" orientation="VERTICAL">
