@@ -15,7 +15,7 @@ plugins {
 
 javafx {
     version = "15.0.1"
-    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.base', 'javafx.graphics', 'javafx.swing', 'javafx.media']
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.base', 'javafx.graphics']
 }
 
 jacoco {
@@ -28,6 +28,7 @@ repositories {
     jcenter()
 }
 
+
 dependencies {
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
@@ -38,6 +39,22 @@ dependencies {
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
     testCompileOnly 'junit:junit:4.12'
+
+    // taken from https://github.itu.dk/hjda/JavaFXTemplate in order to make it work on all OS'es
+    String javaFxVersion = '15'
+
+    implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'linux'
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-controls', version: javaFxVersion, classifier: 'linux'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-fxml', version: javaFxVersion, classifier: 'linux'
+    implementation group: 'org.openjfx', name: 'javafx-graphics', version: javaFxVersion, classifier: 'win'
+    implementation group: 'org.openjfx', name: 'javafx-graphics', version: javaFxVersion, classifier: 'mac'
+    implementation group: 'org.openjfx', name: 'javafx-graphics', version: javaFxVersion, classifier: 'linux'
 
     test {
         finalizedBy jacocoTestReport // report is always generated after tests run
