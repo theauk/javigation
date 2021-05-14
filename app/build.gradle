@@ -56,7 +56,7 @@ application {
     // Define the main class for the application.
     mainClass = 'bfst21.Launcher'
 }
-compileJava.options.encoding = 'UTF-8'
+
 tasks.named('test') {
     //Use junit platform for unit tests.
     useJUnitPlatform()
@@ -64,6 +64,10 @@ tasks.named('test') {
 
 tasks.withType(JavaExec) {
     jvmArgs = ['-Xmx6g']
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 run {

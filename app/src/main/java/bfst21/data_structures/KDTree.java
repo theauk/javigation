@@ -8,6 +8,10 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+/**
+ * Kd based on Values X max and y Max
+ * @param <Value> Value extends element.
+ */
 public class KDTree<Value extends Element> implements Serializable {
     @Serial
     private static final long serialVersionUID = 2546489468741939125L;
@@ -39,6 +43,11 @@ public class KDTree<Value extends Element> implements Serializable {
         hashList = new HashSet<>();
     }
 
+    /**
+     * Returns the comparator to used based on the dimension of the node that needs to be compared.
+     * @param dim dimension to compare
+     * @return comparator
+     */
     private Comparator<KDTreeNode> getComparatorFromDimension(int dim) {
         return dim == 0 ? comparatorX : comparatorY;
     }
@@ -51,6 +60,9 @@ public class KDTree<Value extends Element> implements Serializable {
         hashList.addAll(nodes);
     }
 
+    /**
+     * Builds the tree with list currently in KD tree.
+     */
     public void buildTree() {
         for (Value value : hashList) list.add(new KDTreeNode(value));
         buildTree(list, startDim);
@@ -103,7 +115,12 @@ public class KDTree<Value extends Element> implements Serializable {
     /**
      * Helper method for getNearest Node
      * Calculates whether or not it is worth checking the 'other side' of the tree for possible closer node.
-     * It returns true if the shortest distance is larger than the distance between x or y to the current nodes axis.
+     * It returns true if the shortest distance is larger than the distance between x or y to the current nodes axis
+     * @param shortestDistance Shortest distance so far
+     * @param currentNode Node to look at.
+     * @param x coordinate
+     * @param y coordinate
+     * @return
      */
     private boolean possibleCloserNode(Double shortestDistance, KDTreeNode currentNode, float x, float y) {
         double possibleNewDistance = Math.abs(currentNode.onXAxis ? x - currentNode.node.getxMax() : y - currentNode.node.getyMax());
@@ -162,6 +179,10 @@ public class KDTree<Value extends Element> implements Serializable {
         return currentNearest;
     }
 
+    /**
+     * Inner class for KD tree.
+     * Used for building the KD tree as an outer class for the element put in.
+     */
     private class KDTreeNode implements Serializable {
         @Serial
         private static final long serialVersionUID = -6786678243546431229L;

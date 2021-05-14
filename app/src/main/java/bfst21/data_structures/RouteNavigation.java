@@ -580,7 +580,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The current distance and time on different lines.
      */
     private String getCurrentDistanceAndTimeText() {
-        return "\n" + currentDistanceDescription + " m " + "\n" + currentTimeDescription + " s";
+        return "\n" + MapMath.formatDistance(currentDistanceDescription, 2) + "\n" + MapMath.formatTime(currentTimeDescription, 2);
     }
 
     /**
@@ -645,21 +645,17 @@ public class RouteNavigation extends Service<List<Element>> {
     private String getDirection(double angle, Way wayBeforeTo, String wayBeforeToName) {
         String type = wayBeforeTo.getType();
 
-        if (type.contains("_toll")) specialPathFeatures.add("toll"); // TODO: 4/29/21 fix
-
         if (type.equals("ferry")) {
             return "FERRY";
+        } else if (type.equals("roundabout")) {
+            return "ROUNDABOUT";
         } else if (angle > 0) {
-            if (type.equals("roundabout")) return "ROUNDABOUT";
-            else if (type.equals("primary_link") || type.equals("motorway_link")) return "KEEP_RIGHT";
+            if (type.equals("primary_link") || type.equals("motorway_link")) return "KEEP_RIGHT";
             else return "Turn right onto " + wayBeforeToName;
         } else if (angle < 0) {
             return "Turn left onto " + wayBeforeToName;
-        } else if (angle == 0) {
-            System.out.println("Angle is 0...."); // TODO: 5/4/21 delete
-            return "";
         } else {
-            throw new RuntimeException("getDirection Error"); // TODO: 4/29/21 ???
+            return "Continue on " + wayBeforeToName;
         }
     }
 
@@ -677,9 +673,8 @@ public class RouteNavigation extends Service<List<Element>> {
             if (ways.size() > 1) {
                 for (Way w : ways) {
                     if (w != roundaboutWay) {
-                        if (!w.isOnewayRoad()) exits++;
+                        if (!w.isOnewayRoad() && w.isDriveable()) exits++;
                         else if (w.getNextNode(path.get(i)) != null) exits++; // to ensure that we do not count one-way roads
-                        break;
                     }
                 }
             }

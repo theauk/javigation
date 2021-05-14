@@ -8,7 +8,9 @@ import java.util.List;
 
 /**
  * Binary search tree adapted from Troels Bjerre Lund.
- * @param <Value>
+ * Orders the search tree based on elements id.
+ * First sorts the tree when get method is called.
+ * @param <Value> Value extends Element class.
  */
 public class BinarySearchTree<Value extends Element> {
     private List<Value> values = new ArrayList<>();

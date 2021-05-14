@@ -22,8 +22,11 @@
     -fx-background-color: #3C3C3C;
 }
 
-#copyRight {
+#bottomBarPane {
     -fx-background-color: rgba(128, 128, 128, 0.7);
+}
+
+#bottomBarPane .label {
     -fx-text-fill: rgba(211, 211, 211, 0.7);
 }
 
@@ -35,4 +38,18 @@
     -fx-border-color: white;
     -fx-background-color: rgba(128, 128, 128, 0.7);
     -fx-text-fill: lightgray;
+}
+
+#informationPane {
+    -fx-border-color: rgba(0, 0, 0, 0.2);
+    -fx-background-color: rgba(128, 128, 128, 0.2);
+}
+
+#informationPane .label {
+    -fx-text-fill: rgba(255, 255, 255, 0.4);
+}
+
+#informationPane #bounds {
+    -fx-border-color: rgba(255, 0, 0, 0.4);
+    -fx-background-color: rgba(255, 255, 255, 0.4);
 }

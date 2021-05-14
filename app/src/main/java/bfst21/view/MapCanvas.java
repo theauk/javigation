@@ -1,9 +1,9 @@
 package bfst21.view;
 
 import bfst21.MapData;
-import bfst21.utils.MapMath;
 import bfst21.Osm_Elements.Element;
 import bfst21.Osm_Elements.Node;
+import bfst21.utils.MapMath;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
@@ -15,6 +15,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
@@ -24,18 +25,22 @@ public class MapCanvas extends Canvas {
     private final int ZOOM_FACTOR = 2;
     private byte zoomLevel = MIN_ZOOM_LEVEL;
 
-    private final StringProperty ratio = new SimpleStringProperty("- - -");
     private MapData mapData;
-    private CanvasBounds bounds;
     private Theme theme;
-    private Affine trans;
+    private final CanvasBounds bounds;
+    private final StringProperty ratio;
+    private final Affine trans;
 
     private boolean initialized;
 
+    public MapCanvas() {
+        trans = new Affine();
+        ratio = new SimpleStringProperty("- - - ");
+        bounds = new CanvasBounds();
+    }
+
     public void init(MapData mapData) {
         this.mapData = mapData;
-        trans = new Affine();
-        bounds = new CanvasBounds();
 
         if (!initialized) {
             widthProperty().addListener((observable, oldValue, newValue) -> pan((newValue.doubleValue() - oldValue.doubleValue()) / 2, 0));
@@ -85,6 +90,10 @@ public class MapCanvas extends Canvas {
 
         for (Node point : mapData.getUserAddedPoints()) {
             drawRectangleNode(gc, point);
+        }
+
+        if(mapData.getUserSearchResult() != null){
+            drawRectangleNode(gc, mapData.getUserSearchResult());
         }
         gc.restore();
     }
@@ -222,7 +231,6 @@ public class MapCanvas extends Canvas {
 
     private void zoom(double factor, Point2D center) {
         trans.prependScale(factor, factor, center);
-        calculateRatio();
     }
 
     public void pan(double dx, double dy) {
@@ -233,6 +241,7 @@ public class MapCanvas extends Canvas {
     public void updateMap() {
         setBounds();
         mapData.searchInRTree(bounds, zoomLevel);
+        calculateRatio();
         repaint();
     }
 
@@ -251,11 +260,8 @@ public class MapCanvas extends Canvas {
         double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        //Calculate amount of levels to zoom in
 
-        int levelToZoomTo = getLevelsToZoomForLevel(levels + 1);    //Get the amount of levels to be added/subtracted to reach the defined zoom level.
-
         pan(dx, dy);
-        if(levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
-        else updateMap();
+        zoomToLevel(levels + 1);
     }
 
     public CanvasBounds getBounds() {
@@ -302,27 +308,34 @@ public class MapCanvas extends Canvas {
         return (byte) (level - zoomLevel);
     }
 
-    public void panToRoute(float[] boundingBoxRouteCoordinates) { // TODO: 5/1/21 fix
-        trans = new Affine();
-        zoomLevel = MIN_ZOOM_LEVEL;
-        setBounds();
+    private void zoomToLevel(int levels) {
+        int levelToZoomTo = getLevelsToZoomForLevel(levels);
+        if(levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
+        else updateMap();
+    }
 
-        double mapWidth = boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]; // TODO: 5/6/21 prøv med distance formel 
-        double boundsWidth = bounds.getMaxX() - bounds.getMinX();          
+    public void panToRoute(float[] boundingBoxRouteCoordinates) {
+        //TODO: 07-05-2021 boundingBoxRouteCoordinates giver forkerte koordinater.
+        // Den giver ikke rigtige bounding box koordinater for den firkant der omslutter ruten. Kig især på y-koordinatet.
+        // Nogle gange er man heldig at ruten er lige og den giver de rigtige koordinater.
+        System.out.println(Arrays.toString(boundingBoxRouteCoordinates));
+        double mapWidth = Math.abs(boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]);
+        double boundsWidth = bounds.getWidth();
         double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);
 
-        double mapHeight = boundingBoxRouteCoordinates[3] - boundingBoxRouteCoordinates[2];
-        double boundsHeight = bounds.getMaxY() - bounds.getMinY();
+        double mapHeight = Math.abs(boundingBoxRouteCoordinates[3] - boundingBoxRouteCoordinates[2]);
+        double boundsHeight = bounds.getHeight();
         double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
 
-        double dx = (minXMap - boundingBoxRouteCoordinates[0]) * Math.sqrt(trans.determinant());
-        double dy = (minYMap - boundingBoxRouteCoordinates[2]) * Math.sqrt(trans.determinant());
+        double dx = Math.abs((minXMap - boundingBoxRouteCoordinates[0])) * Math.sqrt(trans.determinant());
+        double dy = Math.abs((minYMap - boundingBoxRouteCoordinates[2])) * Math.sqrt(trans.determinant());
 
         double zoom = getWidth() / mapWidth; 
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
 
+        System.out.println("DX: " + dx + " DY: " + dy);
         pan(dx, dy);
-        zoom(true, levels);
+        zoomToLevel(levels);
     }
 
     public void centerOnPoint(double x, double y) {

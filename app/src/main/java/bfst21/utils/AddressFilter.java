@@ -20,12 +20,15 @@ public class AddressFilter {
 
     private AddressTriesTree addressTree;
     private List<String> suggestions;
-    private Node matchedAddress;
+    private Address matchedAddress;
 
-    private final String addressRegex = "^ *(?<street>[A-Za-zÆØÅæøå0-9 \\-.]+?),? *(?<number>\\d{1,3}[a-zæøå]?)?,? *(?<postCode>\\d{1,4})?(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)? *$";
+    private final String addressRegex = "^ *(?<street>.+?) *,? *(?: (?<number>\\d+[A-Za-zÆØÅæøå]?)? *,? *(?: (?<postCode>\\d{1,4})? *(?: (?<city>[A-Za-zÆØÅæøå]+?|[A-Za-zÆØÅæøå]+? *[A-Za-zÆØÅæøå]+)?)?)?)? *$";
     private final Pattern pattern = Pattern.compile(addressRegex);
     private Matcher matcher;
 
+    /**
+     * Default constructor for an AddressFilter.
+     */
     public AddressFilter() {
         suggestions = new ArrayList<>();
     }
@@ -44,7 +47,7 @@ public class AddressFilter {
         int postCode = 0;
         String city = "";
 
-        matcher = pattern.matcher(prefix);
+        matcher = pattern.matcher(prefix.toLowerCase());
         if(matcher.matches()) {
             if(matches("street")) street = matcher.group("street");
             if(matches("number")) houseNumber = matcher.group("number");
@@ -54,12 +57,12 @@ public class AddressFilter {
             List<AddressTrieNode> searchResult = addressTree.searchWithPrefix(street);
             if(searchResult.size() == 0) return;
             validateInput(searchResult, houseNumber, postCode, city);
+            makeSuggestions(searchResult, houseNumber, postCode, city);
         }
     }
 
     /**
-     * Checks whether the address is valid or makes a
-     * list of suggestions based on the parameters.
+     * Checks whether the address is valid and creates an {@link Address} that can be collected.
      *
      * @param searchResult a List of {@link AddressTrieNode}s.
      * @param houseNumber a house number.
@@ -67,15 +70,14 @@ public class AddressFilter {
      * @param city a city.
      */
     private void validateInput(List<AddressTrieNode> searchResult, String houseNumber, int postCode, String city) {
-        makeSuggestions(searchResult, houseNumber, postCode, city);
-
-        if(isMatch(searchResult.get(0), houseNumber, postCode, city)) {
-            matchedAddress = searchResult.get(0).findNode(houseNumber, postCode);
+        AddressTrieNode result = searchResult.get(0);
+        if(isMatch(result, houseNumber, postCode, city)) {
+            matchedAddress = new Address(result.getStreetName(), houseNumber, postCode, city, result.findNode(houseNumber, postCode));
         }
     }
 
     /**
-     * Creates a List of possible suggestions based on the parameters and sorts it.
+     * Creates a List of possible suggestions based on the parameters and sorts it alphabetically.
      *
      * @param searchResult a List of {@link AddressTrieNode}s.
      * @param houseNumber the house number to make suggestions from.
@@ -98,8 +100,9 @@ public class AddressFilter {
      * @return a List of Strings containing suggestions.
      */
     private List<String> filter(List<AddressTrieNode> searchResult, String houseNumber, int postCode, String city) {
-        if(!houseNumber.isBlank() && postCode != 0 && !city.isBlank()) return getAddressesWithNumberPostCodeAndCity(searchResult.get(0), houseNumber, postCode, city);
-        else if(!houseNumber.isBlank() && postCode == 0 && city.isBlank()) return getAddressesWithNumber(searchResult, houseNumber);
+        if(!houseNumber.isBlank() && postCode != 0 && !city.isBlank()) return getAddressesWithAllCriteria(searchResult.get(0), houseNumber, postCode);
+        else if(!houseNumber.isBlank() && postCode != 0) return getAddressesWithNumberAndPostCode(searchResult.get(0), houseNumber, postCode);
+        else if(!houseNumber.isBlank() && postCode == 0 && city.isBlank()) return getAddressesWithNumber(searchResult.get(0), houseNumber);
         return getAddresses(searchResult);
     }
 
@@ -134,36 +137,40 @@ public class AddressFilter {
     }
 
     /**
-     * Creates and returns a List of possible addresses for the given house number.
+     * Returns a List of possible addresses for the given house number.
      * It will then create all addresses that have the house number regardless of the post code or city.
      *
-     * @param searchResult the list of {@link AddressTrieNode}s to be handled.
+     * @param node the {@link AddressTrieNode} to be handled.
      * @param houseNumber the house number to be searched for.
      * @return a List of Strings containing possible addresses.
      */
-    private List<String> getAddressesWithNumber(List<AddressTrieNode> searchResult, String houseNumber) {
-        List<String> list = new ArrayList<>();
+    private List<String> getAddressesWithNumber(AddressTrieNode node, String houseNumber) {
+        return node.getAddressesFor(houseNumber);
+    }
 
-        for(AddressTrieNode node: searchResult) {
-            list.addAll(node.getAddressFor(houseNumber));
-        }
-
-        return list;
+    /**
+     * Returns a List of possible addresses for the given house number in the specified post code (city).
+     *
+     * @param node the {@link AddressTrieNode} to be handled.
+     * @param houseNumber the house number to be searched for.
+     * @param postCode the post code the house numbers are in.
+     * @return a List of Strings containing possible addresses.
+     */
+    private List<String> getAddressesWithNumberAndPostCode(AddressTrieNode node, String houseNumber, int postCode) {
+        return node.getAddressesStartingWithPostCode(houseNumber, postCode);
     }
 
     /**
      * Creates and returns a List of possible addresses (primarily house numbers) within a given street based on the
-     * house number, post code and city.
-     *
+     * house number and post code.
      *
      * @param node the {@link AddressTrieNode} to be searched.
      * @param houseNumber the house number to look for.
      * @param postCode the post code to look for.
-     * @param city the city to look for.
      * @return a List of Strings containing possible addresses.
      */
-    private List<String> getAddressesWithNumberPostCodeAndCity(AddressTrieNode node, String houseNumber, int postCode, String city) {
-        return new ArrayList<>(node.getAddressesFor(houseNumber, postCode, city));
+    private List<String> getAddressesWithAllCriteria(AddressTrieNode node, String houseNumber, int postCode) {
+        return node.getAddressesStartingWithPostCode(houseNumber, postCode);
     }
 
     /**
@@ -184,7 +191,7 @@ public class AddressFilter {
         return suggestions;
     }
 
-    public Node getMatchedAddress() {
+    public Address getMatchedAddress() {
         return matchedAddress;
     }
 }

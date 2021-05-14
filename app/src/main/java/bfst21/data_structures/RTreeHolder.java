@@ -3,26 +3,34 @@ package bfst21.data_structures;
 import bfst21.Osm_Elements.Element;
 import bfst21.view.MapCanvas;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Sorts elements into different R-trees depending on their type.
+ * Sorts elements into different R-trees depending on their type, returns range search list of elements from rTrees based on paint order.
  */
-public class RTreeHolder {
+public class RTreeHolder implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 4579015712304488555L;
+
     private Map<String, RTree> rTreeMap;
-    private HashMap<String, Integer> print;
     private ArrayList<ArrayList<RTree>> rTreeList;
     private int returnListSize;
     private Map<String, Byte> zoomMap;
     private RTree closetRoadRTree;
-    private int[] lengths; // TODO: 5/7/21 delete?
 
+    /**
+     * Creates Rtreeholder which makes list of rtrees. Rtrees are made based on which type they represent. The rtrees are then sorted in lists based zoomlevel.
+     * @param minimumChildren of Rtree nodes
+     * @param maximumChildren of Rtree nodes
+     * @param numberOfCoordinates dimension of coordinates.
+     * @param returnListSize Paint layers.
+     */
     public RTreeHolder(int minimumChildren, int maximumChildren, int numberOfCoordinates, int returnListSize) {
         rTreeList = new ArrayList<>();
-        print = new HashMap<>();
-        lengths = new int[MapCanvas.MAX_ZOOM_LEVEL];
         rTreeMap = new HashMap<>();
         this.returnListSize = returnListSize;
         zoomMap = MapCanvas.zoomMap;
@@ -34,22 +42,26 @@ public class RTreeHolder {
         for (String type : zoomMap.keySet()) {
             RTree rTree = new RTree(minimumChildren, maximumChildren, numberOfCoordinates);
             rTreeMap.put(type, rTree);
-            print.put(type, 0);
             rTreeList.get(zoomMap.get(type)).add(rTree);
         }
     }
 
+    /**
+     * Sets the Rtree that solely holds ways which can be traveled on.
+     * @param rTree Rtree with only travelable ways.
+     */
     public void setClosetRoadRTree(RTree rTree) {
         closetRoadRTree = rTree;
     }
 
+    /**
+     * Inserts element into the Rtree corresponding to type.
+     * @param element element to insert.
+     */
     public void insert(Element element) {
         String type = element.getType();
         if (zoomMap.get(type) != null) {
             rTreeMap.get(type).insert(element);
-            int i = print.get(type);
-            i++;
-            print.put(type, i);
         }
     }
 
@@ -98,11 +110,4 @@ public class RTreeHolder {
         }
         return results;
     }
-
-    public void print() { // TODO: 5/7/21 delete?
-        for (Map.Entry<String, Integer> entry : print.entrySet()) {
-            System.out.println("Rtree " + entry.getKey() + ", " + entry.getValue());
-        }
-    }
-
 }

@@ -20,9 +20,21 @@
     -fx-cursor: hand;
 }
 
-#copyRight {
-    -fx-font-size: 10px;
+#bottomBarPane {
     -fx-background-color: rgba(255, 255, 255, 0.7);
+}
+
+#bottomBarPane .label {
+    -fx-font-size: 10px;
+    -fx-padding: 0 5 0 5;
+}
+
+#bottomBarPane .separator .line {
+    -fx-border-width: 0;
+}
+
+#bottomBarPane .separator:vertical {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
 }
 
 #scalePane {
@@ -46,7 +58,7 @@
 }
 
 #directionsButton{
-    -fx-graphic: url("icons/directions_from_figma.png");
+    -fx-graphic: url("icons/directions_from_figma_little.png");
 }
 
 #searchForAddress{
@@ -67,13 +79,13 @@
 }
 
 #carNavToggleButton{
-    -fx-graphic: url("icons/car_vroom_test.png");
+    -fx-graphic: url("icons/car_vroom_icon_bigger.png");
 }
 
 #bikeNavToggleButton{
-    -fx-graphic: url("icons/bike_test.png");
+    -fx-graphic: url("icons/bike_icon_bigger.png");
 }
 
 #WalkNavToggleButton{
-    -fx-graphic: url("icons/person_test.png");
+    -fx-graphic: url("icons/walk_icon_bigger.png");
 }

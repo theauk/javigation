@@ -12,8 +12,10 @@ import java.util.TreeMap;
 
 /**
  * TreeMap which places Values with the same Key in the same Value ArrayList.
- * @param <Key>
- * @param <Value>
+ * Sorts the tree based on the keys ID.
+ * @param <Key> Key that extends element.
+ * @param <Value> Value that extends element
+ *
  */
 public class ElementToElementsTreeMap<Key extends Element, Value extends Element> implements Serializable {
     @Serial

@@ -73,7 +73,9 @@ class RTreeTest {
         for (int i = -10; i < 0; i++) {
             for (int j = -10; j < 0; j++) {
                 Node node = new Node(0, i, j);
-                rTree.insert(node);
+                Way way = new Way();
+                way.addNode(node);
+                rTree.insert(way);
             }
         }
         rTree.insert(w1);

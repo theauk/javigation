@@ -27,16 +27,16 @@ public class AddressTriesTree implements Serializable {
      *
      *                    calls insert that inserts the node into the trie via its streetname and city.
      */
-    public void put(Node node, String city, String streetname, int postcode, String houseNumber) {
-        insert(root, node, city, streetname, postcode, houseNumber);
+    public void put(Node node, String streetname, String houseNumber, int postcode, String city) {
+        insert(root, node, streetname, houseNumber, postcode, city);
     }
 
-    public void insert(AddressTrieNode root, Node node, String city, String streetname, int postcode, String houseNumber) {
+    private void insert(AddressTrieNode root, Node node, String streetname, String houseNumber, int postcode, String city) {
         streetname = streetname.toLowerCase();
-        city = city.toLowerCase();
         houseNumber = houseNumber.toLowerCase();
+        city = city.toLowerCase();
         POSTCODE_TO_CITIES.put(postcode, city);
-        insert_address_with_streetname(root,0 , node, streetname, postcode, houseNumber);
+        insertAddressWithStreetname(root,0 , node, streetname, houseNumber, postcode);
     }
 
     /**
@@ -51,10 +51,10 @@ public class AddressTriesTree implements Serializable {
      * @param postcode -> the postcode of the node given by the .osm file.
      * @param houseNumber -> the house number given by the .osm file.
      */
-    private void insert_address_with_streetname(AddressTrieNode trieNode, int index, Node node, String streetname, int postcode, String houseNumber) {
+    private void insertAddressWithStreetname(AddressTrieNode trieNode, int index, Node node, String streetname, String houseNumber, int postcode) {
         if (index == streetname.length()) {
-            if(trieNode.isAddress()) trieNode.addHouseNumber(postcode, node, houseNumber);
-            else trieNode.setAddress(node, postcode, streetname, houseNumber);
+            if(trieNode.isAddress()) trieNode.addHouseNumber(node, houseNumber, postcode);
+            else trieNode.setAddress(node, streetname, houseNumber, postcode);
         }
         else {
             Character currentChar = streetname.charAt(index);
@@ -62,12 +62,13 @@ public class AddressTriesTree implements Serializable {
                 AddressTrieNode new_child = new AddressTrieNode();
                 trieNode.getChildren().put(currentChar, new_child);
             }
-            insert_address_with_streetname(trieNode.getChildren().get(currentChar), index + 1 , node, streetname, postcode, houseNumber);
+            insertAddressWithStreetname(trieNode.getChildren().get(currentChar), index + 1 , node, streetname, houseNumber, postcode);
         }
     }
 
     /**
-     * Adapted from the Algorithms book by Sedgewick & Wayne
+     * Adapted from the Algorithms book by Sedgewick & Wayne.
+     *
      * @param prefix -> prefix to possible streetnames
      * @return -> a list (ArrayList) with the possible streetnames that matches the prefix with help from the help methods.
      */
@@ -112,19 +113,5 @@ public class AddressTriesTree implements Serializable {
         for (Map.Entry<Character, AddressTrieNode> child : trieNode.getChildren().entrySet()) {
             collect(child.getValue(), prefix + child.getKey(), queue);
         }
-    }
-
-    public List<Integer> getPostCodes() {
-        List<Integer> postCodes = new ArrayList<>(POSTCODE_TO_CITIES.keySet());
-        Collections.sort(postCodes);
-
-        return postCodes;
-    }
-
-    public List<String> getCities() {
-        List<String> cities = new ArrayList<>(POSTCODE_TO_CITIES.values());
-        Collections.sort(cities);
-
-        return cities;
     }
 }

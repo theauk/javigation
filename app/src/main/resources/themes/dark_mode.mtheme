@@ -2,67 +2,70 @@
 name = "Dark Mode";
 
 #Background
-"background" = {iColor = [19, 27, 39]};
-"man_made" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
-"asphalt" = {iColor = [238, 238, 238], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
+"background" = {iColor = [52, 66, 93]};
+"man_made" = {iColor = [47, 48, 52], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
+"asphalt" = {iColor = [47, 48, 52], oColor = [0, 0, 0]}, {filled = true}, {showAt = 13};
 
 #Coastline
 "coastline" = {iColor = [48, 60, 73]};
-"coastlines" = {iColor = [242, 239, 233], oColor = [0, 0, 0]}, {filled = true}, {showAt = 0};
+"coastlines" = {iColor = [25, 26, 28], oColor = [0, 0, 0]}, {filled = true}, {showAt = 0};
 
 #Navigation
 "navigation" = {iColor = [102, 157, 246], oColor = [29, 106, 212]}, {iWidth = 6, oWidth = 8};
 "start_route_note" = {iColor = [200, 0, 0], oColor = [255, 0, 0]}, {iWidth = 7, oWidth = 9}, {node = true};
 "end_route_note" = {iColor = [0, 0, 200], oColor = [0, 0, 255]}, {iWidth = 7, oWidth = 9}, {node = true};
+"user_added" = {iColor = [247, 216, 62], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true};
+"address" = {iColor = [40, 201, 34], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true};
 
 #Text
-"city" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 15}, {text = true};
-"town" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 13}, {text = true};
-"village" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 10}, {text = true};
-"hamlet" = {iColor = [255, 66, 54]}, {iWidth = 12, oWidth = 10}, {text = true};
+"city" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 20}, {text = true};
+"town" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 20}, {text = true};
+"village" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 17}, {text = true};
+"hamlet" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 17}, {text = true};
 
 #Roads
 "motorway" = {iColor = [226, 122, 143], oColor = [213, 18, 88]}, {iWidth = 2, oWidth = 3};
 "trunk" = {iColor = [249, 178, 156], oColor = [191, 62, 35]}, {iWidth = 2, oWidth = 3};
-"primary" = {iColor = [252, 206, 144], oColor = [154, 105, 8]}, {iWidth = 2, oWidth = 3};
-"secondary" = {iColor = [244, 251, 173], oColor = [105, 121, 0]}, {iWidth = 2, oWidth = 3};
+"primary" = {iColor = [67, 68, 70], oColor = [154, 105, 8]}, {iWidth = 2, oWidth = 3};
+"secondary" = {iColor = [67, 68, 70], oColor = [105, 121, 0]}, {iWidth = 2, oWidth = 3};
 "tertiary" = {iColor = [67, 68, 70], oColor = [157, 157, 157]}, {iWidth = 2, oWidth = 3};
-"unclassified" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
+"unclassified" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
 "residential" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
-"service" = {iColor = [254, 254, 254], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
+"service" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
 "roundabout" = {iColor = [67, 68, 70], oColor = [189, 184, 184]}, {iWidth = 1, oWidth = 2};
 
 #Road links
 "motorway_link" = {iColor = [233, 144, 161], oColor = [224, 59, 115]}, {iWidth = 1, oWidth = 2};
 "trunk_link" = {iColor = [249, 178, 156], oColor = [249, 178, 156]}, {iWidth = 1, oWidth = 2};
-"tertiary_link" = {iColor = [254, 254, 254], oColor = [157, 157, 157]}, {iWidth = 1, oWidth = 2};
-"primary_link" = {iColor = [252, 214, 164], oColor = [154, 105, 8]}, {iWidth = 1, oWidth = 2};
-"secondary_link" = {iColor = [247, 250, 191], oColor = [105, 121, 0]}, {iWidth = 1, oWidth = 2};
+"tertiary_link" = {iColor = [67, 68, 70], oColor = [157, 157, 157]}, {iWidth = 1, oWidth = 2};
+"primary_link" = {iColor = [67, 68, 70], oColor = [154, 105, 8]}, {iWidth = 1, oWidth = 2};
+"secondary_link" = {iColor = [67, 68, 70], oColor = [105, 121, 0]}, {iWidth = 1, oWidth = 2};
 
 "living_street" = {iColor = [232, 232, 232], oColor = [184, 184, 184]}, {iWidth = 1, oWidth = 2};
 "pedestrian" = {iColor = [213, 212, 227], oColor = [150, 148, 149]}, {iWidth = 1, oWidth = 2};
 "road" = {iColor = [213, 213, 213], oColor = [181, 181, 180]}, {iWidth = 1, oWidth = 2};
 
-"footway" = {iColor = [250, 128, 114]}, {style = "dotted"};
+"footway" = {iColor = [52, 109, 98]}, {style = "dotted"};
 "steps" = {iColor = [250, 128, 114]}, {style = "dotted"};
 "path" = {iColor = [250, 128, 114]}, {style = "dotted"};
 "cycleway" = {iColor = [0, 112, 242]}, {style = "dotted"};
 
 #Public transport
-"rail" = {iColor = [213, 216, 219]}, {showAt = 12};
-"light_rail" = {iColor = [213, 216, 219]}, {showAt = 12};
-"subway" = {iColor = [213, 216, 219]}, {showAt = 12};
+"rail" = {iColor = [84, 88, 92]}, {showAt = 12};
+"light_rail" = {iColor = [84, 88, 92]}, {showAt = 12};
+"subway" = {iColor = [84, 88, 92]}, {showAt = 12};
+"ferry" = {iColor = [114, 155, 239]}, {style = "dotted"}, {showAt = 13};
 
 #Nature
 "park" = {iColor = [40, 68, 53]}, {filled = true};
-"forest" = {iColor = [157, 202, 138]}, {filled = true};
-"dark_green" = {iColor = [172, 210, 156], oColor = [0, 0, 0]}, {filled = true};
-"light_green" = {iColor = [223, 252, 226], oColor = [0, 0, 0]}, {filled = true};
-"wetland" = {iColor = [202, 252, 226], oColor = [0, 0, 0]}, {filled = true};
-"farmland" = {iColor = [238, 240, 213], oColor = [0, 0, 0]}, {filled = true};
+"forest" = {iColor = [29, 50, 36]}, {filled = true};
+"dark_green" = {iColor = [32, 55, 44], oColor = [0, 0, 0]}, {filled = true};
+"light_green" = {iColor = [40, 68, 53], oColor = [0, 0, 0]}, {filled = true};
+"wetland" = {iColor = [52, 66, 93], oColor = [0, 0, 0]}, {filled = true};
+"farmland" = {iColor = [38, 50, 50], oColor = [0, 0, 0]}, {filled = true};
 
 #Building
-"building" = {iColor = [216, 208, 201]}, {filled = true};
+"building" = {iColor = [42, 43, 47]}, {filled = true};
 
 #Water
-"water" = {iColor = [170, 211, 223]}, {filled = true};
+"water" = {iColor = [52, 66, 93]}, {filled = true};

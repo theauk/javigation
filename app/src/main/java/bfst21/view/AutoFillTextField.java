@@ -6,6 +6,9 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,10 +16,13 @@ import java.util.List;
 /**
  * A TextField with the ability to show a list of clickable suggestions.
  * If a suggestion is clicked, the text will be transferred to the TextField.
+ * At any point (when the TextField has focus), use the keyboard shortcut
+ * {@link AutoFillTextField#showSuggestionsCombination} to show the current suggestions.
  */
 public class AutoFillTextField extends TextField {
 
     private final ContextMenu popup;
+    private final KeyCombination showSuggestionsCombination = new KeyCodeCombination(KeyCode.SPACE, KeyCombination.CONTROL_DOWN);
     private final int maxEntries;
     private boolean suggest;
 
@@ -34,6 +40,13 @@ public class AutoFillTextField extends TextField {
     }
 
     /**
+     * Creates an AutoFillTextField with a default number of max suggestions per call to the {@link AutoFillTextField#suggest(List)} method.
+     */
+    public AutoFillTextField() {
+        this(1);
+    }
+
+    /**
      * Shows a list of possible suggestions as a ContextMenu right under the TextField if {@link AutoFillTextField#suggest} is true.
      *
      * @param suggestions a list of Strings containing the suggestions to show.
@@ -44,7 +57,7 @@ public class AutoFillTextField extends TextField {
         if (suggest) {
             if (!suggestions.isEmpty()) {
                 addToPopup(suggestions);
-                if (!popup.isShowing()) popup.show(this, Side.BOTTOM, 0, 0);
+                if (!popup.isShowing()) showPopup();
             } else popup.hide();
         }
     }
@@ -64,6 +77,17 @@ public class AutoFillTextField extends TextField {
                 popup.show(this, Side.BOTTOM, 0, 0);  //If focus is gained and field is not empty
             else popup.hide();
         }));
+
+        setOnKeyPressed(e -> {
+            if(showSuggestionsCombination.match(e)) showPopup();
+        });
+    }
+
+    /**
+     * Shows the suggestions popup right under the TextField.
+     */
+    private void showPopup() {
+        popup.show(this, Side.BOTTOM, 0, 0);
     }
 
     /**
