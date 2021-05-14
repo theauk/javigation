@@ -52,19 +52,9 @@ public class AddressTriesTree implements Serializable {
     }
 
     /**
-     * This method is inspired by the method 'insert' from this post: https://stackoverflow.com/a/55470115
-     *
-     *
-     * @param trieNode when called for the first time, this would be the root.
-     *                     afterwards in the recursive calls the method will call itself with the next node (a child), and proceed
-     *                     to the bottom of the trie, where the addressNode will be added to the Arraylist in that last node's arraylist.<br>
-     *                     this @param trieNode could be omitted, but then the methods needs to be iterative instead of recursive.<br><br>
-     * @param index the start index is always 0, since the method will start from the root, and will traverse through the tree.
-     *                 index could be omitted as well, but the method would need to be made iterative instead of recursive. <br>
-     *
-     *              When index is the same length as the street name the method will insert the address in the matching trie node's
-     *              HashMap&lt;Integer,AddressTrieNode&gt; If the trieNode is not an address already - the method will set it to an address<br><br>
-     *
+     * This method is inspired by the method 'insert' from this post: https://stackoverflow.com/a/55470115 <br>
+     * @param trieNode Root, otherwise a child.
+     * @param index counts how many times the method has been called - stops when index is the same length as streetname
      * @param node the node that contains the coordinates for the address
      * @param streetName the name of the street given by the .osm file.
      * @param postcode the postcode of the node given by the .osm file.
@@ -100,10 +90,9 @@ public class AddressTriesTree implements Serializable {
 
     /**
      *
-     * @param trieNode the trie node which the method is currently at. It starts from the root and goes through the tree until it
-     *                 gets the node associated with key in the sub-trie rooted at the trie node
-     * @param key could also be called prefix. Calls the method recursively until index is the same length as the key, and then it returns the given trie node
-     * @param index starts at 0, and increases up to the length of the key - this is so the method can be called recursively
+     * @param trieNode the trie node which the method is currently at.
+     * @param key could also be called prefix. returns the given trie node
+     * @param index counts how many times the method has been called
      * @return returns the trie node that matches the key.
      */
     private AddressTrieNode get(AddressTrieNode trieNode, String key, int index) {
@@ -117,8 +106,8 @@ public class AddressTriesTree implements Serializable {
 
     /**
      *
-     * @param trieNode the trie node the method is currently at. It starts from the root and traverses the tree until it
-     *                 finds a street name that matches the given prefix and add it to the list (queue).
+     * The method finds a street name that matches the given prefix and add it to the list (queue).
+     * @param trieNode the trie node the method is currently at.
      * @param prefix help method for searchWithPrefix adds street names to the list that begins with the given prefix
      * @param queue the list that searchWithPrefix uses that contains the possible street names
      */

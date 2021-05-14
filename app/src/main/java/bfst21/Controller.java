@@ -703,7 +703,7 @@ public class Controller {
 
     /**
      * Starts the route finding process in its own thread <br>
-     * Sets the time, distance, and if there is a special path feature, to the given label <br>
+     * Sets the time, distance, and if there is a special path feature, to the given label
      */
     @FXML
     public void getRoute() {
