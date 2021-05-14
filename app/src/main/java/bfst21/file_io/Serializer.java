@@ -24,13 +24,13 @@ public class Serializer extends Task<Void> {
             double size = totalBytes;
             String unit = "B";
 
-            if(size > 1000 && size < 1000000) {
+            if (size > 1000 && size < 1000000) {
                 size /= 1000;
                 unit = "kB";
-            } else if(size > 1000000 && size < 1000000000) {
+            } else if (size > 1000000 && size < 1000000000) {
                 size /= 1000000;
                 unit = "MB";
-            } else if(size > 1000000000) {
+            } else if (size > 1000000000) {
                 size /= 1000000000;
                 unit = "GB";
             }

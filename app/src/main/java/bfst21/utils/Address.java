@@ -2,6 +2,9 @@ package bfst21.utils;
 
 import bfst21.Osm_Elements.Node;
 
+/**
+ * The Address class holds an address.
+ */
 public class Address {
     private final String street;
     private final String houseNumber;

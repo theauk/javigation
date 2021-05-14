@@ -9,7 +9,8 @@ import java.io.Serializable;
  * Abstract class for the type elements that the map divides into.
  */
 public abstract class Element implements Spatializable, Serializable {
-    @Serial private static final long serialVersionUID = -5832865119529036880L;
+    @Serial
+    private static final long serialVersionUID = -5832865119529036880L;
 
     protected long id;
     protected float xMin;
@@ -18,9 +19,10 @@ public abstract class Element implements Spatializable, Serializable {
     protected String type;
     protected int layer;
 
-    public Element(){
+    public Element() {
 
     }
+
     public Element(long id) {
         this.id = id;
         layer = 4; //default value;
@@ -70,12 +72,12 @@ public abstract class Element implements Spatializable, Serializable {
         return new float[]{xMin, xMin, yMin, yMin};
     }
 
-    public void setLayer(int lay) {
-        if (lay < 5) layer = lay;
-    }
-
     public int getLayer() {
         return layer;
+    }
+
+    public void setLayer(int lay) {
+        if (lay < 5) layer = lay;
     }
 
 }

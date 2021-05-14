@@ -1,39 +1,33 @@
 package bfst21.data_structures;
 
-import bfst21.exceptions.KDTreeEmptyException;
 import bfst21.Osm_Elements.Element;
+import bfst21.exceptions.KDTreeEmptyException;
 import javafx.geometry.Point2D;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Kd based on Values X max and y Max
+ *
  * @param <Value> Value extends element.
  */
 public class KDTree<Value extends Element> implements Serializable {
     @Serial
     private static final long serialVersionUID = 2546489468741939125L;
 
-    private final transient Comparator<KDTreeNode> comparatorX = new Comparator<KDTreeNode>() {
-        @Override
-        public int compare(KDTreeNode p1, KDTreeNode p2) {
-            return Float.compare(p1.node.getxMax(), p2.node.getxMax());
-        }
-    };
-    private final transient Comparator<KDTreeNode> comparatorY = new Comparator<KDTreeNode>() {
-        @Override
-        public int compare(KDTreeNode p1, KDTreeNode p2) {
-            return Float.compare(p1.node.getyMax(), p2.node.getyMax());
-        }
-    };
+    private final transient Comparator<KDTreeNode> comparatorX = (p1, p2) -> Float.compare(p1.node.getxMax(), p2.node.getxMax());
+    private final transient Comparator<KDTreeNode> comparatorY = (p1, p2) -> Float.compare(p1.node.getyMax(), p2.node.getyMax());
     private KDTreeNode root;
-    private List<KDTreeNode> list;
-    private int startDim;
-    private int numCor;
-    private int numDim;
-    private HashSet<Value> hashList;
+    private final List<KDTreeNode> list;
+    private final int startDim;
+    private final int numCor;
+    private final int numDim;
+    private final HashSet<Value> hashList;
 
     public KDTree(int startDim, int numCor) {
         this.startDim = startDim;
@@ -45,6 +39,7 @@ public class KDTree<Value extends Element> implements Serializable {
 
     /**
      * Returns the comparator to used based on the dimension of the node that needs to be compared.
+     *
      * @param dim dimension to compare
      * @return comparator
      */
@@ -105,7 +100,7 @@ public class KDTree<Value extends Element> implements Serializable {
      * @throws KDTreeEmptyException throws if the tree is empty
      */
     public Value getNearestNode(float x, float y) throws KDTreeEmptyException {
-        if(root == null){
+        if (root == null) {
             throw new KDTreeEmptyException();
         }
         KDTreeNode nearestNode = getNearestNode(x, y, root, null);
@@ -116,11 +111,12 @@ public class KDTree<Value extends Element> implements Serializable {
      * Helper method for getNearest Node
      * Calculates whether or not it is worth checking the 'other side' of the tree for possible closer node.
      * It returns true if the shortest distance is larger than the distance between x or y to the current nodes axis
+     *
      * @param shortestDistance Shortest distance so far
-     * @param currentNode Node to look at.
-     * @param x coordinate
-     * @param y coordinate
-     * @return
+     * @param currentNode      Node to look at.
+     * @param x                coordinate
+     * @param y                coordinate
+     * @return True if a different side also should be checked. Otherwise, false.
      */
     private boolean possibleCloserNode(Double shortestDistance, KDTreeNode currentNode, float x, float y) {
         double possibleNewDistance = Math.abs(currentNode.onXAxis ? x - currentNode.node.getxMax() : y - currentNode.node.getyMax());
@@ -138,8 +134,9 @@ public class KDTree<Value extends Element> implements Serializable {
 
     /**
      * Recursively finds the nearest node, determining the most promising side and looking there first.
-     * @param x coordinate
-     * @param y coordinate
+     *
+     * @param x           coordinate
+     * @param y           coordinate
      * @param currentNode node to search
      * @param nearestNode nearest node so far.
      * @return returns the nearest node
@@ -154,7 +151,7 @@ public class KDTree<Value extends Element> implements Serializable {
         double currentDistance = getDistance(currentNode, x, y);
         double minimumDistance = getDistance(currentNearest, x, y);
 
-        if (currentDistance < minimumDistance) {  // if currentnode is closer than currentNearest
+        if (currentDistance < minimumDistance) {  // if currentNode is closer than currentNearest
             currentNearest = currentNode;
         }
 
@@ -187,7 +184,7 @@ public class KDTree<Value extends Element> implements Serializable {
         @Serial
         private static final long serialVersionUID = -6786678243546431229L;
 
-        private Value node;
+        private final Value node;
         private KDTreeNode leftChild;
         private KDTreeNode rightChild;
         private boolean onXAxis;

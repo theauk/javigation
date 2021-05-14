@@ -32,7 +32,8 @@
 
                 <Menu text="View">
                     <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
-
+                    <SeparatorMenuItem/>
+                    <RadioMenuItem fx:id="showLeftView" text="Show left panel" selected="true" onAction="#toggleLeftPanel" accelerator="CTRL + L"/>
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
                         <RadioMenuItem text="Default" userData="default.mtheme" selected="true">
@@ -157,7 +158,7 @@
         <left>
             <VBox BorderPane.alignment="CENTER" maxWidth="325">
                 <children>
-                    <VBox fx:id="address_myPlacesPane" spacing="18.0" visible="true" prefWidth="325"
+                    <VBox fx:id="address_myPlacesPane" spacing="18.0" visible="false" prefWidth="325"
                           managed="${address_myPlacesPane.visible}">
                         <children>
                             <HBox fx:id="searchForAddressHBox" spacing="5.0">

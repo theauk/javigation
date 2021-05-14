@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class CustomKeyCombination extends KeyCombination {
     public static final List<KeyCode> keyCodes = new ArrayList<>();
-    private final List<KeyCode> needed;
     private static boolean targetSet;
+    private final List<KeyCode> needed;
 
     /**
      * Constructor which adds the specified KeyCodes to a List representing the key combination.
@@ -25,18 +25,6 @@ public class CustomKeyCombination extends KeyCombination {
      */
     public CustomKeyCombination(KeyCode... codes) {
         needed = Arrays.asList(codes);
-    }
-
-    /**
-     * Checks if the specified keys has been pressed for the specific key combination.
-     *
-     * @param e the KeyEvent associated with the key press.
-     * @return true if it is a match, false if not.
-     */
-    @Override
-    public boolean match(KeyEvent e) {
-        if(!targetSet) throw new IllegalStateException("CustomKeyCombination must have a single shared target to observe. Use method \"setTarget\" to set a Node target.");
-        return keyCodes.containsAll(needed);
     }
 
     /**
@@ -49,8 +37,21 @@ public class CustomKeyCombination extends KeyCombination {
     public static void setTarget(Node node) {
         targetSet = true;
         node.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-            if(!keyCodes.contains(e.getCode())) keyCodes.add(e.getCode());
+            if (!keyCodes.contains(e.getCode())) keyCodes.add(e.getCode());
         });
         node.addEventFilter(KeyEvent.KEY_RELEASED, e -> keyCodes.remove(e.getCode()));
+    }
+
+    /**
+     * Checks if the specified keys has been pressed for the specific key combination.
+     *
+     * @param e the KeyEvent associated with the key press.
+     * @return true if it is a match, false if not.
+     */
+    @Override
+    public boolean match(KeyEvent e) {
+        if (!targetSet)
+            throw new IllegalStateException("CustomKeyCombination must have a single shared target to observe. Use method \"setTarget\" to set a Node target.");
+        return keyCodes.containsAll(needed);
     }
 }

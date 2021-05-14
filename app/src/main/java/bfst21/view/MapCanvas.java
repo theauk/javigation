@@ -9,29 +9,25 @@ import javafx.beans.property.StringProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
-    public static Map<String, Byte> zoomMap;
     public final static byte MIN_ZOOM_LEVEL = 1;
     public final static byte MAX_ZOOM_LEVEL = 19;
+    public static Map<String, Byte> zoomMap;
     private final int ZOOM_FACTOR = 2;
-    private byte zoomLevel = MIN_ZOOM_LEVEL;
-
-    private MapData mapData;
-    private Theme theme;
     private final CanvasBounds bounds;
     private final StringProperty ratio;
     private final Affine trans;
-
+    private byte zoomLevel = MIN_ZOOM_LEVEL;
+    private MapData mapData;
+    private Theme theme;
     private boolean initialized;
 
     public MapCanvas() {
@@ -75,7 +71,7 @@ public class MapCanvas extends Canvas {
         fillCoastLines(gc);
 
         int layers = mapData.getMapSegment().size();
-        for (int layer = 0; layer < layers - 1; layer++) { // -1 since toplayer is drawn below
+        for (int layer = 0; layer < layers - 1; layer++) { // layers - 1 since top layer is drawn below
             for (Element element : mapData.getMapSegment().get(layer)) {
                 drawElement(gc, element);
             }
@@ -93,7 +89,7 @@ public class MapCanvas extends Canvas {
             drawRectangleNode(gc, point);
         }
 
-        if(mapData.getUserSearchResult() != null){
+        if (mapData.getUserSearchResult() != null) {
             drawRectangleNode(gc, mapData.getUserSearchResult());
         }
 
@@ -260,7 +256,7 @@ public class MapCanvas extends Canvas {
         double dy = (minYMap - mapData.getMinY()) * Math.sqrt(trans.determinant());
 
         double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map;
-        if(mapHeight > mapWidth) zoom = getHeight() / (mapData.getMaxY() - mapData.getMinY());
+        if (mapHeight > mapWidth) zoom = getHeight() / (mapData.getMaxY() - mapData.getMinY());
 
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        //Calculate amount of levels to zoom in
 
@@ -308,13 +304,13 @@ public class MapCanvas extends Canvas {
     }
 
     private byte getLevelsToZoomForLevel(int level) {
-        if(level > MAX_ZOOM_LEVEL || level < MIN_ZOOM_LEVEL || zoomLevel == level) return 0;
+        if (level > MAX_ZOOM_LEVEL || level < MIN_ZOOM_LEVEL || zoomLevel == level) return 0;
         return (byte) (level - zoomLevel);
     }
 
     private void zoomToLevel(int levels) {
         int levelToZoomTo = getLevelsToZoomForLevel(levels);
-        if(levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
+        if (levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
         else updateMap();
     }
 
@@ -331,7 +327,7 @@ public class MapCanvas extends Canvas {
         double dy = (minYMap - boundingBoxRouteCoordinates[2]) * Math.sqrt(trans.determinant());
 
         double zoom = getWidth() / mapWidth;
-        if(mapHeight > mapWidth) zoom = getHeight() / mapHeight;
+        if (mapHeight > mapWidth) zoom = getHeight() / mapHeight;
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
 
         pan(dx, dy);

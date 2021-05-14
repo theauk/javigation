@@ -184,7 +184,7 @@ public class Creator extends Task<MapData> {
                                     var refR = Long.parseLong(reader.getAttributeValue(null, "ref"));
                                     if (type.equals("way")) {
                                         if (idToWay.get(refR) != null) {
-                                            relation.addWay(idToWay.get(refR)); // TODO: 4/14/21 fix
+                                            relation.addWay(idToWay.get(refR));
                                             relation.addAllNodes(idToWay.get(refR).getNodes());
                                         }
                                     }

@@ -43,7 +43,7 @@ public class Controller {
     private AddressFilter fromAddressFilter;
     private AddressFilter toAddressFilter;
 
-    private static final String BINARY_FILE = "/small.bmapdata"; // TODO: 5/8/21 edit
+    private static final String BINARY_FILE = "/small.bmapdata";
 
     private Point2D lastMouse = new Point2D(0, 0);
     private Point2D currentRightClick = new Point2D(0,0);
@@ -96,6 +96,7 @@ public class Controller {
     @FXML private RadioMenuItem rTreeDebug;
     @FXML private RadioMenuItem kdTreeNearestNode;
     @FXML public RadioMenuItem rTreeNearestNode;
+    @FXML public RadioMenuItem showLeftView;
 
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
@@ -135,7 +136,7 @@ public class Controller {
         openFile();
     }
 
-    private void initView() { // TODO: 5/7/21 flyt listeners
+    private void initView() {
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getUserData().toString()));
         mapCanvas.initTheme(Loader.loadTheme(themeGroup.getSelectedToggle().getUserData().toString()));
         scaleLabel.textProperty().bind(mapCanvas.getRatio());
@@ -148,7 +149,6 @@ public class Controller {
 
     private void initMapCanvas() {
         mapCanvas.init(mapData);
-        //TODO MOVE LISTENERS
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
@@ -209,7 +209,7 @@ public class Controller {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
             Address address = fromAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesNavigation(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet()); // TODO: 5/7/21 fix
+            if (address != null) updateNodesNavigation(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
         }));
 
 
@@ -217,7 +217,7 @@ public class Controller {
             toAddressFilter.search(newValue);
             textFieldToNav.suggest(toAddressFilter.getSuggestions());
             Address address = toAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesNavigation(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet()); // TODO: 5/7/21 fix
+            if (address != null) updateNodesNavigation(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet());
         }));
 
         addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
@@ -264,10 +264,6 @@ public class Controller {
         myPlacesListView.setOnKeyPressed(e -> {
             if(e.getCode() == KeyCode.ENTER && myPlacesListView.getItems().size() > 0) moveToPoint(myPlacesListView.getSelectionModel().getSelectedIndex());
         });
-    }
-
-    private void removeChildren(){
-        // TODO: 28-04-2021 Remove search when under 2 charachters
     }
 
     /**
@@ -735,9 +731,7 @@ public class Controller {
             mapCanvas.panToRoute(routeNavigation.getCoordinatesForPanToRoute());
             mapCanvas.repaint();
         });
-        routeNavigation.setOnFailed(e -> {
-            showDialogBox("No Route Found", "Could not find a route between the two points");
-        });
+        routeNavigation.setOnFailed(e -> showDialogBox("No Route Found", "Could not find a route between the two points"));
         mapCanvas.repaint();
     }
 
@@ -766,7 +760,6 @@ public class Controller {
         s += MapMath.formatDistance(meters, 2);
         distanceNav.setText(s);
     }
-
 
     public void setTimeNav(double seconds){
         timeNav.setVisible(true);
@@ -843,7 +836,7 @@ public class Controller {
     }
 
     /**
-     * add user point via the ContextMenu (right click menu)
+     * Add user point via the ContextMenu (right click menu)
      */
     @FXML
     public void rightClickAddUserPoint() {
@@ -862,12 +855,12 @@ public class Controller {
             navigationLeftPane.setVisible(true);
             address_myPlacesPane.setVisible(false);
         }
-        updateNodesNavigation(true, point.getX(), point.getY(), null, null); // TODO: 5/6/21 null kan ændres for at skrive anden tekst i felterne
+        updateNodesNavigation(true, point.getX(), point.getY(), null, null);
     }
 
     /**
-     * Finds the streetname closest to where the context menu was opened and updates the "to" AutoTextField with the
-     * streetname
+     * Finds the street name closest to where the context menu was opened and updates the "to" AutoTextField with the
+     * street name
      */
     @FXML
     public void rightClickPointNavTo() {
@@ -877,6 +870,10 @@ public class Controller {
             address_myPlacesPane.setVisible(false);
         }
         updateNodesNavigation(false, point.getX(), point.getY(), null, null);
+    }
+
+    public void toggleLeftPanel() {
+        address_myPlacesPane.setVisible(showLeftView.isSelected());
     }
 
     private enum State {

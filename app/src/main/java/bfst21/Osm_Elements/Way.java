@@ -23,12 +23,10 @@ public class Way extends NodeHolder implements Serializable {
 
     public Way() {
         super();
-        isHighway = false;
     }
 
     public Way(long id) {
         super(id);
-        isHighway = false;
     }
 
     public void setType(String type, boolean isHighway, boolean foot) {

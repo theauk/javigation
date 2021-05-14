@@ -79,7 +79,7 @@ public class AutoFillTextField extends TextField {
         }));
 
         setOnKeyPressed(e -> {
-            if(showSuggestionsCombination.match(e)) showPopup();
+            if (showSuggestionsCombination.match(e)) showPopup();
         });
     }
 

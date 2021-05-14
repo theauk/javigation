@@ -21,8 +21,8 @@ import java.util.zip.ZipInputStream;
 
 public class Loader {
     public static InputStream load(String file) throws IOException, NoOSMInZipFileException, UnsupportedFileFormatException {
-        if(file.endsWith(".osm") || file.endsWith(".bmapdata")) return loadFile(file);
-        else if(file.endsWith(".zip")) return loadZIP(file);
+        if (file.endsWith(".osm") || file.endsWith(".bmapdata")) return loadFile(file);
+        else if (file.endsWith(".zip")) return loadZIP(file);
         throw new UnsupportedFileFormatException(file);
     }
 
@@ -32,15 +32,15 @@ public class Loader {
      *
      * @param file the path to the file to be processed
      * @return a ZipInputStream for the found OSM zip entry.
-     * @throws IOException if the file is not found.
+     * @throws IOException             if the file is not found.
      * @throws NoOSMInZipFileException if there is no OSM file in the zip file.
      */
     private static ZipInputStream loadZIP(String file) throws IOException, NoOSMInZipFileException {
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
         ZipEntry entry;
 
-        while((entry = zipInputStream.getNextEntry()) != null) {
-            if(entry.getName().endsWith(".osm")) return zipInputStream;
+        while ((entry = zipInputStream.getNextEntry()) != null) {
+            if (entry.getName().endsWith(".osm")) return zipInputStream;
         }
 
         throw new NoOSMInZipFileException(file);
@@ -64,17 +64,17 @@ public class Loader {
      *
      * @param file the zip file to be processed
      * @return the file size of the first found OSM entry in the zip file (in bytes).
-     * @throws IOException if file is not found.
+     * @throws IOException             if file is not found.
      * @throws NoOSMInZipFileException if there are no OSM zip entries in the zip file.
      */
     public static long getZipFileEntrySize(String file) throws IOException, NoOSMInZipFileException {
         ZipFile zipFile = new ZipFile(file);
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-        while(entries.hasMoreElements()) {
+        while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
 
-            if(entry.getName().endsWith(".osm")) {
+            if (entry.getName().endsWith(".osm")) {
                 zipFile.close();
                 return entry.getSize();
             }
@@ -84,19 +84,19 @@ public class Loader {
     }
 
     public static Theme loadTheme(String file) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
             int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if(line.isBlank()) continue;
+                if (line.isBlank()) continue;
                 theme.parseData(line, lineNumber);
             }
 
             URL cssPath = Loader.class.getResource("/themes/" + file.replace(".mtheme", ".css"));
-            if(cssPath != null) theme.setStylesheet(cssPath.toString());
+            if (cssPath != null) theme.setStylesheet(cssPath.toString());
 
             return theme;
         } catch (IOException e) {

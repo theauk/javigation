@@ -16,14 +16,14 @@ public class RTreeHolder implements Serializable {
     @Serial
     private static final long serialVersionUID = 4579015712304488555L;
 
-    private Map<String, RTree> rTreeMap;
-    private ArrayList<ArrayList<RTree>> rTreeList;
-    private int returnListSize;
-    private Map<String, Byte> zoomMap;
+    private final Map<String, RTree> rTreeMap;
+    private final ArrayList<ArrayList<RTree>> rTreeList;
+    private final int returnListSize;
+    private final Map<String, Byte> zoomMap;
     private RTree closetRoadRTree;
 
     /**
-     * Creates Rtreeholder which makes list of rtrees. Rtrees are made based on which type they represent. The rtrees are then sorted in lists based zoomlevel.
+     * Creates R-tree holder which makes list of R-trees. R-trees are made based on which type they represent. The R-trees are then sorted in lists based zoom level.
      * @param minimumChildren of Rtree nodes
      * @param maximumChildren of Rtree nodes
      * @param numberOfCoordinates dimension of coordinates.

@@ -13,7 +13,8 @@ import java.util.List;
  */
 public final class MapMath {
 
-    private MapMath() { }
+    private MapMath() {
+    }
 
     /**
      * Calculates the angle between p1 and p3 through p2 in degrees ranging from -180 to 180.
@@ -28,7 +29,7 @@ public final class MapMath {
         double v2 = Math.atan2(p2.getyMax() - p1.getyMax(), p2.getxMax() - p1.getxMax());
         double result = v1 - v2;
 
-        if(result > Math.PI) result -= 2 * Math.PI;
+        if (result > Math.PI) result -= 2 * Math.PI;
         else if (result <= -Math.PI) result += 2 * Math.PI;
         return Math.toDegrees(result);
     }
@@ -52,14 +53,14 @@ public final class MapMath {
      * @return a String containing a compass direction ranging from NORTH, NORTH EAST, EAST and so forth or UNKNOWN if not found.
      */
     public static String compassDirection(double bearing) {
-        if(bearing > 337.5 || bearing >= 0 && bearing < 22.5) return "NORTH";
-        else if(bearing > 22.5 && bearing < 67.5) return "NORTH EAST";
-        else if(bearing > 67.5 && bearing < 112.5) return "EAST";
-        else if(bearing > 112.5 && bearing < 157.5) return "SOUTH EAST";
-        else if(bearing > 157.5 && bearing < 202.5) return "SOUTH";
-        else if(bearing > 202.5 && bearing < 247.5) return "SOUTH WEST";
-        else if(bearing > 247.5 && bearing < 292.5) return "WEST";
-        else if(bearing > 292.5 && bearing < 337.5) return "NORTH WEST";
+        if (bearing > 337.5 || bearing >= 0 && bearing < 22.5) return "NORTH";
+        else if (bearing > 22.5 && bearing < 67.5) return "NORTH EAST";
+        else if (bearing > 67.5 && bearing < 112.5) return "EAST";
+        else if (bearing > 112.5 && bearing < 157.5) return "SOUTH EAST";
+        else if (bearing > 157.5 && bearing < 202.5) return "SOUTH";
+        else if (bearing > 202.5 && bearing < 247.5) return "SOUTH WEST";
+        else if (bearing > 247.5 && bearing < 292.5) return "WEST";
+        else if (bearing > 292.5 && bearing < 337.5) return "NORTH WEST";
         return "UNKNOWN";
     }
 
@@ -119,8 +120,9 @@ public final class MapMath {
 
     /**
      * Finds the distance between two nodes in meters.
+     *
      * @param from The from Node.
-     * @param to The to Node.
+     * @param to   The to Node.
      * @return The distance in meters.
      */
     public static double distanceBetweenTwoNodes(Node from, Node to) {
@@ -163,6 +165,7 @@ public final class MapMath {
 
     /**
      * Takes a string in the format hh:mm and converts it to total hours.
+     *
      * @param colonTime The time to be converted in the format hh:mm.
      * @return The time in hours.
      */
@@ -176,6 +179,7 @@ public final class MapMath {
 
     /**
      * Gets the total distance between a list of nodes.
+     *
      * @param nodes A list of nodes.
      * @return The distance between all the nodes in kilometers.
      */
@@ -188,13 +192,15 @@ public final class MapMath {
     }
 
     /**
-     * Finds the shortest distance between a point and a line.
-     * @param queryX The x-coordinate for the point.
-     * @param queryY The y-coordinate for the point.
+     * Finds the shortest distance between a point and a line. Currently, the method does not support if the point is on the vector line
+     * of the node holder segment and not on the node holder segment itself.
+     *
+     * @param queryX     The x-coordinate for the point.
+     * @param queryY     The y-coordinate for the point.
      * @param nodeHolder The line.
      * @return The shortest distance.
      */
-    public static double shortestDistanceToElement(float queryX, float queryY, NodeHolder nodeHolder) { // // TODO: 5/10/21 fix hvis nul (ligger på linjen eller i forlængelse med)
+    public static double shortestDistanceToElement(float queryX, float queryY, NodeHolder nodeHolder) {
         double minDistance = Double.POSITIVE_INFINITY;
         List<Node> nodes = nodeHolder.getNodes();
 
@@ -202,14 +208,9 @@ public final class MapMath {
             Point2D firstNode = new Point2D(nodes.get(i).getxMin(), nodes.get(i).getyMin());
             Point2D lastNode = new Point2D(nodes.get(i + 1).getxMin(), nodes.get(i + 1).getyMin());
 
-            double numerator = Math.abs(((lastNode.getX() - firstNode.getX() ) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
+            double numerator = Math.abs(((lastNode.getX() - firstNode.getX()) * (firstNode.getY() - queryY)) - ((firstNode.getX() - queryX) * (lastNode.getY() - firstNode.getY())));
             double denominator = Math.sqrt(Math.pow(lastNode.getX() - firstNode.getX(), 2) + Math.pow(lastNode.getY() - firstNode.getY(), 2));
             double distance = numerator / denominator;
-            /*if (distance == 0 && ) {
-
-            } else {
-
-            }*/
             if (distance < minDistance) minDistance = distance;
         }
         return minDistance;
@@ -217,8 +218,9 @@ public final class MapMath {
 
     /**
      * Finds the coordinates for the closest point on a way from a query point.
-     * @param queryX The query point's x-coordinate.
-     * @param queryY The query point's y-coordinate.
+     *
+     * @param queryX     The query point's x-coordinate.
+     * @param queryY     The query point's y-coordinate.
      * @param nearestWay The way to find the point on.
      * @return The point on the way as a Node with the coordinates.
      */
@@ -238,11 +240,12 @@ public final class MapMath {
         // Find the nearest point on the way using Cramer's rule (find the intersection of the two lines)
         double[] coordinatesPointOnNearestWay = findIntersectionCramersRule(perpendicularStandardEquation, nearestWayStandardEquation);
 
-        return new Node(0, (float) coordinatesPointOnNearestWay[1], (float) coordinatesPointOnNearestWay[0]); // TODO: 4/30/21 better to cast and have more precise cals or change to floats all the way through?
+        return new Node(0, (float) coordinatesPointOnNearestWay[1], (float) coordinatesPointOnNearestWay[0]);
     }
 
     /**
      * Gets the slope between two Nodes.
+     *
      * @param n1 The first Node.
      * @param n2 The second Node.
      * @return The slope.
@@ -253,17 +256,19 @@ public final class MapMath {
 
     /**
      * Gets the reciprocal of a slope.
+     *
      * @param slope The slope.
      * @return The reciprocal slope.
      */
     public static double getReciprocalSlope(double slope) {
-        return - (1 / slope);
+        return -(1 / slope);
     }
 
     /**
      * Gets the standard form of an equation (Ax + BX = C) given a point and a slope.
-     * @param x The point's x-coordinate.
-     * @param y The point's y-coordinate.
+     *
+     * @param x     The point's x-coordinate.
+     * @param y     The point's y-coordinate.
      * @param slope The slope.
      * @return The standard form of the equation as an array where the first index is A, the second B, and third C.
      */
@@ -276,6 +281,7 @@ public final class MapMath {
 
     /**
      * Finds the intersection point between two lines.
+     *
      * @param line1 The first line in standard form as an array where the first index is A, the second B, and third C.
      * @param line2 The second line in standard form as an array where the first index is A, the second B, and third C.
      * @return The intersection point as an array where the first index is x and the second y.
@@ -303,6 +309,7 @@ public final class MapMath {
     /**
      * Formats a distance string. If the distance is less than 1000 m "m" is used.
      * Otherwise, "km" is used.
+     *
      * @param meters The distance in meters.
      * @param digits How many digits should be used.
      * @return A string with the distance followed by the unit.
@@ -317,8 +324,9 @@ public final class MapMath {
     /**
      * Formats a time string. If the time is less than 50 seconds "s" is used.
      * Otherwise, "min" is used.
+     *
      * @param seconds The time in seconds.
-     * @param digits How many digits should be used.
+     * @param digits  How many digits should be used.
      * @return A string with the time followed by the unit.,
      */
     public static String formatTime(double seconds, int digits) {
@@ -332,6 +340,7 @@ public final class MapMath {
      * Ensures that the coordinates for a nearest node on a way are not outside the way itself
      * if the user has clicked along the infinite line the nearest way forms (mainly relevant on smaller
      * map segments where ways can suddenly end).
+     *
      * @param w The way where the node should lay on.
      * @param n The node to check.
      */

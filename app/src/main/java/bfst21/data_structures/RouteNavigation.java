@@ -76,8 +76,8 @@ public class RouteNavigation extends Service<List<Element>> {
             start.setType("start_route_note");
             end.setType("end_route_note");
 
-            for (int i = 0; i < path.size(); i++) {
-                route.addNode(path.get(i));
+            for (Node node : path) {
+                route.addNode(node);
             }
 
             currentRoute.add(route);
@@ -89,8 +89,8 @@ public class RouteNavigation extends Service<List<Element>> {
         return currentRoute;
     }
 
-    public List<Element> testGetCurrentRoute() throws NoNavigationResultException {
-        return getCurrentRoute();
+    public void testGetCurrentRoute() throws NoNavigationResultException {
+        getCurrentRoute();
     }
 
     private void setup() {
@@ -131,7 +131,8 @@ public class RouteNavigation extends Service<List<Element>> {
 
         if (n != to) {
             setup();
-            needToCheckUTurns = true; // TODO: 4/19/21 really not the most beautiful thing... for u-turns
+            // Run the algorithm again and check for u-turns
+            needToCheckUTurns = true;
             n = checkNode();
             if (n != to) throw new NoNavigationResultException();
         }
@@ -216,7 +217,7 @@ public class RouteNavigation extends Service<List<Element>> {
     }
 
     /**
-     * Gets a list of special features on a path such as if it is necessary to take a ferry, if the route has tolls, etc. // TODO: 4/29/21 toll??
+     * Gets a list of special features on a path such as if it is necessary to take a ferry.
      * @return A list of special path features.
      */
     public HashSet<String> getSpecialPathFeatures() {
@@ -471,7 +472,7 @@ public class RouteNavigation extends Service<List<Element>> {
         nodeBefore.put(currentTo, currentFrom);
         wayBefore.put(currentTo, w);
         if (unitsTo.containsKey(currentTo))
-            pq.remove(currentTo); //TODO: 4/23/21 før var check + tilføj til pq O(1) fordi det var HM. NU: check er O(1) mens remove og add er log
+            pq.remove(currentTo);
         unitsTo.put(currentTo, new DistanceAndTimeEntry(unitsTo.get(currentFrom).distance + distanceBetweenFromTo, unitsTo.get(currentFrom).time + timeBetweenFromTo, newCost));
         pq.add(currentTo);
     }
@@ -589,7 +590,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The ferry direction string.
      */
     private String getFerryText(String wayBeforeViaName) {
-        return "Take the " + wayBeforeViaName + " ferry " + getCurrentDistanceAndTimeText(); // TODO: 4/29/21 time in this case?
+        return "Take the " + wayBeforeViaName + " ferry " + getCurrentDistanceAndTimeText();
     }
 
     /**
@@ -623,7 +624,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The final direction.
      */
     private String getArrivedAtDestinationText(boolean roundabout, boolean ferry) {
-        String text = "";
+        String text;
         String wayName = wayBefore.get(path.get(0)).getName();
         if (wayName.equals("null")) wayName = "unnamed way";
 
@@ -698,7 +699,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * Class which holds the distance and a time to a certain node along with the cost for A-star.
      * The class is necessary to keep track of both variables as time various by the road type for cars.
      */
-    private class DistanceAndTimeEntry implements Comparable<DistanceAndTimeEntry> {
+    private static class DistanceAndTimeEntry implements Comparable<DistanceAndTimeEntry> {
         private final double distance;
         private final double time;
         private final double cost;

@@ -6,14 +6,14 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Relation class can represent a multipolygon or a single line, made up of ways and/or nodes.
  */
 public class Relation extends NodeHolder implements Serializable {
-    @Serial private static final long serialVersionUID = 4812917960463994060L;
+    @Serial
+    private static final long serialVersionUID = 4812917960463994060L;
 
     private ArrayList<Way> ways;
     private String name;
@@ -25,6 +25,11 @@ public class Relation extends NodeHolder implements Serializable {
     private String restriction;
     private Way to, from, viaWay;
     private Node viaNode;
+
+    public Relation(long id) {
+        super(id);
+        ways = new ArrayList<>();
+    }
 
     public Way getTo() {
         return to;
@@ -46,21 +51,16 @@ public class Relation extends NodeHolder implements Serializable {
         return viaNode;
     }
 
-    public Way getViaWay() {
-        return viaWay;
-    }
-
     public void setViaNode(Node viaNode) {
         this.viaNode = viaNode;
     }
 
-    public void setViaWay(Way viaWay) {
-        this.viaWay = viaWay;
+    public Way getViaWay() {
+        return viaWay;
     }
 
-    public Relation(long id) {
-        super(id);
-        ways = new ArrayList<>();
+    public void setViaWay(Way viaWay) {
+        this.viaWay = viaWay;
     }
 
     public ArrayList<Way> getWays() {
@@ -98,12 +98,12 @@ public class Relation extends NodeHolder implements Serializable {
         this.name = name;
     }
 
-    public void setRestriction(String restriction) {
-        this.restriction = restriction;
-    }
-
     public String getRestriction() {
         return restriction;
+    }
+
+    public void setRestriction(String restriction) {
+        this.restriction = restriction;
     }
 
     @Override
@@ -156,11 +156,11 @@ public class Relation extends NodeHolder implements Serializable {
 
             }
         }
-                pieces.forEach((node, way) -> {
-                    if (way.last() == node) {
-                        mergedList.add(way);
-                    }
-                });
+        pieces.forEach((node, way) -> {
+            if (way.last() == node) {
+                mergedList.add(way);
+            }
+        });
 
         return mergedList;
     }
