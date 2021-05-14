@@ -12,6 +12,9 @@ import javafx.concurrent.Task;
 
 import java.util.*;
 
+/**
+ * The RouteNavigation class handles route navigation between two points (Dijkstra or A*).
+ */
 public class RouteNavigation extends Service<List<Element>> {
 
     private ElementToElementsTreeMap<Node, Way> nodeToHighwayMap;
@@ -45,6 +48,9 @@ public class RouteNavigation extends Service<List<Element>> {
         this.maxSpeed = 130;
     }
 
+    /**
+     * Starts the separate routing thread.
+     */
     public void startRouting() {
         if(!isRunning()) {
             reset();
@@ -63,6 +69,11 @@ public class RouteNavigation extends Service<List<Element>> {
         };
     }
 
+    /**
+     * Gets the route between two points.
+     * @return A list of nodes which make up the route.
+     * @throws NoNavigationResultException If no route can be found.
+     */
     private List<Element> getCurrentRoute() throws NoNavigationResultException {
         List<Node> path = createRoute();
         List<Element> currentRoute = new ArrayList<>();
@@ -89,17 +100,24 @@ public class RouteNavigation extends Service<List<Element>> {
         return currentRoute;
     }
 
+    /**
+     * Used for testing the class.
+     * @throws NoNavigationResultException If no route can be found.
+     */
     public void testGetCurrentRoute() throws NoNavigationResultException {
         getCurrentRoute();
     }
 
+    /**
+     * Prepares the necessary fields for the route navigation.
+     */
     private void setup() {
         needToCheckUTurns = false;
         routeDescription = new ArrayList<>();
         unitsTo = new HashMap<>();
         nodeBefore = new HashMap<>();
         wayBefore = new HashMap<>();
-        pq = new PriorityQueue<>((a, b) -> Integer.compare(unitsTo.get(a).compareTo(unitsTo.get(b)), 0)); // different comparator
+        pq = new PriorityQueue<>((a, b) -> Integer.compare(unitsTo.get(a).compareTo(unitsTo.get(b)), 0)); // compares based on units to
         pq.add(from);
         unitsTo.put(from, new DistanceAndTimeEntry(0, 0, 0));
         routeDescription = new ArrayList<>();
@@ -107,14 +125,26 @@ public class RouteNavigation extends Service<List<Element>> {
         coordinatesForPanToRoute = new float[]{Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY};
     }
 
+    /**
+     * Sets the tree map which holds information about which nodes are on which ways.
+     * @param nodeToHighwayMap The map holding the node to way information.
+     */
     public void setNodeToHighwayMap(ElementToElementsTreeMap<Node, Way> nodeToHighwayMap) {
         this.nodeToHighwayMap = nodeToHighwayMap;
     }
 
+    /**
+     * Sets the tree map which holds information about which nodes are a part of a restriction.
+     * @param nodeToRestriction The map holding the node to restriction information.
+     */
     public void setNodeToRestriction(ElementToElementsTreeMap<Node, Relation> nodeToRestriction) {
         this.nodeToRestriction = nodeToRestriction;
     }
 
+    /**
+     * Sets the tree map which holds information about which ways are a part of a restriction.
+     * @param wayToRestriction The map holding the way to restriction information.
+     */
     public void setWayToRestriction(ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
         this.wayToRestriction = wayToRestriction;
     }

@@ -370,7 +370,6 @@ public class MapData implements Serializable {
 
     /**
      * Gets the minimum y-coordinate for the loaded map.
-     *
      */
     public void setMinY(float minY) {
         this.minY = minY;
@@ -387,7 +386,6 @@ public class MapData implements Serializable {
 
     /**
      * Gets the maximum x-coordinate for the loaded map.
-     *
      */
     public void setMaxX(float maxX) {
         this.maxX = maxX;
@@ -404,7 +402,6 @@ public class MapData implements Serializable {
 
     /**
      * Gets the maximum y-coordinate for the loaded map.
-     *
      */
     public void setMaxY(float maxY) {
         this.maxY = maxY;
