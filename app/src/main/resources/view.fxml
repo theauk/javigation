@@ -32,10 +32,6 @@
 
                 <Menu text="View">
                     <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
-                    <SeparatorMenuItem/>
-                    <RadioMenuItem fx:id="showUIItem" text="Show UI" selected="true" accelerator="CTRL + T"/>
-                    <RadioMenuItem fx:id="navigationPane" text="Show Navigation Pane" selected="true"/>
-                    <RadioMenuItem fx:id="leftscrollPane" text="show leftside"/>
 
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
@@ -52,7 +48,7 @@
                 </Menu>
 
                 <Menu text="Debug">
-                    <RadioMenuItem fx:id="informationBoard" text="Show Information Board" selected="true"/>
+                    <RadioMenuItem fx:id="informationBoard" text="Show Information Board"/>
                     <SeparatorMenuItem/>
                     <RadioMenuItem fx:id="rTreeDebug" text="Show R-Tree Debug" onAction="#setRTreeDebug"/>
                     <SeparatorMenuItem/>
@@ -99,7 +95,7 @@
                     />
                 </Pane>
 
-                <AnchorPane id="uiControl" visible="${showUIItem.selected}" pickOnBounds="false">
+                <AnchorPane id="uiControl" visible="${informationBoard.selected}" pickOnBounds="false">
                     <VBox alignment="CENTER" AnchorPane.rightAnchor="5" AnchorPane.bottomAnchor="20" pickOnBounds="false">
                         <Button fx:id="zoomInButton" text="+" onAction="#zoom"/>
                         <Slider fx:id="zoomSlider" pickOnBounds="false" orientation="VERTICAL">
