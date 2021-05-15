@@ -22,7 +22,10 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -70,7 +73,9 @@ public class Controller {
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
     @FXML private StackPane centerPane;
-    @FXML private VBox loaderPane;
+    @FXML private StackPane menuPane;
+    @FXML private VBox loadingBarPane;
+    @FXML private VBox logoPane;
 
     @FXML private Label coordsLabel;
     @FXML private Label geoCoordsLabel;
@@ -135,7 +140,16 @@ public class Controller {
         toAddressFilter = new AddressFilter();
         loadThemes();
         initView();
-        openFile();
+        startUp();
+    }
+
+    private void startUp() {
+        FadeTransition fadeIn = createFadeTransition(1.5, logoPane, true);
+        fadeIn.setOnFinished(e -> {
+            loadingBarPane.setVisible(true);
+            openFile();
+        });
+        fadeIn.play();
     }
 
     private void initView() {
@@ -398,7 +412,7 @@ public class Controller {
             File file = showFileChooser("save").showSaveDialog(scene.getWindow());
             if (file != null) {
                 Serializer serializer = new Serializer(mapData, file);
-                showLoaderPane(true);
+                showMenuPane(true);
 
                 serializer.setOnRunning(e -> taskRunning(serializer));
                 serializer.setOnSucceeded(e -> taskSuccess());
@@ -424,7 +438,7 @@ public class Controller {
 
     @FXML
     private void openFile() {
-        showLoaderPane(true);
+        showMenuPane(true);
         File file = showFileChooser("open").showOpenDialog(scene.getWindow());
         InputStream inputStream;
         long fileSize;
@@ -484,14 +498,14 @@ public class Controller {
 
     private void taskSuccess() {
         state = State.MAP;
-        showLoaderPane(false);
+        showMenuPane(false);
         cleanupTask();
     }
 
     private void taskFailed(Task<?> task, boolean showMap) {
         if (showMap) {
             state = State.MAP;
-            showLoaderPane(false);
+            showMenuPane(false);
         }
         else state = State.MENU;
         cleanupTask();
@@ -532,7 +546,6 @@ public class Controller {
             cancelItem.setDisable(false);
             dumpItem.setDisable(true);
         } else if (state == State.MAP) {
-            address_myPlacesPane.setVisible(true);
             openItem.setDisable(false);
             zoomInItem.setDisable(false);
             zoomOutItem.setDisable(false);
@@ -542,25 +555,27 @@ public class Controller {
         }
     }
 
-    private void showLoaderPane(boolean show) {
-        FadeTransition ft = new FadeTransition(Duration.millis(500), loaderPane);
+    private void showMenuPane(boolean show) {
+        FadeTransition fader;
+
         if (show) {
-            if (loaderPane.isVisible()) return;
+            if (menuPane.isVisible()) return;
             statusLabel.setText("Waiting");
             loadingBar.setProgress(0.0);
-            loaderPane.setVisible(true);
+            menuPane.setVisible(true);
             state = State.MENU;
             disableMenus();
-            ft.setFromValue(0);
-            ft.setToValue(1);
+            fader = createFadeTransition(0.5, menuPane, true);
         } else {
-            ft.setDelay(Duration.millis(500));
-            ft.setFromValue(1);
-            ft.setToValue(0);
-            ft.setOnFinished(e -> loaderPane.setVisible(false));
+            fader = createFadeTransition(0.5, menuPane, false);
+            fader.setDelay(Duration.millis(500));
+            fader.setOnFinished(e -> {
+                menuPane.setVisible(false);
+                address_myPlacesPane.setVisible(true);
+            });
         }
 
-        ft.play();
+        fader.play();
     }
 
     private void setTheme(String themeFile) {
@@ -645,9 +660,9 @@ public class Controller {
     @FXML
     public void searchNav() {
         if (vehicleNavGroup.getSelectedToggle() == null) {
-            showDialogBox("Navigation Error", "Please select a vehicle type");
+            createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select a vehicle type").showAndWait();
         } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
-            showDialogBox("Navigation Error", "Please select either fastest or shortest");
+            createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select either fastest or shortest").showAndWait();
         } else {
                 // TO
                 if (toAddressFilter.getMatchedAddress() != null) {
@@ -656,7 +671,7 @@ public class Controller {
                 } else if(clickedNodeTo != null){
                     setCurrentToNode(clickedNodeTo.getxMax(), clickedNodeTo.getyMax(), null);
                 } else {
-                    showDialogBox("Navigation Error", "Please select where to go from");
+                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go from").showAndWait();
                 }
                 // FROM
                 if (fromAddressFilter.getMatchedAddress() != null) {
@@ -665,11 +680,11 @@ public class Controller {
                 } else if (clickedNodeFrom != null) {
                     setCurrentFromNode(clickedNodeFrom.getxMax(), clickedNodeFrom.getyMax(), null);
                 } else {
-                    showDialogBox("Navigation Error", "Please select where to go to");
+                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go to").showAndWait();
                 }
 
              if (currentFromNode == currentToNode) {
-                showDialogBox("Navigation Error", "From and to are the same entries");
+                 createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "From and to are the same entries").showAndWait();
              } else {
                  getRoute();
              }
@@ -703,10 +718,6 @@ public class Controller {
         clickedNodeTo = null;
         fromAddressFilter.resetAddress();
         toAddressFilter.resetAddress();
-    }
-
-    private void showDialogBox(String title, String contentText) {
-        createAlert(Alert.AlertType.INFORMATION, title, null, contentText).showAndWait();
     }
 
     private void switchDirections() {
@@ -744,8 +755,22 @@ public class Controller {
     private Alert createAlert(Alert.AlertType alertType, String title, String header, String text, ButtonType... buttons) {
         Alert alert = new Alert(alertType, text, buttons);
         alert.setTitle(title);
+        alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         return alert;
+    }
+
+    private FadeTransition createFadeTransition(double duration, javafx.scene.Node target, boolean fadeIn) {
+        FadeTransition ft = new FadeTransition(Duration.seconds(duration), target);
+        if(fadeIn) {
+            ft.setFromValue(0);
+            ft.setToValue(1);
+        } else {
+            ft.setFromValue(1);
+            ft.setToValue(0);
+        }
+
+        return ft;
     }
 
     /**
@@ -772,7 +797,7 @@ public class Controller {
             distanceNav.setVisible(false);
             timeNav.setVisible(false);
             mapCanvas.repaint();
-            showDialogBox("No Route Found", "Could not find a route between the two points");
+            createAlert(Alert.AlertType.INFORMATION, "No Route Found", "No Route Found", "Could not find a route between the two points").showAndWait();
         });
         mapCanvas.repaint();
     }

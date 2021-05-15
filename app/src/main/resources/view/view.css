@@ -57,8 +57,34 @@
     -fx-background-color: rgba(255, 255, 255, 0.4);
 }
 
-#loaderPane {
+#menuPane {
     -fx-background-color: rgb(180, 180, 180);
+}
+
+#logoText {
+    -fx-font-family: Arial;
+    -fx-font-size: 50;
+}
+
+#menuOverlay {
+    -fx-background-color: rgba(255, 255, 255, 0.5);
+}
+
+#loadingBar .progress {
+    -fx-padding: 10;
+}
+
+#loadingBar .tick {
+    -fx-padding: 30;
+}
+
+#loadingBar .percentage {
+    -fx-font-size: 20;
+}
+
+#statusLabel {
+    -fx-font-family: Arial;
+    -fx-font-size: 15;
 }
 
 #directionsButton{
