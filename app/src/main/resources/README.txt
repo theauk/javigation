@@ -1,6 +1,12 @@
-Welcome to Javigaition - a navigation program built with the Java programming language
+# Javigation
+A mapping and navigation program built with the Java programming language.
 
-To run the program with big maps like the map of Denmark it will need to be executed
-with the following command in the terminal/ command line:
-        java -Xmx8g -jar app.jar
-    it can be executed with -Xmx6g too, but it's more efficient to run the program with -Xmx8g
+## Usage
+
+### Via the terminal
+* Navigate to the project directory in the terminal/command line.
+* Run `java -Xmx8g -jar app.jar`
+* The program can also be executed only with 6g. However, for bigger maps (such as the map of Denmark) 8g makes the program run more efficiently.
+
+### Via the file manager
+* Double click the app.jar icon.
