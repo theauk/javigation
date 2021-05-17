@@ -691,7 +691,7 @@ public class RTree implements Serializable {
 
         if (vehicleType != null) {
             if (vehicleType == VehicleType.CAR) {
-                if (addressWayName != null) {
+                if (addressWayName != null && w.getName() != null) {
                     return w.getName().toLowerCase().equals(addressWayName);
                 }
                 return w.isDriveable();

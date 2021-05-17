@@ -689,7 +689,8 @@ public class Controller {
                 } else if(clickedNodeTo != null){
                     setCurrentToNode(clickedNodeTo.getxMax(), clickedNodeTo.getyMax(), null);
                 } else {
-                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go from").showAndWait();
+                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go to").showAndWait();
+                    return;
                 }
                 // FROM
                 if (fromAddressFilter.getMatchedAddress() != null) {
@@ -698,11 +699,12 @@ public class Controller {
                 } else if (clickedNodeFrom != null) {
                     setCurrentFromNode(clickedNodeFrom.getxMax(), clickedNodeFrom.getyMax(), null);
                 } else {
-                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go to").showAndWait();
+                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go from").showAndWait();
+                    return;
                 }
 
-             if (currentFromNode == currentToNode) {
-                 createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "From and to are the same entries").showAndWait();
+             if (fromAddressFilter.getMatchedAddress().getNode() == toAddressFilter.getMatchedAddress().getNode()) {
+                 createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "From and to are the same address").showAndWait();
              } else {
                  getRoute();
              }
