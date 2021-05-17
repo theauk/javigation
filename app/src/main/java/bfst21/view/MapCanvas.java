@@ -128,6 +128,7 @@ public class MapCanvas extends Canvas {
 
     private void drawRectangleNode(GraphicsContext gc, Node point) {
         Theme.ThemeElement themeElement = theme.get(point.getType());
+        gc.setLineWidth(getStrokeWidth(false, themeElement));
         double length = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
         gc.setFill(themeElement.getColor().getInner());
         gc.fillRect(point.getxMax(), point.getyMax(), length, length);

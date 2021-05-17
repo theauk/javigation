@@ -12,10 +12,10 @@ name = "Dark Mode";
 
 #Navigation
 "navigation" = {iColor = [102, 157, 246], oColor = [29, 106, 212]}, {iWidth = 6, oWidth = 8};
-"start_route_note" = {iColor = [200, 0, 0], oColor = [255, 0, 0]}, {iWidth = 7, oWidth = 9}, {node = true};
-"end_route_note" = {iColor = [0, 0, 200], oColor = [0, 0, 255]}, {iWidth = 7, oWidth = 9}, {node = true};
+"start_route_note" = {iColor = [200, 0, 0], oColor = [255, 0, 0]}, {iWidth = 10, oWidth = 9}, {node = true};
+"end_route_note" = {iColor = [0, 0, 200], oColor = [0, 0, 255]}, {iWidth = 10, oWidth = 9}, {node = true};
 "user_added" = {iColor = [247, 216, 62], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true};
-"address" = {iColor = [40, 201, 34], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 4}, {node = true};
+"address" = {iColor = [40, 201, 34], oColor = [0, 0, 0]}, {iWidth = 10, oWidth = 2}, {node = true};
 
 #Text
 "city" = {iColor = [255, 66, 54]}, {iWidth = 13, oWidth = 20}, {text = true};
