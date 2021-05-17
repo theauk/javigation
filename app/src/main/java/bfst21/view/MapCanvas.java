@@ -138,12 +138,9 @@ public class MapCanvas extends Canvas {
 
     private void drawRoundNode(GraphicsContext gc, Element element) {
         Theme.ThemeElement themeElement = theme.get(element.getType());
-        double innerRadius = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
         double outerRadius = (themeElement.getOuterWidth() / Math.sqrt(trans.determinant()));
-        gc.setFill(themeElement.getColor().getInner());
-        gc.fillOval(element.getxMax(), element.getyMax(), innerRadius, innerRadius);
-        gc.setStroke(themeElement.getColor().getOuter());
-        gc.strokeOval(element.getxMax(), element.getyMax(), outerRadius, outerRadius);
+        gc.setFill(themeElement.getColor().getOuter());
+        gc.fillOval(element.getxMax(), element.getyMax(), outerRadius, outerRadius);
     }
 
     private void drawOuterElement(GraphicsContext gc, Element element, Theme.ThemeElement themeElement) {
