@@ -656,7 +656,7 @@ public class RouteNavigation extends Service<List<Element>> {
     private String getArrivedAtDestinationText(boolean roundabout, boolean ferry) {
         String text;
         String wayName = wayBefore.get(path.get(0)).getName();
-        if (wayName.equals("null")) wayName = "unnamed way";
+        if (wayName == null) wayName = "unnamed way";
 
         if (roundabout) text = "Follow the roundabout";
         else if (ferry) text = "Take the " + wayName + " ferry";
