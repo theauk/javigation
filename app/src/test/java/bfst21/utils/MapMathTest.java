@@ -61,7 +61,7 @@ class MapMathTest {
     void formatDistanceTest() {
         String mTest = MapMath.formatDistance(867, 2);
         String kmTest = MapMath.formatDistance(1567, 3);
-        assertEquals("867.0 m", mTest);
+        assertEquals("867 m", mTest);
         assertEquals("1.567 km", kmTest);
     }
 
