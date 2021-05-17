@@ -11,7 +11,7 @@
 }
 
 .text-field {
-    -fx-prompt-text-fill: gray;
+    -fx-prompt-text-fill: lightgray;
 }
 
 .button:hover{
@@ -21,6 +21,11 @@
 .separator *.line {
     -fx-background-color: #3C3C3C;
 }
+
+#directionsButton, #searchForAddress, #carNavToggleButton, #bikeNavToggleButton, #walkNavToggleButton, #switchButton, #searchNav {
+    -fx-background-color: lightgray;
+}
+
 
 #bottomBarPane {
     -fx-background-color: rgba(128, 128, 128, 0.7);
