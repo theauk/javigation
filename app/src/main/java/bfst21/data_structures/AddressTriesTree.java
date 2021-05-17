@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.*;
 
 public class AddressTriesTree implements Serializable {
-    public static final Map<Integer, String> POSTCODE_TO_CITIES = new HashMap<>();
     @Serial
     private static final long serialVersionUID = 5713923887785799744L;
     private final AddressTrieNode root;
@@ -47,8 +46,7 @@ public class AddressTriesTree implements Serializable {
         streetName = streetName.toLowerCase();
         houseNumber = houseNumber.toLowerCase();
         city = city.toLowerCase();
-        POSTCODE_TO_CITIES.put(postcode, city);
-        insertAddressWithStreetName(root, 0, node, streetName, houseNumber, postcode);
+        insertAddressWithStreetName(root, 0, node, streetName, houseNumber, postcode, city);
     }
 
     /**
@@ -60,17 +58,17 @@ public class AddressTriesTree implements Serializable {
      * @param postcode the postcode of the node given by the .osm file.
      * @param houseNumber the house number given by the .osm file.
      */
-    private void insertAddressWithStreetName(AddressTrieNode trieNode, int index, Node node, String streetName, String houseNumber, int postcode) {
+    private void insertAddressWithStreetName(AddressTrieNode trieNode, int index, Node node, String streetName, String houseNumber, int postcode, String city) {
         if (index == streetName.length()) {
-            if (trieNode.isAddress()) trieNode.addHouseNumber(node, houseNumber, postcode);
-            else trieNode.setAddress(node, streetName, houseNumber, postcode);
+            if (trieNode.isAddress()) trieNode.addHouseNumber(node, houseNumber, postcode, city);
+            else trieNode.setAddress(node, streetName, houseNumber, postcode, city);
         } else {
             Character currentChar = streetName.charAt(index);
             if (!trieNode.getChildren().containsKey(currentChar)) {
                 AddressTrieNode new_child = new AddressTrieNode();
                 trieNode.getChildren().put(currentChar, new_child);
             }
-            insertAddressWithStreetName(trieNode.getChildren().get(currentChar), index + 1, node, streetName, houseNumber, postcode);
+            insertAddressWithStreetName(trieNode.getChildren().get(currentChar), index + 1, node, streetName, houseNumber, postcode, city);
         }
     }
 

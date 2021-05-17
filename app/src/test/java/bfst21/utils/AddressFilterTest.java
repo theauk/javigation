@@ -420,6 +420,5 @@ public class AddressFilterTest {
     public static void tearDown() {
         addressFilter = null;
         addressTriesTree = null;
-        AddressTriesTree.POSTCODE_TO_CITIES.clear();
     }
 }

@@ -13,6 +13,7 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
     private String streetName;
     private boolean isAddress;
     private Map<Integer, List<HouseNumberNode>> citiesWithThisStreet;
+    private Map<Integer, String> postCodesToCities;
 
     /**
      * Creates a default AddressTrieNode which is not an address.
@@ -31,10 +32,12 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
      * @param houseNumber the house number of the address.
      * @param postcode    the post code of the address.
      */
-    public void setAddress(Node node, String streetName, String houseNumber, int postcode) {
+    public void setAddress(Node node, String streetName, String houseNumber, int postcode, String city) {
+        postCodesToCities = new HashMap<>();
         citiesWithThisStreet = new HashMap<>();
         List<HouseNumberNode> list = new ArrayList<>();
         list.add(new HouseNumberNode(node, houseNumber));
+        postCodesToCities.put(postcode, city);
         citiesWithThisStreet.put(postcode, list);
         this.streetName = streetName;
         isAddress = true;
@@ -47,7 +50,8 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
      * @param houseNumber the house number to be added.
      * @param postcode    the post code to be added.
      */
-    public void addHouseNumber(Node node, String houseNumber, int postcode) {
+    public void addHouseNumber(Node node, String houseNumber, int postcode, String city) {
+        postCodesToCities.put(postcode, city);
         if (citiesWithThisStreet.containsKey(postcode)) {
             citiesWithThisStreet.get(postcode).add(new HouseNumberNode(node, houseNumber));
             Collections.sort(citiesWithThisStreet.get(postcode));
@@ -68,7 +72,7 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
         List<String> list = new ArrayList<>();
 
         for (int postCode : citiesWithThisStreet.keySet()) {
-            String address = streetName + ", " + postCode + " " + AddressTriesTree.POSTCODE_TO_CITIES.get(postCode);
+            String address = streetName + ", " + postCode + " " + postCodesToCities.get(postCode);
             list.add(address);
         }
 
@@ -87,7 +91,7 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
         for (Map.Entry<Integer, List<HouseNumberNode>> entry : citiesWithThisStreet.entrySet()) {    //Get the key/value set for postcode to list of house nodes
             for (HouseNumberNode node : entry.getValue()) {                                           //Run through each house number node to check if the specified address is present
                 if (node.houseNumber.startsWith(houseNumber)) {
-                    String address = streetName + " " + node.houseNumber + ", " + entry.getKey() + " " + AddressTriesTree.POSTCODE_TO_CITIES.get(entry.getKey());
+                    String address = streetName + " " + node.houseNumber + ", " + entry.getKey() + " " + postCodesToCities.get(entry.getKey());
                     list.add(address);
                 }
             }
@@ -110,7 +114,7 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
         List<HouseNumberNode> nodes = citiesWithThisStreet.get(postCode);
         for (HouseNumberNode node : nodes) {
             if (node.houseNumber.startsWith(houseNumber)) {
-                String address = streetName + " " + node.houseNumber + ", " + postCode + " " + AddressTriesTree.POSTCODE_TO_CITIES.get(postCode);
+                String address = streetName + " " + node.houseNumber + ", " + postCode + " " + postCodesToCities.get(postCode);
                 list.add(address);
             }
         }
@@ -170,7 +174,7 @@ public class AddressTrieNode implements Comparable<AddressTrieNode>, Serializabl
      * @return true if the city exists else false.
      */
     private boolean isValidCity(int postCode, String city) {
-        String realCity = AddressTriesTree.POSTCODE_TO_CITIES.get(postCode);
+        String realCity = postCodesToCities.get(postCode);
         if (realCity == null) return false;
         return realCity.equals(city);
     }

@@ -19,12 +19,12 @@ public class AddressTrieNodeTest {
         addressTree.put(new Node(0, 0, 0), "Olymposvej", "50", 9270, "Klarup");
 
         node = new AddressTrieNode();
-        node.setAddress(new Node(0, 0, 0), "olymposvej", "50", 2300);
-        node.addHouseNumber(new Node(1, 1, 1), "49", 2300);
-        node.addHouseNumber(new Node(2, 2, 2), "49a", 2300);
-        node.addHouseNumber(new Node(3, 3, 3), "48", 2300);
-        node.addHouseNumber(new Node(4, 4, 4), "50", 9270);
-        node.addHouseNumber(new Node(5, 5, 5), "49", 9270);
+        node.setAddress(new Node(0, 0, 0), "olymposvej", "50", 2300, "København s");
+        node.addHouseNumber(new Node(1, 1, 1), "49", 2300, "københavn s");
+        node.addHouseNumber(new Node(2, 2, 2), "49a", 2300, "københavn s");
+        node.addHouseNumber(new Node(3, 3, 3), "48", 2300, "københavn S");
+        node.addHouseNumber(new Node(4, 4, 4), "50", 9270, "klarup");
+        node.addHouseNumber(new Node(5, 5, 5), "49", 9270, "klarup");
     }
 
     @Test
@@ -47,6 +47,5 @@ public class AddressTrieNodeTest {
     public static void tearDown() {
         node = null;
         addressTree = null;
-        AddressTriesTree.POSTCODE_TO_CITIES.clear();
     }
 }
