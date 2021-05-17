@@ -645,6 +645,14 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
+    /**
+     * Get the nearest road, node on road an road indices to given coordinate.
+     * @param x coordinate
+     * @param y coordinate
+     * @param addressWay  if closest road needs to have addressWay name else null.
+     * @param vehicleType If vehicle type is chosen, else null.
+     * @return RTree.NearestRoadPriorityQueueEntry
+     */
     private RTree.NearestRoadPriorityQueueEntry getNearestRoadEntry(float x, float y, String addressWay, VehicleType vehicleType) {
         return mapData.getNearestRoadRTreePQEntry(x, y, addressWay, vehicleType);
     }
@@ -663,6 +671,10 @@ public class Controller {
         textFieldFromNav.setSuggest(true);
     }
 
+    /**
+     * Checks if all the needed input is given in order to get route from navigation.
+     * Checks closest nodes with toggle group input in order to find the closets road matching the chosen vehicle type.
+     */
     @FXML
     public void searchNav() {
         if (vehicleNavGroup.getSelectedToggle() == null) {
@@ -697,6 +709,12 @@ public class Controller {
         }
     }
 
+    /**
+     * Sets the current from node for navigation.
+     * @param x coordinate
+     * @param y coordinate
+     * @param street Null or address street name that node should be on.
+     */
     private void setCurrentFromNode(float x, float y, String street) {
         VehicleType vehicleType = (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData();
         RTree.NearestRoadPriorityQueueEntry entry = getNearestRoadEntry(x, y, street, vehicleType);
@@ -706,6 +724,12 @@ public class Controller {
         currentFromNode = nearestNodeOnNearestWay;
     }
 
+    /**
+     * Sets the current to node for navigation.
+     * @param x coordinate
+     * @param y coordinate
+     * @param street Null or address street name that node should be on.
+     */
     private void setCurrentToNode(float x, float y, String street) {
         VehicleType vehicleType = (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData();
         RTree.NearestRoadPriorityQueueEntry entry = getNearestRoadEntry(x, y, street, vehicleType);
