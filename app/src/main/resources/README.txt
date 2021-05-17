@@ -16,3 +16,6 @@ A mapping and navigation program built with the Java programming language.
 ### Via the file manager
 * Double click the app.jar icon.
 * Bigger maps (such as the map of Denmark) should be opened via the terminal/command prompt.
+
+## Tests
+* The JUnit tests can be found in the test folder located inside app/src.
