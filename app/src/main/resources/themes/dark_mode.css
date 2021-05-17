@@ -26,6 +26,11 @@
     -fx-background-color: lightgray;
 }
 
+#zoomInButton, #zoomOutButton{
+    -fx-background-color: lightgray;
+    -fx-text-fill: black;
+}
+
 
 #bottomBarPane {
     -fx-background-color: rgba(128, 128, 128, 0.7);
