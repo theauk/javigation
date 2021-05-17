@@ -5,13 +5,13 @@ package bfst21.Osm_Elements;
  */
 public interface Spatializable {
 
-    public float getxMax();
+    float getxMax();
 
-    public float getxMin();
+    float getxMin();
 
-    public float getyMax();
+    float getyMax();
 
-    public float getyMin();
+    float getyMin();
 
-    public float[] getCoordinates();
+    float[] getCoordinates();
 }

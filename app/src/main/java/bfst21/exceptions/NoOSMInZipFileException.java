@@ -1,5 +1,8 @@
 package bfst21.exceptions;
 
+/**
+ * Thrown if the user tries to open a zip file which does not contain an OSM-file-
+ */
 public class NoOSMInZipFileException extends Exception {
     private final String fileName;
 

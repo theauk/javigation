@@ -19,16 +19,12 @@ public class AddressTriesTreeTest {
     private static AddressTriesTree addressTrie;
     private static List<Node> nodes;
     private static List<String> streets;
-    private static List<String> cities;
-    private static List<Integer> postCodes;
 
     @BeforeAll
     public static void setUp() {
         addressTrie = new AddressTriesTree();
         nodes = new ArrayList<>();
         streets = new ArrayList<>();
-        postCodes = new ArrayList<>();
-        cities = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(AddressTrieNodeTest.class.getResourceAsStream("/tests/addresses.txt"), StandardCharsets.UTF_8))) {
             String line;
@@ -43,8 +39,6 @@ public class AddressTriesTreeTest {
                 Node node = new Node(id, id, id);
 
                 if (!streets.contains(street)) streets.add(street);
-                if (!postCodes.contains(postCode)) postCodes.add(postCode);
-                if (!cities.contains(city)) cities.add(city);
                 nodes.add(node);
 
                 addressTrie.put(node, street, number, postCode, city);
@@ -56,8 +50,6 @@ public class AddressTriesTreeTest {
         }
 
         Collections.sort(streets);
-        Collections.sort(postCodes);
-        Collections.sort(cities);
     }
 
     @Test
@@ -131,26 +123,6 @@ public class AddressTriesTreeTest {
     }
 
     @Test
-    public void checkAllPostCodes() {
-        List<Integer> triePostCodes = new ArrayList<>(AddressTriesTree.POSTCODE_TO_CITIES.keySet());
-        Collections.sort(triePostCodes);
-
-        for (int i = 0; i < postCodes.size(); i++) {
-            assertEquals(postCodes.get(i), triePostCodes.get(i));
-        }
-    }
-
-    @Test
-    public void checkAllCities() {
-        List<String> trieCities = new ArrayList<>(AddressTriesTree.POSTCODE_TO_CITIES.values());
-        Collections.sort(trieCities);
-
-        for (int i = 0; i < cities.size(); i++) {
-            assertEquals(cities.get(i), trieCities.get(i));
-        }
-    }
-
-    @Test
     public void checkAllStreets() {
         List<AddressTrieNode> trieStreets = addressTrie.searchWithPrefix("");
 
@@ -162,7 +134,6 @@ public class AddressTriesTreeTest {
     @AfterAll
     public static void tearDown() {
         addressTrie = null;
-        AddressTriesTree.POSTCODE_TO_CITIES.clear();
     }
 }
 

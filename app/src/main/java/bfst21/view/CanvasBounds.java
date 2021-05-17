@@ -7,8 +7,7 @@ import javafx.geometry.Point2D;
  * Each CanvasBounds object is represented by the diagonal points of the rectangle from the upper left corner to the lower right.
  * It also contains useful methods for determining the width and height of the bounds and the coordinates to the center point.
  */
-public class CanvasBounds
-{
+public class CanvasBounds {
     private float minX;
     private float minY;
     private float maxX;

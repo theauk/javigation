@@ -1,5 +1,8 @@
 package bfst21.exceptions;
 
+/**
+ * Thrown if the user tries to load an unsupported file format.
+ */
 public class UnsupportedFileFormatException extends Exception {
     private final String format;
 

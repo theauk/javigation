@@ -1,27 +1,25 @@
 package bfst21.data_structures;
 
-
 import bfst21.Osm_Elements.Element;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
  * TreeMap which places Values with the same Key in the same Value ArrayList.
- * Sorts the tree based on the keys ID.
- * @param <Key> Key that extends element.
- * @param <Value> Value that extends element
+ * Sorts the tree based on the key ID.
  *
+ * @param <Key>   Key that extends element.
+ * @param <Value> Value that extends element
  */
 public class ElementToElementsTreeMap<Key extends Element, Value extends Element> implements Serializable {
     @Serial
     private static final long serialVersionUID = 7599232655577398280L;
 
-    private TreeMap<Long, ArrayList<Value>> map;
+    private final TreeMap<Long, ArrayList<Value>> map;
 
     public ElementToElementsTreeMap() {
         map = new TreeMap<>();

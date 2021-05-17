@@ -11,7 +11,7 @@
 }
 
 .text-field {
-    -fx-prompt-text-fill: gray;
+    -fx-prompt-text-fill: lightgray;
 }
 
 .button:hover{
@@ -21,6 +21,16 @@
 .separator *.line {
     -fx-background-color: #3C3C3C;
 }
+
+#directionsButton, #searchForAddress, #carNavToggleButton, #bikeNavToggleButton, #walkNavToggleButton, #switchButton, #searchNav {
+    -fx-background-color: lightgray;
+}
+
+#zoomInButton, #zoomOutButton{
+    -fx-background-color: lightgray;
+    -fx-text-fill: black;
+}
+
 
 #bottomBarPane {
     -fx-background-color: rgba(128, 128, 128, 0.7);
@@ -52,4 +62,8 @@
 #informationPane #bounds {
     -fx-border-color: rgba(255, 0, 0, 0.4);
     -fx-background-color: rgba(255, 255, 255, 0.4);
+}
+
+#menuOverlay {
+    -fx-background-color: rgba(128, 128, 128, 0.5);
 }

@@ -88,7 +88,7 @@ class RTreeTest {
 
     @Test
     void getNearestRoad() {
-        RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax(), null);
+        RTree.NearestRoadPriorityQueueEntry w = rTree.getNearestRoad(n.getxMax(), n.getyMax(), null, null);
         assertEquals("w2", w.getWay().getName());
     }
 

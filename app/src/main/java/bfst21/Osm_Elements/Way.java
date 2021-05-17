@@ -5,6 +5,9 @@ import javafx.scene.canvas.GraphicsContext;
 import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * Way class represents a line on the map made up of several nodes.
+ */
 public class Way extends NodeHolder implements Serializable {
     @Serial
     private static final long serialVersionUID = 8806015478559051293L;
@@ -20,12 +23,10 @@ public class Way extends NodeHolder implements Serializable {
 
     public Way() {
         super();
-        isHighway = false;
     }
 
     public Way(long id) {
         super(id);
-        isHighway = false;
     }
 
     public void setType(String type, boolean isHighway, boolean foot) {

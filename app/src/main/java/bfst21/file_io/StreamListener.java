@@ -1,7 +1,8 @@
 package bfst21.file_io;
 
-import java.io.IOException;
-
+/**
+ * A functional Interface with a method for tracking bytes read/written.
+ */
 public interface StreamListener {
-    void onBytesTouched(long totalBytes) throws IOException;
+    void onBytesTouched(long totalBytes);
 }

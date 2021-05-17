@@ -15,27 +15,24 @@ import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.NonInvertibleTransformException;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class MapCanvas extends Canvas {
-    public static Map<String, Byte> zoomMap;
     public final static byte MIN_ZOOM_LEVEL = 1;
     public final static byte MAX_ZOOM_LEVEL = 19;
+    public static Map<String, Byte> zoomMap;
     private final int ZOOM_FACTOR = 2;
-    private byte zoomLevel = MIN_ZOOM_LEVEL;
-
-    private MapData mapData;
-    private Theme theme;
     private final CanvasBounds bounds;
     private final StringProperty ratio;
     private final Affine trans;
-
+    private byte zoomLevel = MIN_ZOOM_LEVEL;
+    private MapData mapData;
+    private Theme theme;
     private boolean initialized;
 
     public MapCanvas() {
         trans = new Affine();
-        ratio = new SimpleStringProperty("- - - ");
+        ratio = new SimpleStringProperty("- - -");
         bounds = new CanvasBounds();
     }
 
@@ -74,7 +71,7 @@ public class MapCanvas extends Canvas {
         fillCoastLines(gc);
 
         int layers = mapData.getMapSegment().size();
-        for (int layer = 0; layer < layers - 1; layer++) { // -1 since toplayer is drawn below
+        for (int layer = 0; layer < layers - 1; layer++) { // layers - 1 since top layer is drawn below
             for (Element element : mapData.getMapSegment().get(layer)) {
                 drawElement(gc, element);
             }
@@ -92,9 +89,10 @@ public class MapCanvas extends Canvas {
             drawRectangleNode(gc, point);
         }
 
-        if(mapData.getUserSearchResult() != null){
+        if (mapData.getUserSearchResult() != null) {
             drawRectangleNode(gc, mapData.getUserSearchResult());
         }
+
         gc.restore();
     }
 
@@ -130,6 +128,7 @@ public class MapCanvas extends Canvas {
 
     private void drawRectangleNode(GraphicsContext gc, Node point) {
         Theme.ThemeElement themeElement = theme.get(point.getType());
+        gc.setLineWidth(getStrokeWidth(false, themeElement));
         double length = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
         gc.setFill(themeElement.getColor().getInner());
         gc.fillRect(point.getxMax(), point.getyMax(), length, length);
@@ -140,12 +139,9 @@ public class MapCanvas extends Canvas {
 
     private void drawRoundNode(GraphicsContext gc, Element element) {
         Theme.ThemeElement themeElement = theme.get(element.getType());
-        double innerRadius = (themeElement.getInnerWidth() / Math.sqrt(trans.determinant()));
         double outerRadius = (themeElement.getOuterWidth() / Math.sqrt(trans.determinant()));
-        gc.setFill(themeElement.getColor().getInner());
-        gc.fillOval(element.getxMax(), element.getyMax(), innerRadius, innerRadius);
-        gc.setStroke(themeElement.getColor().getOuter());
-        gc.strokeOval(element.getxMax(), element.getyMax(), outerRadius, outerRadius);
+        gc.setFill(themeElement.getColor().getOuter());
+        gc.fillOval(element.getxMax(), element.getyMax(), outerRadius, outerRadius);
     }
 
     private void drawOuterElement(GraphicsContext gc, Element element, Theme.ThemeElement themeElement) {
@@ -257,7 +253,9 @@ public class MapCanvas extends Canvas {
         double dx = (minXMap - mapData.getMinX()) * Math.sqrt(trans.determinant());              //Calculate the difference between the two bounding boxes min x-coordinate
         double dy = (minYMap - mapData.getMinY()) * Math.sqrt(trans.determinant());
 
-        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map
+        double zoom = getWidth() / (mapData.getMaxX() - mapData.getMinX()); //Get the scale for the view to show all of the map;
+        if (mapHeight > mapWidth) zoom = getHeight() / (mapData.getMaxY() - mapData.getMinY());
+
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));        //Calculate amount of levels to zoom in
 
         pan(dx, dy);
@@ -304,21 +302,17 @@ public class MapCanvas extends Canvas {
     }
 
     private byte getLevelsToZoomForLevel(int level) {
-        if(level > MAX_ZOOM_LEVEL || level < MIN_ZOOM_LEVEL || zoomLevel == level) return 0;
+        if (level > MAX_ZOOM_LEVEL || level < MIN_ZOOM_LEVEL || zoomLevel == level) return 0;
         return (byte) (level - zoomLevel);
     }
 
     private void zoomToLevel(int levels) {
         int levelToZoomTo = getLevelsToZoomForLevel(levels);
-        if(levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
+        if (levelToZoomTo != 0) zoom(levelToZoomTo > 0, levelToZoomTo);
         else updateMap();
     }
 
     public void panToRoute(float[] boundingBoxRouteCoordinates) {
-        //TODO: 07-05-2021 boundingBoxRouteCoordinates giver forkerte koordinater.
-        // Den giver ikke rigtige bounding box koordinater for den firkant der omslutter ruten. Kig især på y-koordinatet.
-        // Nogle gange er man heldig at ruten er lige og den giver de rigtige koordinater.
-        System.out.println(Arrays.toString(boundingBoxRouteCoordinates));
         double mapWidth = Math.abs(boundingBoxRouteCoordinates[1] - boundingBoxRouteCoordinates[0]);
         double boundsWidth = bounds.getWidth();
         double minXMap = bounds.getMinX() + ((boundsWidth - mapWidth) / 2);
@@ -327,15 +321,15 @@ public class MapCanvas extends Canvas {
         double boundsHeight = bounds.getHeight();
         double minYMap = bounds.getMinY() + ((boundsHeight - mapHeight) / 2);
 
-        double dx = Math.abs((minXMap - boundingBoxRouteCoordinates[0])) * Math.sqrt(trans.determinant());
-        double dy = Math.abs((minYMap - boundingBoxRouteCoordinates[2])) * Math.sqrt(trans.determinant());
+        double dx = (minXMap - boundingBoxRouteCoordinates[0]) * Math.sqrt(trans.determinant());
+        double dy = (minYMap - boundingBoxRouteCoordinates[2]) * Math.sqrt(trans.determinant());
 
-        double zoom = getWidth() / mapWidth; 
+        double zoom = getWidth() / mapWidth;
+        if (mapHeight > mapWidth) zoom = getHeight() / mapHeight;
         int levels = (int) (Math.log(zoom) / Math.log(ZOOM_FACTOR));
 
-        System.out.println("DX: " + dx + " DY: " + dy);
         pan(dx, dy);
-        zoomToLevel(levels);
+        zoomToLevel(levels + 1);
     }
 
     public void centerOnPoint(double x, double y) {

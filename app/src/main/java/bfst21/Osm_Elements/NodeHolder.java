@@ -7,6 +7,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Abstract class for Relations and ways, as they hold several nodes.
+ */
 public abstract class NodeHolder extends Element implements Serializable {
     @Serial
     private static final long serialVersionUID = 4506251123911227447L;
@@ -27,7 +30,7 @@ public abstract class NodeHolder extends Element implements Serializable {
     public float getxMax() {
         return xMax;
     }
-    
+
     @Override
     public float getyMax() {
         return yMax;
@@ -52,7 +55,6 @@ public abstract class NodeHolder extends Element implements Serializable {
     }
 
     public void addNodeBetweenIndices(Node node, int index) {
-        // not necessary to update max and min as the node is on a line between i and j nodes.
         nodes.add(index, node);
     }
 
@@ -129,6 +131,4 @@ public abstract class NodeHolder extends Element implements Serializable {
         }
         return previousNode;
     }
-
-
 }

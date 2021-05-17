@@ -12,6 +12,9 @@ import javafx.concurrent.Task;
 
 import java.util.*;
 
+/**
+ * The RouteNavigation class handles route navigation between two points (Dijkstra or A*).
+ */
 public class RouteNavigation extends Service<List<Element>> {
 
     private ElementToElementsTreeMap<Node, Way> nodeToHighwayMap;
@@ -45,6 +48,9 @@ public class RouteNavigation extends Service<List<Element>> {
         this.maxSpeed = 130;
     }
 
+    /**
+     * Starts the separate routing thread.
+     */
     public void startRouting() {
         if(!isRunning()) {
             reset();
@@ -63,6 +69,11 @@ public class RouteNavigation extends Service<List<Element>> {
         };
     }
 
+    /**
+     * Gets the route between two points.
+     * @return A list of nodes which make up the route.
+     * @throws NoNavigationResultException If no route can be found.
+     */
     private List<Element> getCurrentRoute() throws NoNavigationResultException {
         List<Node> path = createRoute();
         List<Element> currentRoute = new ArrayList<>();
@@ -76,8 +87,8 @@ public class RouteNavigation extends Service<List<Element>> {
             start.setType("start_route_note");
             end.setType("end_route_note");
 
-            for (int i = 0; i < path.size(); i++) {
-                route.addNode(path.get(i));
+            for (Node node : path) {
+                route.addNode(node);
             }
 
             currentRoute.add(route);
@@ -89,17 +100,24 @@ public class RouteNavigation extends Service<List<Element>> {
         return currentRoute;
     }
 
-    public List<Element> testGetCurrentRoute() throws NoNavigationResultException {
-        return getCurrentRoute();
+    /**
+     * Used for testing the class.
+     * @throws NoNavigationResultException If no route can be found.
+     */
+    public void testGetCurrentRoute() throws NoNavigationResultException {
+        getCurrentRoute();
     }
 
+    /**
+     * Prepares the necessary fields for the route navigation.
+     */
     private void setup() {
         needToCheckUTurns = false;
         routeDescription = new ArrayList<>();
         unitsTo = new HashMap<>();
         nodeBefore = new HashMap<>();
         wayBefore = new HashMap<>();
-        pq = new PriorityQueue<>((a, b) -> Integer.compare(unitsTo.get(a).compareTo(unitsTo.get(b)), 0)); // different comparator
+        pq = new PriorityQueue<>((a, b) -> Integer.compare(unitsTo.get(a).compareTo(unitsTo.get(b)), 0)); // compares based on units to
         pq.add(from);
         unitsTo.put(from, new DistanceAndTimeEntry(0, 0, 0));
         routeDescription = new ArrayList<>();
@@ -107,14 +125,26 @@ public class RouteNavigation extends Service<List<Element>> {
         coordinatesForPanToRoute = new float[]{Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY};
     }
 
+    /**
+     * Sets the tree map which holds information about which nodes are on which ways.
+     * @param nodeToHighwayMap The map holding the node to way information.
+     */
     public void setNodeToHighwayMap(ElementToElementsTreeMap<Node, Way> nodeToHighwayMap) {
         this.nodeToHighwayMap = nodeToHighwayMap;
     }
 
+    /**
+     * Sets the tree map which holds information about which nodes are a part of a restriction.
+     * @param nodeToRestriction The map holding the node to restriction information.
+     */
     public void setNodeToRestriction(ElementToElementsTreeMap<Node, Relation> nodeToRestriction) {
         this.nodeToRestriction = nodeToRestriction;
     }
 
+    /**
+     * Sets the tree map which holds information about which ways are a part of a restriction.
+     * @param wayToRestriction The map holding the way to restriction information.
+     */
     public void setWayToRestriction(ElementToElementsTreeMap<Way, Relation> wayToRestriction) {
         this.wayToRestriction = wayToRestriction;
     }
@@ -131,7 +161,8 @@ public class RouteNavigation extends Service<List<Element>> {
 
         if (n != to) {
             setup();
-            needToCheckUTurns = true; // TODO: 4/19/21 really not the most beautiful thing... for u-turns
+            // Run the algorithm again and check for u-turns
+            needToCheckUTurns = true;
             n = checkNode();
             if (n != to) throw new NoNavigationResultException();
         }
@@ -216,7 +247,7 @@ public class RouteNavigation extends Service<List<Element>> {
     }
 
     /**
-     * Gets a list of special features on a path such as if it is necessary to take a ferry, if the route has tolls, etc. // TODO: 4/29/21 toll??
+     * Gets a list of special features on a path such as if it is necessary to take a ferry.
      * @return A list of special path features.
      */
     public HashSet<String> getSpecialPathFeatures() {
@@ -308,7 +339,7 @@ public class RouteNavigation extends Service<List<Element>> {
             }
             if (!adjacentNodes.isEmpty()) {
                 for (Node n : adjacentNodes) {
-                    if (!isThereARestriction(wayBefore.get(currentFrom), currentFrom, w)) {
+                    if (vehicleType == VehicleType.WALK || !isThereARestriction(wayBefore.get(currentFrom), currentFrom, w)) {
                         if (aStar) {
                             checkDistanceAStar(currentFrom, n, w);
                         } else {
@@ -471,7 +502,7 @@ public class RouteNavigation extends Service<List<Element>> {
         nodeBefore.put(currentTo, currentFrom);
         wayBefore.put(currentTo, w);
         if (unitsTo.containsKey(currentTo))
-            pq.remove(currentTo); //TODO: 4/23/21 før var check + tilføj til pq O(1) fordi det var HM. NU: check er O(1) mens remove og add er log
+            pq.remove(currentTo);
         unitsTo.put(currentTo, new DistanceAndTimeEntry(unitsTo.get(currentFrom).distance + distanceBetweenFromTo, unitsTo.get(currentFrom).time + timeBetweenFromTo, newCost));
         pq.add(currentTo);
     }
@@ -511,7 +542,7 @@ public class RouteNavigation extends Service<List<Element>> {
             routeDescription.add(getFerryText(fromWay.getName()));
             specialPathFeatures.add("a ferry");
         } else {
-            routeDescription.add("Head " + MapMath.compassDirection(f, t).toLowerCase() + " on " + wayBefore.get(t).getName() + " and you will arrive at your destination" + getCurrentDistanceAndTimeText());
+            routeDescription.add("Head " + MapMath.compassDirection(f, t).toLowerCase() + " on " + wayBefore.get(t).getName() + " and you will arrive at your destination" + getCurrentDistanceText());
         }
     }
 
@@ -532,8 +563,10 @@ public class RouteNavigation extends Service<List<Element>> {
             Way wayBeforeTo = wayBefore.get(t);
             String wayBeforeViaName = wayBeforeVia.getName() != null ? wayBeforeVia.getName() : "unnamed road";
             String wayBeforeToName = wayBeforeTo.getName() != null ? wayBeforeTo.getName() : "unnamed road";
+            String wayBeforeViaType = wayBeforeVia.getType();
+            String wayBeforeToType = wayBeforeTo.getType();
 
-            if (!wayBeforeViaName.equals(wayBeforeToName)) {
+            if (!wayBeforeViaName.equals(wayBeforeToName) || !wayBeforeViaType.equals(wayBeforeToType)) {
                 if (roundabout) {
                     routeDescription.add(getRoundaboutText(roundAboutStartNodeIndex, i, wayBeforeVia, wayBeforeToName));
                     roundabout = false;
@@ -545,7 +578,7 @@ public class RouteNavigation extends Service<List<Element>> {
                         routeDescription.add(getKeepRightText(wayBeforeViaName));
                         keepRight = false;
                     } else {
-                        routeDescription.add("Follow " + wayBeforeViaName + getCurrentDistanceAndTimeText());
+                        routeDescription.add("Follow " + wayBeforeViaName + getCurrentDistanceText());
                     }
 
                     currentDistanceDescription = unitsTo.get(t).distance - unitsTo.get(v).distance;
@@ -576,11 +609,11 @@ public class RouteNavigation extends Service<List<Element>> {
     }
 
     /**
-     * Gets the current distance and time as a string on different lines.
-     * @return The current distance and time on different lines.
+     * Gets the current distance as a string.
+     * @return The current distance on a new line.
      */
-    private String getCurrentDistanceAndTimeText() {
-        return "\n" + MapMath.formatDistance(currentDistanceDescription, 2) + "\n" + MapMath.formatTime(currentTimeDescription, 2);
+    private String getCurrentDistanceText() {
+        return "\n" + MapMath.formatDistance(currentDistanceDescription, 2);
     }
 
     /**
@@ -589,7 +622,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The ferry direction string.
      */
     private String getFerryText(String wayBeforeViaName) {
-        return "Take the " + wayBeforeViaName + " ferry " + getCurrentDistanceAndTimeText(); // TODO: 4/29/21 time in this case?
+        return "Take the " + wayBeforeViaName + " ferry " + getCurrentDistanceText();
     }
 
     /**
@@ -601,7 +634,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The direction string for the roundabout.
      */
     private String getRoundaboutText(int roundAboutStartNodeIndex, int i, Way wayBeforeVia, String wayBeforeToName) {
-        return "At the roundabout, take the " + getRoundaboutExit(roundAboutStartNodeIndex, i - 1, wayBeforeVia) + ". exit onto " + wayBeforeToName + getCurrentDistanceAndTimeText();
+        return "At the roundabout, take the " + getRoundaboutExit(roundAboutStartNodeIndex, i - 1, wayBeforeVia) + ". exit onto " + wayBeforeToName + getCurrentDistanceText();
     }
 
     /**
@@ -613,7 +646,7 @@ public class RouteNavigation extends Service<List<Element>> {
         String keepRightName = "";
         if (wayBeforeViaName.contains("Exit")) keepRightName = " and take " + wayBeforeViaName;
         else if (!wayBeforeViaName.equals("unnamed way")) keepRightName = " on " + wayBeforeViaName;
-        return "Keep right" + keepRightName + getCurrentDistanceAndTimeText();
+        return "Keep right" + keepRightName + getCurrentDistanceText();
     }
 
     /**
@@ -623,15 +656,15 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The final direction.
      */
     private String getArrivedAtDestinationText(boolean roundabout, boolean ferry) {
-        String text = "";
+        String text;
         String wayName = wayBefore.get(path.get(0)).getName();
-        if (wayName.equals("null")) wayName = "unnamed way";
+        if (wayName == null) wayName = "unnamed way";
 
         if (roundabout) text = "Follow the roundabout";
         else if (ferry) text = "Take the " + wayName + " ferry";
         else text = "Follow " + wayName;
 
-        text += " and you will arrive at your destination" + getCurrentDistanceAndTimeText();
+        text += " and you will arrive at your destination" + getCurrentDistanceText();
         return text;
     }
 
@@ -698,7 +731,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * Class which holds the distance and a time to a certain node along with the cost for A-star.
      * The class is necessary to keep track of both variables as time various by the road type for cars.
      */
-    private class DistanceAndTimeEntry implements Comparable<DistanceAndTimeEntry> {
+    private static class DistanceAndTimeEntry implements Comparable<DistanceAndTimeEntry> {
         private final double distance;
         private final double time;
         private final double cost;

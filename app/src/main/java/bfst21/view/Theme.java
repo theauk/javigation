@@ -20,7 +20,7 @@ public class Theme {
     private String stylesheet;
     private boolean warned;
 
-    private final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = (?:\\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*]))*\\})*(?:, )?(?:\\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*\\})*(?:, )?(?:\\{style = \"(?<style>[a-z]+)\"\\})*(?:, )?(?:\\{filled = (?<fill>true|false)\\})*(?:, )?(?:\\{node = (?<node>true|false)\\})*(?:, )?(?:\\{text = (?<text>true|false)\\})*(?:, )?(?:\\{showAt = (?<zoomLevel>\\d{1,2})\\})*;(?: *#.*)*)* *$|^#.*$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
+    private final String regex = "^ *(?:\"(?<key>[a-z_]*)\" = (?:\\{(?<iColor>iColor = \\[(?<red>\\d{1,3}), (?<green>\\d{1,3}), (?<blue>\\d{1,3})])(?:, (?<oColor>oColor = \\[(?<red2>\\d{1,3}), (?<green2>\\d{1,3}), (?<blue2>\\d{1,3})*]))*})*(?:, )?(?:\\{iWidth = (?<iWidth>\\d+)(?:, oWidth = (?<oWidth>\\d+))*})*(?:, )?(?:\\{style = \"(?<style>[a-z]+)\"})*(?:, )?(?:\\{filled = (?<fill>true|false)})*(?:, )?(?:\\{node = (?<node>true|false)})*(?:, )?(?:\\{text = (?<text>true|false)})*(?:, )?(?:\\{showAt = (?<zoomLevel>\\d{1,2})})*;(?: *#.*)*)* *$|^#.*$|^name = \"(?<name>[A-Za-z0-9 ]+)\"; *$";
     private final Pattern pattern = Pattern.compile(regex);
     private Matcher matcher;
 
@@ -216,7 +216,7 @@ public class Theme {
         }
     }
 
-    public class MapColor {
+    public static class MapColor {
         private final Color inner;
         private final Color outer;
 

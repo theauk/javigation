@@ -19,10 +19,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+/**
+ * A class containing static methods for file loading.
+ * Features include:
+ * <ul>
+ *     <li>Loading map files the program supports (.osm, .zip and .bmapdata).</li>
+ *     <li>Loading and creating {@link Theme}s from a .mtheme file.</li>
+ *     <li>Loading resources and determining their file size.</li>
+ *     <li>Returning lists with file entries from a specific folder.</li>
+ * </ul>
+ */
 public class Loader {
     public static InputStream load(String file) throws IOException, NoOSMInZipFileException, UnsupportedFileFormatException {
-        if(file.endsWith(".osm") || file.endsWith(".bmapdata")) return loadFile(file);
-        else if(file.endsWith(".zip")) return loadZIP(file);
+        if (file.endsWith(".osm") || file.endsWith(".bmapdata")) return loadFile(file);
+        else if (file.endsWith(".zip")) return loadZIP(file);
         throw new UnsupportedFileFormatException(file);
     }
 
@@ -32,28 +42,48 @@ public class Loader {
      *
      * @param file the path to the file to be processed
      * @return a ZipInputStream for the found OSM zip entry.
-     * @throws IOException if the file is not found.
+     * @throws IOException             if the file is not found.
      * @throws NoOSMInZipFileException if there is no OSM file in the zip file.
      */
     private static ZipInputStream loadZIP(String file) throws IOException, NoOSMInZipFileException {
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
         ZipEntry entry;
 
-        while((entry = zipInputStream.getNextEntry()) != null) {
-            if(entry.getName().endsWith(".osm")) return zipInputStream;
+        while ((entry = zipInputStream.getNextEntry()) != null) {
+            if (entry.getName().endsWith(".osm")) return zipInputStream;
         }
 
         throw new NoOSMInZipFileException(file);
     }
 
+    /**
+     * Loads a file coming from outside the users computer.
+     *
+     * @param file the path to the file to be loaded.
+     * @return a {@link FileInputStream} for the specified file.
+     * @throws IOException if the file could not be found.
+     */
     private static FileInputStream loadFile(String file) throws IOException {
         return new FileInputStream(file);
     }
 
+    /**
+     * Loads a resource file from the resources folder within the programs environment.
+     *
+     * @param file the resource file to be loaded.
+     * @return a {@link InputStream} for the specified resource file.
+     */
     public static InputStream loadResource(String file) {
         return Loader.class.getResourceAsStream(file);
     }
 
+    /**
+     * Returns the file size in bytes of a specific resource file located in the resources folder.
+     *
+     * @param file the file to get the size from.
+     * @return the size of the file in bytes.
+     * @throws IOException if the file could not be found.
+     */
     public static long getResourceFileSize(String file) throws IOException {
         return Loader.class.getResource(file).openConnection().getContentLengthLong();
     }
@@ -64,17 +94,17 @@ public class Loader {
      *
      * @param file the zip file to be processed
      * @return the file size of the first found OSM entry in the zip file (in bytes).
-     * @throws IOException if file is not found.
+     * @throws IOException             if file is not found.
      * @throws NoOSMInZipFileException if there are no OSM zip entries in the zip file.
      */
     public static long getZipFileEntrySize(String file) throws IOException, NoOSMInZipFileException {
         ZipFile zipFile = new ZipFile(file);
         Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-        while(entries.hasMoreElements()) {
+        while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
 
-            if(entry.getName().endsWith(".osm")) {
+            if (entry.getName().endsWith(".osm")) {
                 zipFile.close();
                 return entry.getSize();
             }
@@ -83,27 +113,33 @@ public class Loader {
         throw new NoOSMInZipFileException(file);
     }
 
+    /**
+     * Loads a theme file from the resources folder and constructs and returns a {@link Theme}.
+     *
+     * @param file the theme file to be loaded.
+     * @return a theme created from the file or an empty theme if not found.
+     */
     public static Theme loadTheme(String file) {
-        try(BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(loadResource("/themes/" + file)))) {
             Theme theme = new Theme();
 
             String line;
             int lineNumber = 0;
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
-                if(line.isBlank()) continue;
+                if (line.isBlank()) continue;
                 theme.parseData(line, lineNumber);
             }
 
             URL cssPath = Loader.class.getResource("/themes/" + file.replace(".mtheme", ".css"));
-            if(cssPath != null) theme.setStylesheet(cssPath.toString());
+            if (cssPath != null) theme.setStylesheet(cssPath.toString());
 
             return theme;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return new Theme();
     }
 
     /**

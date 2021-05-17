@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
@@ -26,21 +25,21 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
  * Creates a complete MapData object containing Nodes, Ways and Relations from an InputStream containing either a .osm file or a binary {@link MapData}.
  */
 public class Creator extends Task<MapData> {
+    private static final float transformationConstant = -0.56f;
     private final ProgressInputStream progressInputStream;
     private final boolean[] touched = new boolean[3];
     private final boolean binary;
     private MapData mapData;
     private String city, streetName, houseNumber, name;
     private Integer postcode;
-    private int bottomLayer, layerTwo, layerThree, layerFour, topLayer;
-    private HashMap<String, Integer> typeToLayer;
-    private Relation coastLines;
-    private HashMap<Element, String> elementToText;
+    private final int bottomLayer, layerTwo, layerThree, layerFour, topLayer;
+    private final HashMap<String, Integer> typeToLayer;
+    private final Relation coastLines;
+    private final HashMap<Element, String> elementToText;
     private boolean isFoot = false;
     private boolean motorWayJunctionNode = false;
-    private HashMap<Node, String> destinationInfoMap = new HashMap<>();
+    private final HashMap<Node, String> destinationInfoMap = new HashMap<>();
     private String motorwayExitInfo;
-    private static final float transformationConstant = -0.56f;
 
     public Creator(InputStream inputStream, long fileSize, boolean binary) {
         mapData = new MapData();
@@ -84,6 +83,7 @@ public class Creator extends Task<MapData> {
 
     /**
      * Converts OSM data into objects and sorts them into different data structures depending on their attributes and type.
+     *
      * @throws XMLStreamException If a processing error happens.
      */
     private void createMapData() throws XMLStreamException {
@@ -184,7 +184,7 @@ public class Creator extends Task<MapData> {
                                     var refR = Long.parseLong(reader.getAttributeValue(null, "ref"));
                                     if (type.equals("way")) {
                                         if (idToWay.get(refR) != null) {
-                                            relation.addWay(idToWay.get(refR)); // TODO: 4/14/21 fix
+                                            relation.addWay(idToWay.get(refR));
                                             relation.addAllNodes(idToWay.get(refR).getNodes());
                                         }
                                     }
@@ -225,13 +225,14 @@ public class Creator extends Task<MapData> {
                                         motorwayExitInfo = null;
                                     }
 
-                                    if(isAddress()){
+                                    if (isAddress()) {
                                         addressTree.put(node, streetName, houseNumber, postcode, city);
                                         node.setType("address", 4);
                                         nullifyAddress();
                                     } else {
-                                        if (node.hasType())
-                                        {rTreeHolder.insert(node);}
+                                        if (node.hasType()) {
+                                            rTreeHolder.insert(node);
+                                        }
                                         idToNode.put(node);
                                     }
                                     node = null;
@@ -241,14 +242,14 @@ public class Creator extends Task<MapData> {
                             case "way":
                                 if (way != null) {
                                     idToWay.put(way);
-                                    if (way.hasType()) {
+                                    if (way.getLayer()!= -1 && way.hasType()) {
                                         rTreeHolder.insert(way);
 
                                     }
                                     if (way.isHighWay()) {
                                         nodeToHighwayMap.putAll(way.getNodes(), way);
+                                        closetRoadRTree.insert(way);
                                         if (way.hasName()) {
-                                            closetRoadRTree.insert(way);
                                             highWayRoadNodes.addAll(way.getNodes());
                                         }
                                     }
@@ -287,6 +288,7 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets the name of motorway exits to the exit number and name (if any).
+     *
      * @param k The current key.
      * @param v The current value.
      */
@@ -305,8 +307,9 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets the type of relations.
-     * @param k The current key.
-     * @param v The current value.
+     *
+     * @param k        The current key.
+     * @param v        The current value.
      * @param relation The current Relation.
      */
     private void checkRelation(String k, String v, Relation relation) {
@@ -318,8 +321,11 @@ public class Creator extends Task<MapData> {
             case "name":
                 relation.setName(v);
                 break;
-            case "bridge":
-                // TODO: 5/1/21 ???
+            case "man_made":
+                if (v.equals("bridge")) {
+                    relation.setType((k), typeToLayer.get(k));
+                    relation.setIsMultiPolygon();
+                }
             case "building":
                 relation.setType((k), typeToLayer.get(k));
                 break;
@@ -357,8 +363,9 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets the type of ways.
-     * @param k The current key.
-     * @param v The current value.
+     *
+     * @param k   The current key.
+     * @param v   The current value.
      * @param way The current way.
      */
     private void checkWay(String k, String v, Way way) {
@@ -430,7 +437,8 @@ public class Creator extends Task<MapData> {
                 break;
 
             case "ref":
-                if (way.getName() == null && way.getType() != null && !way.getType().equals("roundabout")) way.setName(fixNumberWayName(v));
+                if (way.getName() == null && way.getType() != null && !way.getType().equals("roundabout"))
+                    way.setName(fixNumberWayName(v));
                 break;
 
             case "route":
@@ -441,7 +449,7 @@ public class Creator extends Task<MapData> {
                 break;
 
             case "tunnel":
-                if (v.equals("yes")) way.setType(null);
+                if (v.equals("yes")) way.setLayer(-1);
                 break;
 
         }
@@ -450,6 +458,7 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets the name of a way to its number (given that it has one) and type if the way does not already have a name.
+     *
      * @param v The current value.
      * @return The name of the way.
      */
@@ -459,7 +468,8 @@ public class Creator extends Task<MapData> {
 
         for (int i = 0; i < wayNumbers.length; i++) {
             if (wayNumbers[i].length() < 3) names[i] = "Main Road " + wayNumbers[i]; // main road has max 2 numbers.
-            else if (wayNumbers[i].matches(".*[0-9]+.*") && wayNumbers[i].matches(".*[A-Za-z]+.*")) names[i] = "Highway " + wayNumbers[i]; // highway has letters and numbers
+            else if (wayNumbers[i].matches(".*[0-9]+.*") && wayNumbers[i].matches(".*[A-Za-z]+.*"))
+                names[i] = "Highway " + wayNumbers[i]; // highway has letters and numbers
             else names[i] = "Secondary Road " + wayNumbers[i];
         }
         return String.join("/", names);
@@ -467,8 +477,9 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets the attributes of ways.
-     * @param k The current key.
-     * @param v The current value.
+     *
+     * @param k   The current key.
+     * @param v   The current value.
      * @param way The current way.
      */
     private void checkHighWayAttributes(String k, String v, Way way) {
@@ -492,7 +503,7 @@ public class Creator extends Task<MapData> {
             case "maxspeed":
                 try {
                     way.setMaxSpeed(Integer.parseInt(v));
-                } catch (NumberFormatException e) {
+                } catch (NumberFormatException ignored) {
                 }
                 break;
 
@@ -518,14 +529,6 @@ public class Creator extends Task<MapData> {
                 if (v.equals("yes")) isFoot = true;
                 break;
 
-            case "service":
-                if (v.equals("driveway")) {
-                    way.setNotDriveable();
-                    way.setNotCycleable();
-                    way.setNotWalkable();
-                }
-                break;
-
             case "duration":
                 if (v.matches("[0-9]{1,2}:[0-9]{1,2}")) {
                     double duration = MapMath.colonTimeToHours(v);
@@ -538,8 +541,9 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets the attributes of an address node.
-     * @param k The current key.
-     * @param v The current value.
+     *
+     * @param k    The current key.
+     * @param v    The current value.
      * @param node The current node.
      */
     private void checkAddressNode(String k, String v, Node node) {
@@ -550,18 +554,18 @@ public class Creator extends Task<MapData> {
             case "addr:housenumber":
                 houseNumber = v;
                 break;
-            case "addr:postcode" :
+            case "addr:postcode":
                 postcode = Integer.parseInt(v.trim());
                 break;
             case "addr:street":
                 streetName = v;
                 break;
-            case "name" :
+            case "name":
                 name = v;
                 break;
             case "place":
-                if(v.equals("city") || v.equals("town") || v.equals("village") || v.equals("hamlet")) {
-                    node.setType(v,typeToLayer.get("text"));
+                if (v.equals("city") || v.equals("town") || v.equals("village") || v.equals("hamlet")) {
+                    node.setType(v, typeToLayer.get("text"));
                     elementToText.put(node, name);
                 }
                 break;
@@ -580,7 +584,8 @@ public class Creator extends Task<MapData> {
 
     /**
      * Checks if the current node has a valid address.
-     * @return
+     *
+     * @return True, if the current node has a valid name. Otherwise, false.
      */
     private boolean isAddress() {
         if (city == null) return false;
@@ -592,8 +597,9 @@ public class Creator extends Task<MapData> {
 
     /**
      * Sets highway (ways which can be navigated on).
+     *
      * @param way The current way.
-     * @param v The current value.
+     * @param v   The current value.
      */
     private void checkHighWayType(Way way, String v) {
 
@@ -623,19 +629,19 @@ public class Creator extends Task<MapData> {
 
         if (v.equals("service")) {
             way.setType(v, true, isFoot);
-            way.setMaxSpeed(50);
+            way.setMaxSpeed(20);
             return;
         }
 
         if (v.contains("trunk")) {
-            //motortrafikvej
+            // motortrafikvej
             way.setType(v, true, isFoot);
             way.setMaxSpeed(80);
             return;
         }
 
         if (v.equals("motorway_link")) {
-            for(Node n : way.getNodes()) {
+            for (Node n : way.getNodes()) {
                 if (destinationInfoMap.get(n) != null) {
                     way.setName(destinationInfoMap.get(n));
                     break;
@@ -649,6 +655,7 @@ public class Creator extends Task<MapData> {
 
     /**
      * Checks if the way is of a type that should be created as an object.
+     *
      * @param v The current value.
      * @return True if it should be created. Otherwise, false.
      */

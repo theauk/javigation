@@ -22,15 +22,14 @@ import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.*;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
@@ -48,14 +47,14 @@ public class Controller {
     private AddressFilter fromAddressFilter;
     private AddressFilter toAddressFilter;
 
-    private static final String BINARY_FILE = "/small.bmapdata"; // TODO: 5/8/21 edit
+    private static final String BINARY_FILE = "/bornholm.bmapdata";
 
     private Point2D lastMouse = new Point2D(0, 0);
     private Point2D currentRightClick = new Point2D(0,0);
-    private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.LEFT);
-    private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.UP, KeyCode.RIGHT);
-    private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.LEFT);
-    private final CustomKeyCombination downRightCombination = new CustomKeyCombination(KeyCode.DOWN, KeyCode.RIGHT);
+    private final CustomKeyCombination upLeftCombination = new CustomKeyCombination(KeyCode.W, KeyCode.A);
+    private final CustomKeyCombination upRightCombination = new CustomKeyCombination(KeyCode.W, KeyCode.D);
+    private final CustomKeyCombination downLeftCombination = new CustomKeyCombination(KeyCode.S, KeyCode.A);
+    private final CustomKeyCombination downRightCombination = new CustomKeyCombination(KeyCode.S, KeyCode.D);
     private boolean viaZoomSlider = true;
     private boolean dragged;
 
@@ -69,11 +68,15 @@ public class Controller {
     private Way currentToWay;
     private int[] nearestFromWaySegmentIndices;
     private int[] nearestToWaySegmentIndices;
+    private Node clickedNodeTo;
+    private Node clickedNodeFrom;
 
     @FXML private MapCanvas mapCanvas;
     @FXML private Scene scene;
     @FXML private StackPane centerPane;
-    @FXML private VBox loaderPane;
+    @FXML private StackPane menuPane;
+    @FXML private VBox loadingBarPane;
+    @FXML private VBox logoPane;
 
     @FXML private Label coordsLabel;
     @FXML private Label geoCoordsLabel;
@@ -101,6 +104,7 @@ public class Controller {
     @FXML private RadioMenuItem rTreeDebug;
     @FXML private RadioMenuItem kdTreeNearestNode;
     @FXML public RadioMenuItem rTreeNearestNode;
+    @FXML public RadioMenuItem showLeftView;
 
     @FXML private Button zoomInButton;
     @FXML private Button zoomOutButton;
@@ -124,10 +128,15 @@ public class Controller {
     @FXML private ContextMenu rightClickMenu;
 
     @FXML private Button directionsButton;
+    @FXML private Button searchForAddress;
     @FXML private Button switchButton;
     @FXML private Button backButton;
     @FXML private VBox address_myPlacesPane;
     @FXML private VBox navigationLeftPane;
+    @FXML private ToggleButton bikeNavToggleButton;
+    @FXML private ToggleButton walkNavToggleButton;
+    @FXML private HBox fastestShortestGroup;
+    @FXML private ToggleButton carNavToggleButton;
 
     public void init() {
         mapData = new MapData();
@@ -136,10 +145,19 @@ public class Controller {
         toAddressFilter = new AddressFilter();
         loadThemes();
         initView();
-        openFile();
+        startUp();
     }
 
-    private void initView() { // TODO: 5/7/21 flyt listeners
+    private void startUp() {
+        FadeTransition fadeIn = createFadeTransition(1.5, logoPane, true);
+        fadeIn.setOnFinished(e -> {
+            loadingBarPane.setVisible(true);
+            openFile();
+        });
+        fadeIn.play();
+    }
+
+    private void initView() {
         themeGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> setTheme(((RadioMenuItem) newValue.getToggleGroup().getSelectedToggle()).getUserData().toString()));
         mapCanvas.initTheme(Loader.loadTheme(themeGroup.getSelectedToggle().getUserData().toString()));
         scaleLabel.textProperty().bind(mapCanvas.getRatio());
@@ -152,7 +170,6 @@ public class Controller {
 
     private void initMapCanvas() {
         mapCanvas.init(mapData);
-        //TODO MOVE LISTENERS
         mapCanvas.widthProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
         mapCanvas.heightProperty().addListener((observable, oldValue, newValue) -> setBoundsLabels());
 
@@ -212,26 +229,20 @@ public class Controller {
         textFieldFromNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             fromAddressFilter.search(newValue);
             textFieldFromNav.suggest(fromAddressFilter.getSuggestions());
-            Address address = fromAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesNavigation(true, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet()); // TODO: 5/7/21 fix
         }));
-
 
         textFieldToNav.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             textFieldToNav.suggest(toAddressFilter.getSuggestions());
-            Address address = toAddressFilter.getMatchedAddress();
-            if (address != null) updateNodesNavigation(false, address.getNode().getxMax(), address.getNode().getyMax(), address.toString(), address.getStreet()); // TODO: 5/7/21 fix
         }));
 
         addressSearchTextField.textProperty().addListener(((observable, oldValue, newValue) -> {
             toAddressFilter.search(newValue);
             addressSearchTextField.suggest(toAddressFilter.getSuggestions());
-            if(toAddressFilter.getMatchedAddress() != null){
-                mapData.addUserSearchResult(toAddressFilter.getMatchedAddress().getNode());
-                mapCanvas.repaint();
-            }
         }));
+
+        addressSearchTextField.setOnAction(e -> addSearchResult());
+        searchForAddress.setOnAction(e -> addSearchResult());
 
         directionsButton.setOnAction(e -> {
             mapData.resetCurrentSearchResult();
@@ -242,17 +253,21 @@ public class Controller {
             textFieldToNav.setSuggest(true);
         });
 
-        switchButton.setOnAction(e -> {
-            switchDirections();
-        });
+        switchButton.setOnAction(e -> switchDirections());
 
         backButton.setOnAction(e -> {
+            addressSearchTextField.clear();
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
-            textFieldToNav.clear();
             textFieldFromNav.clear();
+            textFieldToNav.clear();
+            directionsList.getItems().clear();
+            timeNav.setVisible(false);
+            distanceNav.setVisible(false);
             mapData.resetCurrentRoute();
             mapData.resetCurrentSearchResult();
+            resetNavigation();
+            mapCanvas.repaint();
         });
 
         myPlacesListView.setOnMouseClicked(e -> {
@@ -264,8 +279,16 @@ public class Controller {
         });
     }
 
-    private void removeChildren(){
-        // TODO: 28-04-2021 Remove search when under 2 charachters
+    private void addSearchResult() {
+        mapData.resetCurrentSearchResult();
+        if(toAddressFilter.getMatchedAddress() != null){
+            Node match = toAddressFilter.getMatchedAddress().getNode();
+            mapData.addUserSearchResult(match);
+            mapCanvas.centerOnPoint(match.getxMax(), match.getyMax());
+        } else {
+            createAlert(Alert.AlertType.WARNING, "No Address Found", "No Address Found!", "Please check if you've written the correct address.").showAndWait();
+            mapCanvas.repaint();
+        }
     }
 
     /**
@@ -361,10 +384,10 @@ public class Controller {
         else if (upRightCombination.match(e)) mapCanvas.pan(-acceleration, acceleration);
         else if (downLeftCombination.match(e)) mapCanvas.pan(acceleration, -acceleration);
         else if (downRightCombination.match(e)) mapCanvas.pan(-acceleration, -acceleration);
-        else if (e.getCode().equals(KeyCode.UP)) mapCanvas.pan(0, acceleration);
-        else if (e.getCode().equals(KeyCode.DOWN)) mapCanvas.pan(0, -acceleration);
-        else if (e.getCode().equals(KeyCode.LEFT)) mapCanvas.pan(acceleration, 0);
-        else if (e.getCode().equals(KeyCode.RIGHT)) mapCanvas.pan(-acceleration, 0);
+        else if (e.getCode().equals(KeyCode.W)) mapCanvas.pan(0, acceleration);
+        else if (e.getCode().equals(KeyCode.S)) mapCanvas.pan(0, -acceleration);
+        else if (e.getCode().equals(KeyCode.A)) mapCanvas.pan(acceleration, 0);
+        else if (e.getCode().equals(KeyCode.D)) mapCanvas.pan(-acceleration, 0);
     }
 
     @FXML
@@ -381,6 +404,10 @@ public class Controller {
         viaZoomSlider = true;
     }
 
+    /**
+     * Method to create a Binary file from the application
+     * A progress bar will be shown to the user and how much data the method has dumped
+     */
     @FXML
     private void dumpBinary() {
         String contentText = "The dumping process of MapData takes excessive amount of memory. If not enough memory is available an Out of Memory Error might be thrown, causing the program to crash. \n\nDo you want to continue?";
@@ -391,7 +418,7 @@ public class Controller {
             File file = showFileChooser("save").showSaveDialog(scene.getWindow());
             if (file != null) {
                 Serializer serializer = new Serializer(mapData, file);
-                showLoaderPane(true);
+                showMenuPane(true);
 
                 serializer.setOnRunning(e -> taskRunning(serializer));
                 serializer.setOnSucceeded(e -> taskSuccess());
@@ -417,7 +444,7 @@ public class Controller {
 
     @FXML
     private void openFile() {
-        showLoaderPane(true);
+        showMenuPane(true);
         File file = showFileChooser("open").showOpenDialog(scene.getWindow());
         InputStream inputStream;
         long fileSize;
@@ -477,14 +504,14 @@ public class Controller {
 
     private void taskSuccess() {
         state = State.MAP;
-        showLoaderPane(false);
+        showMenuPane(false);
         cleanupTask();
     }
 
     private void taskFailed(Task<?> task, boolean showMap) {
         if (showMap) {
             state = State.MAP;
-            showLoaderPane(false);
+            showMenuPane(false);
         }
         else state = State.MENU;
         cleanupTask();
@@ -509,6 +536,7 @@ public class Controller {
         if (state == State.MENU) {
             address_myPlacesPane.setVisible(false);
             navigationLeftPane.setVisible(false);
+            showLeftView.setDisable(true);
             openItem.setDisable(false);
             zoomInItem.setDisable(true);
             zoomOutItem.setDisable(true);
@@ -518,6 +546,7 @@ public class Controller {
         } else if (state == State.LOADING) {
             address_myPlacesPane.setVisible(false);
             navigationLeftPane.setVisible(false);
+            showLeftView.setDisable(true);
             openItem.setDisable(true);
             zoomInItem.setDisable(true);
             zoomOutItem.setDisable(true);
@@ -525,7 +554,7 @@ public class Controller {
             cancelItem.setDisable(false);
             dumpItem.setDisable(true);
         } else if (state == State.MAP) {
-            address_myPlacesPane.setVisible(true);
+            showLeftView.setDisable(false);
             openItem.setDisable(false);
             zoomInItem.setDisable(false);
             zoomOutItem.setDisable(false);
@@ -535,25 +564,27 @@ public class Controller {
         }
     }
 
-    private void showLoaderPane(boolean show) {
-        FadeTransition ft = new FadeTransition(Duration.millis(500), loaderPane);
+    private void showMenuPane(boolean show) {
+        FadeTransition fader;
+
         if (show) {
-            if (loaderPane.isVisible()) return;
+            if (menuPane.isVisible()) return;
             statusLabel.setText("Waiting");
             loadingBar.setProgress(0.0);
-            loaderPane.setVisible(true);
+            menuPane.setVisible(true);
             state = State.MENU;
             disableMenus();
-            ft.setFromValue(0);
-            ft.setToValue(1);
+            fader = createFadeTransition(0.5, menuPane, true);
         } else {
-            ft.setDelay(Duration.millis(500));
-            ft.setFromValue(1);
-            ft.setToValue(0);
-            ft.setOnFinished(e -> loaderPane.setVisible(false));
+            fader = createFadeTransition(0.5, menuPane, false);
+            fader.setDelay(Duration.millis(500));
+            fader.setOnFinished(e -> {
+                menuPane.setVisible(false);
+                address_myPlacesPane.setVisible(true);
+            });
         }
 
-        ft.play();
+        fader.play();
     }
 
     private void setTheme(String themeFile) {
@@ -599,7 +630,7 @@ public class Controller {
 
         if (option.equals("open")) {
             fileChooser.setTitle("Open File");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All OSM Files", "*.osm", "*zip", "*.bmapdata"));
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All OSM Files", "*.osm", "*.zip", "*.bmapdata"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("OSM File", "*.osm"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zipped OSM File", "*zip"));
         } else if (option.equals("save")) {
@@ -617,40 +648,111 @@ public class Controller {
         mapCanvas.rTreeDebugMode();
     }
 
-    public void getPointNav(boolean fromSelected) {
-        EventHandler<MouseEvent> event = new EventHandler<>() {
-            @Override
-            public void handle(MouseEvent e) {
-                Point2D coords = mapCanvas.getTransCoords(e.getX(), e.getY());
-                updateNodesNavigation(fromSelected, coords.getX(), coords.getY(), null, null);
-                mapCanvas.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-            }
-        };
-        mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
+    /**
+     * Get the nearest road, node on road an road indices to given coordinate.
+     * @param x coordinate
+     * @param y coordinate
+     * @param addressWay  if closest road needs to have addressWay name else null.
+     * @param vehicleType If vehicle type is chosen, else null.
+     * @return RTree.NearestRoadPriorityQueueEntry
+     */
+    private RTree.NearestRoadPriorityQueueEntry getNearestRoadEntry(float x, float y, String addressWay, VehicleType vehicleType) {
+        return mapData.getNearestRoadRTreePQEntry(x, y, addressWay, vehicleType);
+    }
+    // Finds the cosmetic nearest road in order to write it in the textfield
+    private void setClosestToWay(Node node) {
+        textFieldToNav.setSuggest(false);
+        Way nearestWay = getNearestRoadEntry(node.getxMax(), node.getyMax(), null, null).getWay();
+        textFieldToNav.setText(nearestWay.getName());
+        textFieldToNav.setSuggest(true);
+    }
+    // same as above - just for the FromNav field
+    private void setClosestFromWay(Node node) {
+        textFieldFromNav.setSuggest(false);
+        Way nearestWay = getNearestRoadEntry(node.getxMax(), node.getyMax(), null, null).getWay();
+        textFieldFromNav.setText(nearestWay.getName());
+        textFieldFromNav.setSuggest(true);
     }
 
-    public void updateNodesNavigation(boolean fromSelected, double x, double y, String fullAddress, String addressWay) {
-        RTree.NearestRoadPriorityQueueEntry entry = mapData.getNearestRoadRTreePQEntry((float) x, (float) y, addressWay);
-        Way nearestWay = entry.getWay();
-        Way nearestSegment = entry.getSegment();
-        int[] nearestWaySegmentIndices = entry.getSegmentIndices();
-        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, nearestSegment);
-
-        if (fromSelected) {
-            textFieldFromNav.setSuggest(false);
-            if (addressWay == null) textFieldFromNav.setText(nearestWay.getName());
-            currentFromWay = nearestWay;
-            nearestFromWaySegmentIndices = nearestWaySegmentIndices;
-            currentFromNode = nearestNodeOnNearestWay;
-            textFieldFromNav.setSuggest(true);
+    /**
+     * Checks if all the needed input is given in order to get route from navigation.
+     * Checks closest nodes with toggle group input in order to find the closets road matching the chosen vehicle type.
+     */
+    @FXML
+    public void searchNav() {
+        if (vehicleNavGroup.getSelectedToggle() == null) {
+            createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select a vehicle type").showAndWait();
+        } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
+            createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select either fastest or shortest").showAndWait();
         } else {
-            textFieldToNav.setSuggest(false);
-            if (addressWay == null) textFieldToNav.setText(nearestWay.getName());
-            currentToWay = nearestWay;
-            currentToNode = nearestNodeOnNearestWay;
-            nearestToWaySegmentIndices = nearestWaySegmentIndices;
-            textFieldToNav.setSuggest(true);
+                // TO
+                if (toAddressFilter.getMatchedAddress() != null) {
+                    Address address = toAddressFilter.getMatchedAddress();
+                    setCurrentToNode(address.getNode().getxMax(), address.getNode().getyMax(), address.getStreet());
+                } else if(clickedNodeTo != null){
+                    setCurrentToNode(clickedNodeTo.getxMax(), clickedNodeTo.getyMax(), null);
+                } else {
+                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go to").showAndWait();
+                    return;
+                }
+                // FROM
+                if (fromAddressFilter.getMatchedAddress() != null) {
+                    Address address = fromAddressFilter.getMatchedAddress();
+                    setCurrentFromNode(address.getNode().getxMax(), address.getNode().getyMax(), address.getStreet());
+                } else if (clickedNodeFrom != null) {
+                    setCurrentFromNode(clickedNodeFrom.getxMax(), clickedNodeFrom.getyMax(), null);
+                } else {
+                    createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "Please select where to go from").showAndWait();
+                    return;
+                }
+
+             if (currentFromNode.getxMax() == currentToNode.getxMax() && currentFromNode.getyMax() == currentToNode.getyMax()) {
+                 createAlert(Alert.AlertType.INFORMATION, "Navigation Error", "Navigation Error", "From and to are the same address").showAndWait();
+             } else {
+                 getRoute();
+             }
         }
+    }
+
+    /**
+     * Sets the current from node for navigation.
+     * @param x coordinate
+     * @param y coordinate
+     * @param street Null or address street name that node should be on.
+     */
+    private void setCurrentFromNode(float x, float y, String street) {
+        VehicleType vehicleType = (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData();
+        RTree.NearestRoadPriorityQueueEntry entry = getNearestRoadEntry(x, y, street, vehicleType);
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, entry.getSegment());
+        currentFromWay = entry.getWay();
+        nearestFromWaySegmentIndices = entry.getSegmentIndices();
+        currentFromNode = nearestNodeOnNearestWay;
+    }
+
+    /**
+     * Sets the current to node for navigation.
+     * @param x coordinate
+     * @param y coordinate
+     * @param street Null or address street name that node should be on.
+     */
+    private void setCurrentToNode(float x, float y, String street) {
+        VehicleType vehicleType = (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData();
+        RTree.NearestRoadPriorityQueueEntry entry = getNearestRoadEntry(x, y, street, vehicleType);
+        Node nearestNodeOnNearestWay = MapMath.getClosestPointOnWayAsNode(x, y, entry.getSegment());
+        currentToWay = entry.getWay();
+        nearestToWaySegmentIndices = entry.getSegmentIndices();
+        currentToNode = nearestNodeOnNearestWay;
+    }
+
+    private void resetNavigation(){
+        currentToNode = null;
+        currentFromNode = null;
+        nearestFromWaySegmentIndices = null;
+        nearestToWaySegmentIndices = null;
+        clickedNodeFrom = null;
+        clickedNodeTo = null;
+        fromAddressFilter.resetAddress();
+        toAddressFilter.resetAddress();
     }
 
     private void switchDirections() {
@@ -660,48 +762,56 @@ public class Controller {
         String currentFromTextCopy = textFieldFromNav.getText();
         Way currentFromWayCopy = currentFromWay;
         int[] currentNearestFromWaySegmentIndicesCopy = nearestFromWaySegmentIndices;
-        Node currentFromNodeCopy = currentFromNode;
+        Node clickedNodeFromCopy = clickedNodeFrom;
 
         textFieldFromNav.setText(textFieldToNav.getText());
         currentFromWay = currentToWay;
         nearestFromWaySegmentIndices = nearestToWaySegmentIndices;
-        currentFromNode = currentToNode;
+        clickedNodeFrom = clickedNodeTo;
 
         textFieldToNav.setText(currentFromTextCopy);
         currentToWay = currentFromWayCopy;
         nearestToWaySegmentIndices = currentNearestFromWaySegmentIndicesCopy;
-        currentToNode = currentFromNodeCopy;
+        clickedNodeTo = clickedNodeFromCopy;
 
         textFieldFromNav.setSuggest(true);
         textFieldToNav.setSuggest(true);
     }
 
-    @FXML
-    public void searchNav() {
-        if (currentToNode == null || currentFromNode == null) {
-            showDialogBox("Navigation Error", "Please enter both from and to");
-        } else if (currentFromNode == currentToNode) {
-            showDialogBox("Navigation Error", "From and to are the same entries");
-        } else if (vehicleNavGroup.getSelectedToggle() == null) {
-            showDialogBox("Navigation Error", "Please select a vehicle type");
-        } else if (!radioButtonFastestNav.isSelected() && !radioButtonShortestNav.isSelected()) {
-            showDialogBox("Navigation Error", "Please select either fastest or shortest");
-        } else {
-            getRoute();
-        }
-    }
-
-    private void showDialogBox(String title, String contentText) {
-        createAlert(Alert.AlertType.INFORMATION, title, null, contentText).showAndWait();
-    }
-
+    /**
+     * helper method to create Alert windows
+     * @param alertType The type of alert the pop up
+     * @param title The title of the window
+     * @param header the header for the text
+     * @param text The text that is the content of the alert
+     * @param buttons The buttons such as "Confirm" and "cancel"
+     * @return An alert with the given information.
+     */
     private Alert createAlert(Alert.AlertType alertType, String title, String header, String text, ButtonType... buttons) {
         Alert alert = new Alert(alertType, text, buttons);
         alert.setTitle(title);
+        alert.setHeaderText(header);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         return alert;
     }
 
+    private FadeTransition createFadeTransition(double duration, javafx.scene.Node target, boolean fadeIn) {
+        FadeTransition ft = new FadeTransition(Duration.seconds(duration), target);
+        if(fadeIn) {
+            ft.setFromValue(0);
+            ft.setToValue(1);
+        } else {
+            ft.setFromValue(1);
+            ft.setToValue(0);
+        }
+
+        return ft;
+    }
+
+    /**
+     * Starts the route finding process in its own thread <br>
+     * Sets the time, distance, and if there is a special path feature, to the given label
+     */
     @FXML
     public void getRoute() {
         routeNavigation.setupRoute(currentFromNode, currentToNode, currentFromWay, currentToWay, nearestFromWaySegmentIndices, nearestToWaySegmentIndices, (VehicleType) vehicleNavGroup.getSelectedToggle().getUserData(), radioButtonFastestNav.isSelected(), aStarNav.isSelected());
@@ -717,17 +827,25 @@ public class Controller {
             mapCanvas.repaint();
         });
         routeNavigation.setOnFailed(e -> {
-            showDialogBox("No Route Found", "Could not find a route between the two points");
+            mapData.resetCurrentRoute();
+            directionsList.getItems().clear();
+            distanceNav.setVisible(false);
+            timeNav.setVisible(false);
+            mapCanvas.repaint();
+            createAlert(Alert.AlertType.INFORMATION, "No Route Found", "No Route Found", "Could not find a route between the two points").showAndWait();
         });
         mapCanvas.repaint();
     }
 
+    /**
+     * Inserts the directions into the given ListView
+     * @param directions the list of directions to be inserted in the ListView
+     */
     public void setDirections(ArrayList<String> directions) {
         directionsList.getItems().removeAll(directionsList.getItems());
         int order = 1;
         for (String s : directions) {
             ListCell<String> l = new ListCell<>();
-            if(order % 2 == 0) l.setStyle("-fx-background-color: rgb(249, 249, 249)");
             l.setText(order + ". " + s);
             l.setEditable(false);
             l.setWrapText(true);
@@ -742,10 +860,6 @@ public class Controller {
         String s = "Total distance: ";
         s += MapMath.formatDistance(meters, 2);
         distanceNav.setText(s);
-    }
-
-    public void hideDistanceAndTimeNav() {
-        distanceNav.setVisible(false);
     }
 
     public void setTimeNav(double seconds){
@@ -769,6 +883,10 @@ public class Controller {
         mapCanvas.centerOnPoint(node.getxMax(), node.getyMax());
     }
 
+    /**
+     * Makes the user able to choose a point on the map, name it, and add it to the list of user points
+     * this method is used by the "add" button
+     */
     public void addUserPoint() {
         EventHandler<MouseEvent> event = new EventHandler<>() {
             @Override
@@ -781,6 +899,11 @@ public class Controller {
         mapCanvas.addEventHandler(MouseEvent.MOUSE_CLICKED, event);
     }
 
+    /**
+     *
+     * @param point The point that the user chooses on the map to be saved to the list over user points
+     *              this method is used by the right click menu and the other addUserPoint() method
+     */
     private void addUserPoint(Point2D point){
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Name Your Point");
@@ -799,6 +922,9 @@ public class Controller {
         }
     }
 
+    /**
+     * Deletes the selected point from the Listview containing the user's points on the map
+     */
     @FXML
     public void deleteUserPoint(){
         if(myPlacesListView.getSelectionModel().getSelectedItem() != null){
@@ -810,35 +936,61 @@ public class Controller {
 
     }
 
+    /**
+     * Add user point via the ContextMenu (right click menu)
+     */
     @FXML
-    public void setRightClickMenu(ContextMenuEvent actionEvent) {
-
-    }
-
-    @FXML
-    public void rightClickAddUserPoint(ActionEvent actionEvent) {
+    public void rightClickAddUserPoint() {
         Point2D point = mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
         addUserPoint(point);
     }
 
+    /**
+     * Finds the street name closest to where the user opened the context menu and updates the "from" AutoTextField
+     * with the street name
+     */
     @FXML
-    public void rightClickPointNavFrom(ActionEvent actionEvent) {
+    public void rightClickPointNavFrom() {
         Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        clickedNodeFrom = new Node(0, (float) point.getX(), (float) point.getY());
+        fromAddressFilter.resetAddress();
         if (!navigationLeftPane.isVisible()) {
             navigationLeftPane.setVisible(true);
             address_myPlacesPane.setVisible(false);
         }
-        updateNodesNavigation(true, point.getX(), point.getY(), null, null); // TODO: 5/6/21 null kan ændres for at skrive anden tekst i felterne
+        setClosestFromWay(clickedNodeFrom);
+    }
+
+    /**
+     * Finds the street name closest to where the context menu was opened and updates the "to" AutoTextField with the
+     * street name
+     */
+    @FXML
+    public void rightClickPointNavTo() {
+        Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
+        clickedNodeTo = new Node(0, (float) point.getX(), (float) point.getY());
+        toAddressFilter.resetAddress();
+        if (!navigationLeftPane.isVisible()) {
+            navigationLeftPane.setVisible(true);
+            address_myPlacesPane.setVisible(false);
+        }
+        setClosestToWay(clickedNodeTo);
+    }
+
+    public void toggleLeftPanel() {
+        address_myPlacesPane.setVisible(showLeftView.isSelected());
     }
 
     @FXML
-    public void rightClickPointNavTo(ActionEvent actionEvent) {
-        Point2D point =  mapCanvas.getTransCoords(currentRightClick.getX(), currentRightClick.getY());
-        if (!navigationLeftPane.isVisible()) {
-            navigationLeftPane.setVisible(true);
-            address_myPlacesPane.setVisible(false);
+    public void toggleShortestFastest(){
+        if(bikeNavToggleButton.isSelected()|| walkNavToggleButton.isSelected()){
+            radioButtonShortestNav.setSelected(true);
+            fastestShortestGroup.setVisible(false);
         }
-        updateNodesNavigation(false, point.getX(), point.getY(), null, null);
+        if(carNavToggleButton.isSelected()){
+            fastestShortestGroup.setVisible(true);
+            radioButtonShortestNav.setSelected(false);
+        }
     }
 
     private enum State {

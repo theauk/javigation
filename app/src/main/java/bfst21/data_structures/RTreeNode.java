@@ -10,10 +10,11 @@ public class RTreeNode implements Serializable {
     @Serial private static final long serialVersionUID = 6595066254175712095L;
 
     private float[] coordinates;
-    private ArrayList<RTreeNode> children;
-    private boolean leaf;
-    private ArrayList<Element> entries;
-    private int minimumEntrySize, maximumChildren;
+    private final ArrayList<RTreeNode> children;
+    private final boolean leaf;
+    private final ArrayList<Element> entries;
+    private final int minimumEntrySize;
+    private final int maximumChildren;
     private RTreeNode parent;
 
     public RTreeNode(float[] coordinates, boolean leaf, int minimumChildren, int maximumChildren, RTreeNode parent) {
