@@ -251,6 +251,7 @@ public class Controller {
         switchButton.setOnAction(e -> switchDirections());
 
         backButton.setOnAction(e -> {
+            addressSearchTextField.clear();
             navigationLeftPane.setVisible(false);
             address_myPlacesPane.setVisible(true);
             textFieldFromNav.clear();

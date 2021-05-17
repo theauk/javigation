@@ -529,14 +529,6 @@ public class Creator extends Task<MapData> {
                 if (v.equals("yes")) isFoot = true;
                 break;
 
-            case "service":
-                if (v.equals("driveway")) {
-                    way.setNotDriveable();
-                    way.setNotCycleable();
-                    way.setNotWalkable();
-                }
-                break;
-
             case "duration":
                 if (v.matches("[0-9]{1,2}:[0-9]{1,2}")) {
                     double duration = MapMath.colonTimeToHours(v);
@@ -637,7 +629,7 @@ public class Creator extends Task<MapData> {
 
         if (v.equals("service")) {
             way.setType(v, true, isFoot);
-            way.setMaxSpeed(50);
+            way.setMaxSpeed(20);
             return;
         }
 

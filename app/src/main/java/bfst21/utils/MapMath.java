@@ -311,13 +311,13 @@ public final class MapMath {
      * Otherwise, "km" is used.
      *
      * @param meters The distance in meters.
-     * @param digits How many digits should be used.
+     * @param digitsKM How many digits should be used for km.
      * @return A string with the distance followed by the unit.
      */
-    public static String formatDistance(double meters, int digits) {
+    public static String formatDistance(double meters, int digitsKM) {
         String s = "";
-        if (meters < 1000) s += round(meters, digits) + " m";
-        else s += round(meters / 1000f, digits) + " km";
+        if (meters < 1000) s+= Math.round(meters) + " m";
+        else s += round(meters / 1000f, digitsKM) + " km";
         return s;
     }
 

@@ -542,7 +542,7 @@ public class RouteNavigation extends Service<List<Element>> {
             routeDescription.add(getFerryText(fromWay.getName()));
             specialPathFeatures.add("a ferry");
         } else {
-            routeDescription.add("Head " + MapMath.compassDirection(f, t).toLowerCase() + " on " + wayBefore.get(t).getName() + " and you will arrive at your destination" + getCurrentDistanceAndTimeText());
+            routeDescription.add("Head " + MapMath.compassDirection(f, t).toLowerCase() + " on " + wayBefore.get(t).getName() + " and you will arrive at your destination" + getCurrentDistanceText());
         }
     }
 
@@ -563,8 +563,10 @@ public class RouteNavigation extends Service<List<Element>> {
             Way wayBeforeTo = wayBefore.get(t);
             String wayBeforeViaName = wayBeforeVia.getName() != null ? wayBeforeVia.getName() : "unnamed road";
             String wayBeforeToName = wayBeforeTo.getName() != null ? wayBeforeTo.getName() : "unnamed road";
+            String wayBeforeViaType = wayBeforeVia.getType();
+            String wayBeforeToType = wayBeforeTo.getType();
 
-            if (!wayBeforeViaName.equals(wayBeforeToName)) {
+            if (!wayBeforeViaName.equals(wayBeforeToName) || !wayBeforeViaType.equals(wayBeforeToType)) {
                 if (roundabout) {
                     routeDescription.add(getRoundaboutText(roundAboutStartNodeIndex, i, wayBeforeVia, wayBeforeToName));
                     roundabout = false;
@@ -576,7 +578,7 @@ public class RouteNavigation extends Service<List<Element>> {
                         routeDescription.add(getKeepRightText(wayBeforeViaName));
                         keepRight = false;
                     } else {
-                        routeDescription.add("Follow " + wayBeforeViaName + getCurrentDistanceAndTimeText());
+                        routeDescription.add("Follow " + wayBeforeViaName + getCurrentDistanceText());
                     }
 
                     currentDistanceDescription = unitsTo.get(t).distance - unitsTo.get(v).distance;
@@ -607,11 +609,11 @@ public class RouteNavigation extends Service<List<Element>> {
     }
 
     /**
-     * Gets the current distance and time as a string on different lines.
-     * @return The current distance and time on different lines.
+     * Gets the current distance as a string.
+     * @return The current distance on a new line.
      */
-    private String getCurrentDistanceAndTimeText() {
-        return "\n" + MapMath.formatDistance(currentDistanceDescription, 2) + "\n" + MapMath.formatTime(currentTimeDescription, 2);
+    private String getCurrentDistanceText() {
+        return "\n" + MapMath.formatDistance(currentDistanceDescription, 2);
     }
 
     /**
@@ -620,7 +622,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The ferry direction string.
      */
     private String getFerryText(String wayBeforeViaName) {
-        return "Take the " + wayBeforeViaName + " ferry " + getCurrentDistanceAndTimeText();
+        return "Take the " + wayBeforeViaName + " ferry " + getCurrentDistanceText();
     }
 
     /**
@@ -632,7 +634,7 @@ public class RouteNavigation extends Service<List<Element>> {
      * @return The direction string for the roundabout.
      */
     private String getRoundaboutText(int roundAboutStartNodeIndex, int i, Way wayBeforeVia, String wayBeforeToName) {
-        return "At the roundabout, take the " + getRoundaboutExit(roundAboutStartNodeIndex, i - 1, wayBeforeVia) + ". exit onto " + wayBeforeToName + getCurrentDistanceAndTimeText();
+        return "At the roundabout, take the " + getRoundaboutExit(roundAboutStartNodeIndex, i - 1, wayBeforeVia) + ". exit onto " + wayBeforeToName + getCurrentDistanceText();
     }
 
     /**
@@ -644,7 +646,7 @@ public class RouteNavigation extends Service<List<Element>> {
         String keepRightName = "";
         if (wayBeforeViaName.contains("Exit")) keepRightName = " and take " + wayBeforeViaName;
         else if (!wayBeforeViaName.equals("unnamed way")) keepRightName = " on " + wayBeforeViaName;
-        return "Keep right" + keepRightName + getCurrentDistanceAndTimeText();
+        return "Keep right" + keepRightName + getCurrentDistanceText();
     }
 
     /**
@@ -662,7 +664,7 @@ public class RouteNavigation extends Service<List<Element>> {
         else if (ferry) text = "Take the " + wayName + " ferry";
         else text = "Follow " + wayName;
 
-        text += " and you will arrive at your destination" + getCurrentDistanceAndTimeText();
+        text += " and you will arrive at your destination" + getCurrentDistanceText();
         return text;
     }
 

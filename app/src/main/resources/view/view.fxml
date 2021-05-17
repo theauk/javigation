@@ -35,7 +35,7 @@
                 <Menu text="View">
                     <MenuItem fx:id="resetItem" text="Reset" onAction="#resetView" accelerator="CTRL + R"/>
                     <SeparatorMenuItem/>
-                    <RadioMenuItem fx:id="showLeftView" text="Show left panel" selected="true" onAction="#toggleLeftPanel" accelerator="CTRL + L"/>
+                    <RadioMenuItem fx:id="showLeftView" text="Show left panel" selected="true" onAction="#toggleLeftPanel"/>
                     <SeparatorMenuItem/>
                     <Menu fx:id="themeMenu" text="Change Theme...">
                         <RadioMenuItem text="Default" userData="default.mtheme" selected="true">
