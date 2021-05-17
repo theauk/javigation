@@ -242,7 +242,7 @@ public class Creator extends Task<MapData> {
                             case "way":
                                 if (way != null) {
                                     idToWay.put(way);
-                                    if (way.hasType()) {
+                                    if (way.getLayer()!= -1 && way.hasType()) {
                                         rTreeHolder.insert(way);
 
                                     }
@@ -449,7 +449,7 @@ public class Creator extends Task<MapData> {
                 break;
 
             case "tunnel":
-                if (v.equals("yes")) way.setType(null);
+                if (v.equals("yes")) way.setLayer(-1);
                 break;
 
         }
