@@ -827,11 +827,6 @@ public class Controller {
             distanceNav.setVisible(false);
             timeNav.setVisible(false);
             mapCanvas.repaint();
-            try { // TODO: 5/17/21 delete 
-                throw routeNavigation.getException();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
             createAlert(Alert.AlertType.INFORMATION, "No Route Found", "No Route Found", "Could not find a route between the two points").showAndWait();
         });
         mapCanvas.repaint();
